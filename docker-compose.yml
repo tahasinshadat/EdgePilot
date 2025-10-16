@@ -1,0 +1,8 @@
+# docker-compose.yml
+version: "3.9"
+services:
+  mcp:
+    build: .
+    command: edgepilot mcp
+    stdin_open: true
+    tty: true
