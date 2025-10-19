@@ -1,0 +1,94 @@
+{
+  "sessions": [
+    {
+      "id": "ae0d00f1-c3c2-4582-bae3-1d479c8b83a7",
+      "title": "Chat 17:51:19",
+      "messages": [],
+      "tokens_used": 0,
+      "created_at": 1760655079.911669,
+      "updated_at": 1760655079.911669
+    },
+    {
+      "id": "aa5abe99-68ff-4d25-b63b-49bc924e7e25",
+      "title": "Chat 16:59:16",
+      "messages": [
+        {
+          "role": "user",
+          "content": "s",
+          "created_at": 1760653222.494261
+        },
+        {
+          "role": "assistant",
+          "content": "Okay, I'm ready. I'm listening and waiting for your requests. To give you succinct and actionable guidance, I need you to tell me what you're working on or what problems you're facing.\n\n**Example Prompts to Get Started:**\n\n*   \"My model training job is taking longer than expected. Can you check resource utilization?\"\n*   \"We're planning a large data ingestion. Will the system handle it, or do we need to adjust the schedule?\"\n*   \"Is there any scheduled maintenance that might impact my data pipeline tonight?\"\n*   \"I'm getting errors related to memory allocation. Is there a memory bottleneck on any nodes?\"\n*   \"What resources are currently available, and which are under the least load?\"\n\nThe more context you provide, the better I can assist you. Let's get started!",
+          "created_at": 1760653225.3629515
+        },
+        {
+          "role": "user",
+          "content": "hello",
+          "created_at": 1760655022.3260634
+        },
+        {
+          "role": "assistant",
+          "content": "Hello! What can I help you with today? To give you the best advice, tell me what you are working on or what you need help with. For example, are you:\n\n*   Planning a job?\n*   Experiencing a performance issue?\n*   Checking resource availability?\n*   Investigating an error?",
+          "created_at": 1760655024.6499894
+        },
+        {
+          "role": "user",
+          "content": "what",
+          "created_at": 1760655044.3405821
+        },
+        {
+          "role": "assistant",
+          "content": "I understand you're starting a conversation, but I need more information to be helpful. To give you relevant assistance, please tell me:\n\n*   **What are you trying to do?** (e.g., run a job, debug a problem, plan a task)\n*   **Which system or application are you working with?** (e.g., data pipeline, model training, specific server)\n*   **What specific information are you looking for?** (e.g., resource availability, performance metrics, scheduled events)\n\nThe more details you provide, the better I can understand your needs and offer actionable guidance.",
+          "created_at": 1760655046.681414
+        }
+      ],
+      "tokens_used": 936,
+      "created_at": 1760651956.9057062,
+      "updated_at": 1760655046.681414
+    },
+    {
+      "id": "72778463-d1be-4a40-b965-35b52e7c7bd9",
+      "title": "Chat 16:59:14",
+      "messages": [],
+      "tokens_used": 0,
+      "created_at": 1760651954.2107787,
+      "updated_at": 1760651954.2107787
+    },
+    {
+      "id": "3765e316-ff43-4952-ae75-830256f83022",
+      "title": "Chat 16:59:09",
+      "messages": [],
+      "tokens_used": 0,
+      "created_at": 1760651949.936192,
+      "updated_at": 1760651949.936192
+    },
+    {
+      "id": "76a4bc54-3a41-40c8-acb4-bbbf3266fea0",
+      "title": "New Chat",
+      "messages": [],
+      "tokens_used": 0,
+      "created_at": 1760650749.1436787,
+      "updated_at": 1760650749.1436787
+    },
+    {
+      "id": "67ab498d-bb7a-4ba7-a96d-eaab2ab6ccd4",
+      "title": "New Chat",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hello",
+          "created_at": 1760650722.2864234
+        },
+        {
+          "role": "assistant",
+          "content": "Acknowledged. What can I help you with today? Do you need assistance with system capacity planning, bottleneck analysis, or scheduling optimization? Please provide specifics so I can give you relevant advice.",
+          "created_at": 1760650723.8131843
+        }
+      ],
+      "tokens_used": 80,
+      "created_at": 1760650722.2385018,
+      "updated_at": 1760650723.8131843
+    }
+  ]
+}

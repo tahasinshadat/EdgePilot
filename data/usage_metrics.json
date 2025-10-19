@@ -1,0 +1,49 @@
+{
+  "records": [
+    {
+      "ts": 1760650723.8159323,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 41,
+      "response_tokens": 39,
+      "latency_ms": 1524.815499986289,
+      "ok": true
+    },
+    {
+      "ts": 1760650736.2564788,
+      "provider": "claude",
+      "model": "claude-3-5-sonnet-20240620",
+      "prompt_tokens": 0,
+      "response_tokens": 0,
+      "latency_ms": 979.8209999862593,
+      "ok": false
+    },
+    {
+      "ts": 1760653225.3706675,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 41,
+      "response_tokens": 181,
+      "latency_ms": 2868.5212999989744,
+      "ok": true
+    },
+    {
+      "ts": 1760655024.82295,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 222,
+      "response_tokens": 69,
+      "latency_ms": 2323.7812999868765,
+      "ok": true
+    },
+    {
+      "ts": 1760655046.724767,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 291,
+      "response_tokens": 132,
+      "latency_ms": 2339.590000017779,
+      "ok": true
+    }
+  ]
+}

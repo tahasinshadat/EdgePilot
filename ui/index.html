@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EdgePilot Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sidebar-section header">
+          <div>
+            <h1>EdgePilot</h1>
+            <p class="subtitle">On-prem copilot assistant</p>
+          </div>
+          <button id="new-chat-btn" class="primary-btn">New Chat</button>
+        </div>
+
+        <div class="sidebar-section">
+          <h2>Model Selection</h2>
+          <label for="provider-select" class="sr-only">Provider</label>
+          <select id="provider-select"></select>
+          <small id="provider-status" class="status-text"></small>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="section-heading">
+            <h2>Conversations</h2>
+          </div>
+          <ul id="chat-items" class="chat-items"></ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="metrics-heading">
+            <h2>Metrics</h2>
+            <div class="metrics-tabs">
+              <button class="metrics-tab active" data-mode="live">Live</button>
+              <button class="metrics-tab" data-mode="session">Session</button>
+            </div>
+          </div>
+          <div id="metric-grid" class="metric-grid"></div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="chat-title">
+          <h1 id="active-chat-title">Select a chat</h1>
+          <span id="token-counter"></span>
+        </header>
+
+        <section id="messages" class="messages">
+          <div class="empty-state">Create a chat to begin.</div>
+        </section>
+
+        <section class="composer">
+          <div class="composer-top">
+            <button id="mode-button" class="mode-button" aria-haspopup="true" aria-expanded="false">
+              <span class="mode-icon">+</span>
+              <span id="mode-label">Ask a question</span>
+            </button>
+            <div id="mode-menu" class="mode-menu hidden" role="menu">
+              <button type="button" class="mode-option" data-mode="ask">Ask a question</button>
+              <button type="button" class="mode-option" data-mode="schedule">Schedule a task</button>
+              <button type="button" class="mode-option" data-mode="shutdown">Shut down a run</button>
+            </div>
+          </div>
+          <form id="chat-form" class="composer-form">
+            <textarea
+              id="prompt-input"
+              rows="3"
+              placeholder="Ask a question"
+              required
+            ></textarea>
+            <div class="composer-actions">
+              <span class="composer-hint">Enter to send · Shift+Enter for newline</span>
+              <button type="submit" class="primary-btn">Send</button>
+            </div>
+          </form>
+          <div id="status-bar" class="status-bar"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./renderer.js" defer></script>
+  </body>
+</html>

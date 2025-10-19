@@ -1,0 +1,10 @@
+# ignore virtual environments
+edgepilot_environment/
+.venv
+
+# Ignore all node_modules folders
+node_modules/
+
+# Ignore all __pycache__ folders and .pyc files
+__pycache__/
+*.pyc

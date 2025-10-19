@@ -1,0 +1,83 @@
+"""Anthropic Claude provider implementation."""
+
+from __future__ import annotations
+
+import requests
+
+from .base import BaseLLM, ChatMessage, LLMResponse, ProviderConfig
+
+DEFAULT_ENDPOINT = "https://api.anthropic.com/v1/messages"
+MAX_OUTPUT_TOKENS = 1024
+
+
+class ClaudeProvider(BaseLLM):
+    """Invoke Anthropic Claude models via Messages API."""
+
+    def __init__(self, config: ProviderConfig) -> None:
+        self.config = config
+        if not self.config.api_key:
+            raise ValueError("Claude provider requires ANTHROPIC_API_KEY")
+
+    @classmethod
+    def describe(cls) -> dict:
+        return {
+            "name": "Claude",
+            "id": "claude",
+            "model": "claude-3-5-sonnet-20240620",
+            "supports_tools": True,
+        }
+
+    def generate(self, messages: list[ChatMessage]) -> LLMResponse:
+        prepared = self.format_messages(messages)
+        system_prompts: list[str] = []
+        anthropic_messages = []
+
+        for msg in prepared:
+            role = msg.get("role")
+            content = msg.get("content", "")
+            if not content:
+                continue
+            if role == "system":
+                system_prompts.append(content)
+                continue
+
+            anthropic_messages.append(
+                {
+                    "role": "assistant" if role == "assistant" else "user",
+                    "content": [{"type": "text", "text": content}],
+                }
+            )
+
+        if not anthropic_messages:
+            raise ValueError("Claude requires at least one user message.")
+
+        endpoint = self.config.base_url or DEFAULT_ENDPOINT
+        payload = {
+            "model": self.config.model or self.describe()["model"],
+            "messages": anthropic_messages,
+            "max_tokens": MAX_OUTPUT_TOKENS,
+        }
+        if system_prompts:
+            payload["system"] = "\n\n".join(system_prompts)
+
+        headers = {
+            "x-api-key": self.config.api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+
+        response = requests.post(endpoint, headers=headers, json=payload, timeout=self.config.timeout_sec)
+        response.raise_for_status()
+        data = response.json()
+
+        text_blocks = []
+        for block in data.get("content", []):
+            if block.get("type") == "text" and block.get("text"):
+                text_blocks.append(block["text"])
+        reply = "\n\n".join(text_blocks).strip() or "Claude did not return any content."
+
+        usage = data.get("usage", {})
+        prompt_tokens = int(usage.get("input_tokens", 0) or 0)
+        response_tokens = int(usage.get("output_tokens", 0) or 0)
+
+        return LLMResponse(text=reply, prompt_tokens=prompt_tokens, response_tokens=response_tokens)
