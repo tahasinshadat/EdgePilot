@@ -1,15 +1,16 @@
 # EdgePilot - AI Copilot Console
 
-EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications, and manage processes through natural language.
+EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language.
 
 ## Highlights
 - **🤖 MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
 - **📊 Real-time Metrics** - CPU, memory, disk, network monitoring with process-level details and executable paths
-- **🎯 Smart Tool Calling** - LLM automatically decides when to gather metrics, schedule tasks, or end processes
-- **🖥️ Browser UI** - Dark, minimal chat interface served at `http://127.0.0.1:8000/app/`
+- **🚀 Smart App Launcher** - Launch applications by name with delay support using Windows Start Menu search
+- **🎯 Smart Tool Calling** - LLM automatically decides when to gather metrics, launch apps, or end processes
+- **🖥️ Desktop UI** - Electron-based chat interface with dark theme
 - **🔌 Provider Abstraction** - Pluggable system supporting Gemini (with tools), Claude, and GPT
 - **💾 Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
-- **🚀 Scalable Architecture** - Add new tools in minutes with simple 5-step process
+- **⚡ Lightweight** - Clean codebase focused on core functionality
 
 ## Quick Start
 
@@ -36,11 +37,11 @@ python main.py serve --host 127.0.0.1 --port 8000
 
 ### 3. Test Tools
 ```bash
-# Test all tool calls and see their outputs
-python main.py tools test-tools
+# Test all MCP tools integration
+python test_tools.py
 
-# Verify metrics collection
-python main.py tools metrics --top-n 5 --pretty
+# Test launcher directly
+python tools/launcher.py
 ```
 
 ### 4. Try It Out!
@@ -50,13 +51,19 @@ Open the UI and try these prompts with **Gemini**:
 - "What's my current CPU and memory usage?"
 - "Show me the top 5 processes using the most CPU"
 
-**Task Management:**
+**Application Discovery:**
+- "What apps do I have installed?"
+- "Do I have Discord installed?"
+- "List all my games"
+
+**Application Launching:**
 - "Launch notepad"
-- "Open the calculator"
+- "Open Chrome in 30 seconds"
+- "Start Minecraft in 1 minute"
 
 **Process Control:**
 - "Close all Chrome instances"
-- "Show me all Python processes with their paths"
+- "End the notepad process"
 
 ## Environment Configuration
 Edit `env/.env`:
@@ -72,28 +79,28 @@ DEFAULT_PROVIDER=gemini               # Use gemini for tool calling
 EdgePilot/
 ├── README.md
 ├── requirements.txt
+├── test_tools.py            # MCP tools integration test
 ├── main.py                  # FastAPI backend + CLI entry point
 ├── ui/                      # Electron desktop application
 │   ├── index.html           # UI markup
 │   ├── renderer.js          # Frontend logic
 │   ├── styles.css           # Dark theme styling
-│   └── main.js              # Electron main process
+│   ├── main.js              # Electron main process
+│   └── package.json         # Node.js dependencies
 ├── providers/               # LLM provider adapters
 │   ├── base.py              # BaseLLM protocol + ToolCall classes
 │   ├── gemini.py            # Gemini with function calling
 │   ├── claude.py            # Claude adapter
 │   └── gpt.py               # GPT placeholder
 ├── tools/                   # System utilities exposed as tools
+│   ├── __init__.py          # Export gather_metrics, launch, search, list_apps, end_task
 │   ├── metrics.py           # System monitoring (CPU, memory, processes)
-│   ├── app_search.py        # Smart application search
-│   ├── schedule_task.py     # Application launcher with smart search
+│   ├── launcher.py          # Application launcher with Windows Start Menu search
 │   └── end_task.py          # Process termination
 ├── MCP/                     # Model Context Protocol integration
-│   ├── tool_schemas.py      # Function calling schemas for all 4 tools
+│   ├── tool_schemas.py      # Function calling schemas for all 5 tools
 │   ├── tool_executor.py     # Tool execution engine
 │   └── README.md            # Full MCP documentation
-├── test/                    # Test suite
-│   └── test.py              # Integration tests
 ├── env/.env                 # API keys and configuration
 └── data/                    # JSON persistence
     ├── chat_history.json    # Chat sessions
@@ -111,7 +118,7 @@ EdgePilot/
 
 ## MCP (Model Context Protocol)
 
-EdgePilot includes full MCP integration with **4 powerful tools**:
+EdgePilot includes full MCP integration with **5 powerful tools** using launcher.py for intelligent app launching:
 
 ### Available Tools
 
@@ -123,43 +130,77 @@ Collects comprehensive system metrics including CPU, memory, disk, network, batt
 gather_metrics(top_n=10, all_processes=False)
 ```
 
-#### 2. **search_applications** - Application Search
-Searches for applications installed on the system by name, returning matching apps with paths and relevance scores.
-
-```python
-# LLM calls this when user asks to find or launch an app
-search_applications(query="minecraft", max_results=10)
-```
-
-#### 3. **schedule_task** - Application Launcher
-Launches applications by path or command name with optional arguments, working directory, and smart search.
+#### 2. **launch** - Application Launcher with Scheduling
+Launch applications by name with optional delay. Uses Windows Start Menu search and Microsoft Store app discovery.
 
 ```python
 # LLM calls this when user wants to launch an app
-schedule_task(application="notepad", args=[], delay_seconds=0, cwd=None, search=True)
+launch(app_name="chrome", delay_seconds=0)
+launch(app_name="minecraft", delay_seconds=30)  # Launch in 30 seconds
 ```
 
-#### 4. **end_task** - Process Termination
+**Features:**
+- Searches Windows Start Menu shortcuts
+- Finds Microsoft Store/UWP apps
+- Supports delayed execution with threading
+- Simple app names (no paths needed)
+
+#### 3. **search** - Application Discovery
+Search for installed applications by name. Returns list of matching apps found in Start Menu and Microsoft Store.
+
+```python
+# LLM calls this to check if an app is installed
+search(app_name="discord")  # Returns: ["Discord"]
+search(app_name="game")     # Returns: ["Game Bar", "Steam", ...]
+```
+
+#### 4. **list_apps** - Browse Installed Applications
+List all installed applications with optional filtering. Perfect for "what apps do I have?" queries.
+
+```python
+# LLM calls this to browse available apps
+list_apps(filter_term="")       # Returns all apps
+list_apps(filter_term="game")   # Returns only apps with "game" in name
+```
+
+#### 5. **end_task** - Process Termination
 Terminates processes by name, path, or command line identifier.
 
 ```python
 # LLM calls this when user wants to close an app
 end_task(identifier="chrome", force=False)
+end_task(identifier="notepad", force=True)
 ```
 
 ### How It Works
 1. User sends a message in natural language
-2. Gemini analyzes the request and decides if tools are needed
-3. Tools are executed automatically (e.g., gathering metrics)
+2. Gemini analyzes the request and decides which tools to call
+3. Tools are executed automatically (e.g., launching apps, gathering metrics)
 4. Results are fed back to Gemini
 5. Gemini formulates a human-readable response
 
-**Example:**
+**Example 1: System Monitoring**
 ```
 User: "Show me what's using the most CPU"
 → Gemini calls gather_metrics(top_n=3)
-→ Receives: [{name: "chrome.exe", cpu: 15.2%, path: "C:\...\chrome.exe"}, ...]
+→ Receives: {processes: [{name: "chrome.exe", cpu: 15.2%, ...}]}
 → Responds: "Chrome is using the most CPU at 15.2%..."
+```
+
+**Example 2: Scheduled App Launch**
+```
+User: "Launch Minecraft in 30 seconds"
+→ Gemini calls launch(app_name="minecraft", delay_seconds=30)
+→ Receives: {success: true, message: "Scheduled 'minecraft' to launch in 30 seconds"}
+→ Responds: "I've scheduled Minecraft to launch in 30 seconds!"
+```
+
+**Example 3: App Discovery**
+```
+User: "What games do I have?"
+→ Gemini calls list_apps(filter_term="game")
+→ Receives: {count: 3, apps: ["Game Bar", "Steam", "Minecraft"]}
+→ Responds: "You have 3 games installed: Game Bar, Steam, and Minecraft"
 ```
 
 ### Adding Your Own Tools
@@ -170,20 +211,18 @@ See `MCP/README.md` for the complete guide. It's a simple 5-step process:
 4. Add executor in `MCP/tool_executor.py`
 5. Restart and test!
 
-## CLI Tools & Utilities
+## Testing & Utilities
 ```bash
-# Test all tool calls with sample data
-python main.py tools test-tools
+# Test all MCP tools integration
+python test_tools.py
 
-# Dump metrics manually
-python main.py tools metrics --top-n 5 --pretty
+# Test launcher directly (launches notepad, chrome, minecraft)
+python tools/launcher.py
 
-# Or run modules directly
-python tools/metrics.py --all --pretty
-python tools/app_search.py chrome --pretty
-
-# Run integration tests
-python test/test.py
+# Run modules directly
+python -c "from tools import gather_metrics; print(gather_metrics(top_n=5))"
+python -c "from tools import search; print(search('chrome'))"
+python -c "from tools import list_apps; print(list_apps('game'))"
 ```
 
 ## Extending Providers
@@ -192,10 +231,22 @@ python test/test.py
 3. Add environment variables for API keys/models
 4. For tool support, implement `enable_tools()` and parse `tool_calls` in responses
 
+## Key Features Powered by launcher.py
+
+EdgePilot's application launching is powered by `launcher.py`, which provides:
+
+1. **Windows Start Menu Search** - Searches .lnk shortcuts in user and system Start Menu locations
+2. **Microsoft Store Apps** - Discovers and launches UWP/Store apps via PowerShell
+3. **Delayed Execution** - Background threading for scheduled launches
+4. **Intelligent Fallback** - Falls back to Windows `start` command for built-in apps
+5. **Simple API** - Just 3 core functions: `launch()`, `search()`, `list_apps()`
+
+The LLM can use simple app names like "chrome", "minecraft", or "notepad" without needing full paths!
+
 ## Documentation
 - **`README.md`** (this file) - Quick start and overview
 - **`MCP/README.md`** - Complete MCP integration guide
-- **`IMPLEMENTATION_SUMMARY.md`** - Technical implementation details
+- **`tools/launcher.py`** - Application launcher implementation with detailed documentation
 
 ## License
 MIT License - See LICENSE file for details
