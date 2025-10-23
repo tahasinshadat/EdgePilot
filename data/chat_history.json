@@ -1,94 +1,54 @@
 {
   "sessions": [
     {
-      "id": "ae0d00f1-c3c2-4582-bae3-1d479c8b83a7",
-      "title": "Chat 17:51:19",
-      "messages": [],
-      "tokens_used": 0,
-      "created_at": 1760655079.911669,
-      "updated_at": 1760655079.911669
-    },
-    {
-      "id": "aa5abe99-68ff-4d25-b63b-49bc924e7e25",
-      "title": "Chat 16:59:16",
+      "id": "c24267c7-8bfd-4d0a-a228-a9686e150147",
+      "title": "I need to schedule a task: Launch Minecraft in 10 ",
       "messages": [
         {
           "role": "user",
-          "content": "s",
-          "created_at": 1760653222.494261
+          "content": "I need to schedule a task: Launch Minecraft in 10 seconds",
+          "created_at": 1761184555.8681455
         },
         {
           "role": "assistant",
-          "content": "Okay, I'm ready. I'm listening and waiting for your requests. To give you succinct and actionable guidance, I need you to tell me what you're working on or what problems you're facing.\n\n**Example Prompts to Get Started:**\n\n*   \"My model training job is taking longer than expected. Can you check resource utilization?\"\n*   \"We're planning a large data ingestion. Will the system handle it, or do we need to adjust the schedule?\"\n*   \"Is there any scheduled maintenance that might impact my data pipeline tonight?\"\n*   \"I'm getting errors related to memory allocation. Is there a memory bottleneck on any nodes?\"\n*   \"What resources are currently available, and which are under the least load?\"\n\nThe more context you provide, the better I can assist you. Let's get started!",
-          "created_at": 1760653225.3629515
+          "content": "OK. I have scheduled Minecraft to launch in 10 seconds.",
+          "created_at": 1761184560.0308993
         },
         {
           "role": "user",
-          "content": "hello",
-          "created_at": 1760655022.3260634
+          "content": "What is using up most of my storage?",
+          "created_at": 1761184673.2464755
         },
         {
           "role": "assistant",
-          "content": "Hello! What can I help you with today? To give you the best advice, tell me what you are working on or what you need help with. For example, are you:\n\n*   Planning a job?\n*   Experiencing a performance issue?\n*   Checking resource availability?\n*   Investigating an error?",
-          "created_at": 1760655024.6499894
+          "content": "Your disk has had 83 GB read and 110 GB written. I cannot tell you which specific files or folders are using the most storage. I can tell you that the top processes by CPU usage are: System Idle Process, MsMpEng.exe (Windows Defender), System, dwm.exe (Desktop Window Manager), Code.exe (VS Code), qcdpps.exe, Copilot.exe, MuseHub.exe and PAD.Console.Host.exe (Power Automate). MsMpEng.exe is using a significant amount of memory.",
+          "created_at": 1761184677.5545495
         },
         {
           "role": "user",
-          "content": "what",
-          "created_at": 1760655044.3405821
+          "content": "what is the main CPU killer in my computer?",
+          "created_at": 1761184707.6443696
         },
         {
           "role": "assistant",
-          "content": "I understand you're starting a conversation, but I need more information to be helpful. To give you relevant assistance, please tell me:\n\n*   **What are you trying to do?** (e.g., run a job, debug a problem, plan a task)\n*   **Which system or application are you working with?** (e.g., data pipeline, model training, specific server)\n*   **What specific information are you looking for?** (e.g., resource availability, performance metrics, scheduled events)\n\nThe more details you provide, the better I can understand your needs and offer actionable guidance.",
-          "created_at": 1760655046.681414
+          "content": "The top processes by CPU usage are: System Idle Process, MsMpEng.exe (Windows Defender), System, dwm.exe (Desktop Window Manager), Code.exe (VS Code), qcdpps.exe, Copilot.exe, MuseHub.exe and PAD.Console.Host.exe (Power Automate). It may be that Windows Defender or VS Code are the main CPU killers.",
+          "created_at": 1761184709.1692297
+        },
+        {
+          "role": "user",
+          "content": "can you give me a list of all available apps I have?",
+          "created_at": 1761184738.319891
+        },
+        {
+          "role": "assistant",
+          "content": "Here is a list of all available apps: Access, Add-In Manager 2025, Administrative Tools, Audacity, Autodesk Access, Autodesk App Manager, Autodesk Inventor Professional 2025 - English, Character Map, Command Prompt, Component Services, Computer Management, Control Panel, Cursor, DWG TrueView 2025 - English, Database Compare, Design Assistant 2025, Disk Cleanup, DrRacket, Drawing Resource Transfer Wizard 2025, Driver Install Creator Wizard, Event Viewer, Example Source Code, Excel, File Explorer, Git Bash, Git CMD, Git GUI, Git Release Notes, Google Chrome, IDLE (Python 3.12 64-bit), Install Additional Tools for Node.js, IntelliJ IDEA Community Edition 2025.2.3, Inventor Read-only Mode 2025 - English, Inventor Reset Utility, LiveCaptions, LockDown Browser, MATLAB R2024b, MSYS2 CLANG64, MSYS2 CLANGARM64, MSYS2 MINGW32, MSYS2 MINGW64, MSYS2 MSYS, MSYS2 UCRT64, Magnify, Microsoft Edge, MuseHub, Narrator, Node.js, Node.js command prompt, ODBC Data Sources (32-bit), ODBC Data Sources (64-bit), Office Language Preferences, On-Screen Keyboard, OneDrive, OneNote, Outlook (classic), Performance Monitor, PowerPoint, PowerToys (Preview), Project Editor 2025, Property Mapping for Imported CAD Data, Publisher, Python 3.12 (64-bit), Python 3.12 Manuals (64-bit), Python 3.12 Module Docs (64-bit), Racket, Racket Folder, RecoveryDrive, Registry Editor, Remote Desktop Connection, Resource Monitor, Riot Client, Roblox Player, Roblox Studio, Run, RustDesk, RustDesk Tray, Send to OneNote, Spreadsheet Compare, Steam, Steps Recorder, Sticky Notes (new), Style Library Manager 2025, Supplier Content Center 2025, System Configuration, System Information, Task Manager, Task Scheduler, Task Scheduler 2025, Telemetry Log for Office, Turnitin Draft Coach\\u2122 - Google Workspace Marketplace, Uninstall, Uninstall Node.js, Uninstall RustDesk, Uninstall UsbK Development Kit, Uninstall Zoom Workplace, UsbK Documentation, UsbK License, VALORANT, Visual Studio Code, VoiceAccess, WSL, WSL Settings, Windows Defender Firewall with Advanced Security, Windows Media Player Legacy, Windows PowerShell, Windows PowerShell (x64), Windows PowerShell (x86), Windows PowerShell ISE, Windows PowerShell ISE (x64), Windows PowerShell ISE (x86), Word, Zoom Workplace, dfrgui, libusb-win32 Filter Wizard, services.",
+          "created_at": 1761184746.9839766
         }
       ],
-      "tokens_used": 936,
-      "created_at": 1760651956.9057062,
-      "updated_at": 1760655046.681414
-    },
-    {
-      "id": "72778463-d1be-4a40-b965-35b52e7c7bd9",
-      "title": "Chat 16:59:14",
-      "messages": [],
-      "tokens_used": 0,
-      "created_at": 1760651954.2107787,
-      "updated_at": 1760651954.2107787
-    },
-    {
-      "id": "3765e316-ff43-4952-ae75-830256f83022",
-      "title": "Chat 16:59:09",
-      "messages": [],
-      "tokens_used": 0,
-      "created_at": 1760651949.936192,
-      "updated_at": 1760651949.936192
-    },
-    {
-      "id": "76a4bc54-3a41-40c8-acb4-bbbf3266fea0",
-      "title": "New Chat",
-      "messages": [],
-      "tokens_used": 0,
-      "created_at": 1760650749.1436787,
-      "updated_at": 1760650749.1436787
-    },
-    {
-      "id": "67ab498d-bb7a-4ba7-a96d-eaab2ab6ccd4",
-      "title": "New Chat",
-      "messages": [
-        {
-          "role": "user",
-          "content": "hello",
-          "created_at": 1760650722.2864234
-        },
-        {
-          "role": "assistant",
-          "content": "Acknowledged. What can I help you with today? Do you need assistance with system capacity planning, bottleneck analysis, or scheduling optimization? Please provide specifics so I can give you relevant advice.",
-          "created_at": 1760650723.8131843
-        }
-      ],
-      "tokens_used": 80,
-      "created_at": 1760650722.2385018,
-      "updated_at": 1760650723.8131843
+      "tokens_used": 7863,
+      "tool_calls_count": 3,
+      "created_at": 1761184490.2130458,
+      "updated_at": 1761184746.985999
     }
   ]
 }

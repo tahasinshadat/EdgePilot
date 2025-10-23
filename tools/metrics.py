@@ -27,26 +27,67 @@ def _gpu_info() -> Dict[str, float | bool | None]:
     return {"available": False}
 
 
-def _process_snapshot(limit: int = 10) -> List[Dict[str, float | int | str]]:
+def _process_snapshot(limit: int = 10, all_processes: bool = False) -> List[Dict[str, float | int | str]]:
+    """
+    Get a snapshot of running processes.
+
+    Parameters
+    ----------
+    limit:
+        Number of top processes to return (by CPU usage). Ignored if all_processes=True.
+    all_processes:
+        If True, return all running processes instead of just the top N.
+
+    Returns
+    -------
+    List of process dictionaries with pid, name, exe path, cpu_percent, and memory usage.
+    """
     procs = []
-    for proc in psutil.process_iter(attrs=["pid", "name", "cpu_percent", "memory_info"]):
-        with proc.oneshot():
-            info = proc.info
-            rss = info["memory_info"].rss if info.get("memory_info") else 0
-            procs.append(
-                {
-                    "pid": info["pid"],
-                    "name": info.get("name") or "unknown",
-                    "cpu_percent": info.get("cpu_percent", 0.0),
-                    "rss_bytes": rss,
-                }
-            )
-    procs.sort(key=lambda item: item["cpu_percent"], reverse=True)
-    return procs[:limit]
+    for proc in psutil.process_iter(attrs=["pid", "name", "exe", "cpu_percent", "memory_info"]):
+        try:
+            with proc.oneshot():
+                info = proc.info
+                rss = info["memory_info"].rss if info.get("memory_info") else 0
+                exe_path = info.get("exe") or "unknown"
+                procs.append(
+                    {
+                        "pid": info["pid"],
+                        "name": info.get("name") or "unknown",
+                        "exe": exe_path,
+                        "cpu_percent": info.get("cpu_percent", 0.0),
+                        "rss_bytes": rss,
+                    }
+                )
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            # Process may have terminated or we don't have permission
+            continue
+
+    if all_processes:
+        # Return all processes sorted by CPU usage
+        procs.sort(key=lambda item: item["cpu_percent"], reverse=True)
+        return procs
+    else:
+        # Return top N by CPU usage
+        procs.sort(key=lambda item: item["cpu_percent"], reverse=True)
+        return procs[:limit]
 
 
-def gather_metrics(top_n: int = 10) -> Dict[str, object]:
-    """Collect metrics for the dashboard and tool calls."""
+def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, object]:
+    """
+    Collect metrics for the dashboard and tool calls.
+
+    Parameters
+    ----------
+    top_n:
+        Number of top processes by CPU usage to include. Ignored if all_processes=True.
+    all_processes:
+        If True, include all running processes instead of just top N.
+
+    Returns
+    -------
+    Dictionary with system metrics including CPU, memory, disk, network, battery,
+    and process information with executable paths.
+    """
     cpu_percent = psutil.cpu_percent(interval=0.1)
     virtual_mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -83,9 +124,20 @@ def gather_metrics(top_n: int = 10) -> Dict[str, object]:
         },
         "battery": _battery_info(),
         "gpu": _gpu_info(),
-        "top_processes": _process_snapshot(top_n),
+        "top_processes": _process_snapshot(top_n, all_processes),
     }
     return metrics
+
+
+def get_all_processes() -> List[Dict[str, float | int | str]]:
+    """
+    Get information about all running processes.
+
+    Returns
+    -------
+    List of all processes with their PID, name, executable path, CPU usage, and memory usage.
+    """
+    return _process_snapshot(limit=0, all_processes=True)
 
 
 def ensure_data_dir(path: Path) -> None:
@@ -98,9 +150,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="EdgePilot metrics snapshot")
     parser.add_argument("--top-n", type=int, default=10, help="Number of processes to include")
+    parser.add_argument("--all", action="store_true", help="Include all running processes")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output")
     args = parser.parse_args()
 
-    data = gather_metrics(top_n=args.top_n)
+    data = gather_metrics(top_n=args.top_n, all_processes=args.all)
     indent = 2 if args.pretty else None
     print(_json.dumps(data, indent=indent))

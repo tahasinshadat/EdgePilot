@@ -1,0 +1,637 @@
+{
+  "tool_calls": [
+    {
+      "ts": 1761162155.4714255,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "schedule_task",
+      "arguments": {
+        "application": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "schedule_task",
+        "arguments": {
+          "application": "minecraft"
+        },
+        "result": {
+          "error": "Application not found: minecraft",
+          "command": [
+            "minecraft"
+          ],
+          "status": "failed",
+          "suggestion": "Try searching with: search=True"
+        }
+      },
+      "success": true,
+      "latency_ms": 87304.47660002392,
+      "chat_id": "569b013b-318c-4edf-a401-c57e800f016f"
+    },
+    {
+      "ts": 1761162183.0354717,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "search_applications",
+      "arguments": {
+        "query": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "search_applications",
+        "arguments": {
+          "query": "minecraft"
+        },
+        "result": {
+          "query": "minecraft",
+          "found": 0,
+          "applications": []
+        }
+      },
+      "success": true,
+      "latency_ms": 9019.904099986888,
+      "chat_id": "569b013b-318c-4edf-a401-c57e800f016f"
+    },
+    {
+      "ts": 1761163071.3334641,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "schedule_task",
+      "arguments": {
+        "application": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "schedule_task",
+        "arguments": {
+          "application": "minecraft"
+        },
+        "result": {
+          "error": "Application not found: minecraft",
+          "command": [
+            "minecraft"
+          ],
+          "status": "failed",
+          "suggestion": "Try searching with: search=True"
+        }
+      },
+      "success": true,
+      "latency_ms": 17546.645800000988,
+      "chat_id": "89f69e37-d450-4d4c-9470-8589e8bdd371"
+    },
+    {
+      "ts": 1761163119.584915,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "search_applications",
+      "arguments": {
+        "query": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "search_applications",
+        "arguments": {
+          "query": "minecraft"
+        },
+        "result": {
+          "query": "minecraft",
+          "found": 0,
+          "applications": []
+        }
+      },
+      "success": true,
+      "latency_ms": 17199.89520002855,
+      "chat_id": "89f69e37-d450-4d4c-9470-8589e8bdd371"
+    },
+    {
+      "ts": 1761164089.181549,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761164087.9408379,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 16.7,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 30333759488,
+            "available": 37841473536,
+            "percent": 44.5,
+            "swap_total": 4294967296,
+            "swap_used": 150925312
+          },
+          "disk": {
+            "read_bytes": 80578332160,
+            "write_bytes": 102501123072
+          },
+          "network": {
+            "bytes_sent": 349283523,
+            "bytes_recv": 139449761
+          },
+          "battery": {
+            "available": true,
+            "percent": 13,
+            "secs_left": -2,
+            "power_plugged": true
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 1041.4,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 16.0,
+              "rss_bytes": 11628544
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 14.9,
+              "rss_bytes": 415084544
+            },
+            {
+              "pid": 23384,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 10.1,
+              "rss_bytes": 170921984
+            },
+            {
+              "pid": 24092,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 8.4,
+              "rss_bytes": 334282752
+            },
+            {
+              "pid": 30584,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 7.8,
+              "rss_bytes": 82231296
+            },
+            {
+              "pid": 38084,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 7.7,
+              "rss_bytes": 106336256
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 7.6,
+              "rss_bytes": 232751104
+            },
+            {
+              "pid": 6400,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 6.6,
+              "rss_bytes": 137793536
+            },
+            {
+              "pid": 25148,
+              "name": "Copilot.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.Copilot_1.25095.165.0_arm64__8wekyb3d8bbwe\\Copilot.exe",
+              "cpu_percent": 5.6,
+              "rss_bytes": 449564672
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1367.0592000125907,
+      "chat_id": "54d791b6-3bfb-4cf0-b576-22b622653881"
+    },
+    {
+      "ts": 1761164149.2464616,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "search_path",
+      "arguments": {
+        "query": "notepad.exe"
+      },
+      "result": {
+        "success": true,
+        "tool": "search_path",
+        "arguments": {
+          "query": "notepad.exe"
+        },
+        "result": {
+          "query": "notepad.exe",
+          "found": 10,
+          "paths": [
+            "C:\\Users\\tahas\\AppData\\Local\\Microsoft\\WindowsApps\\notepad.exe",
+            "C:\\Users\\tahas\\AppData\\Local\\Microsoft\\WindowsApps\\Microsoft.WindowsNotepad_8wekyb3d8bbwe\\notepad.exe",
+            "C:\\Windows\\notepad.exe",
+            "C:\\Windows\\en-US\\notepad.exe.mui",
+            "C:\\Windows\\System32\\notepad.exe",
+            "C:\\Windows\\System32\\en-US\\notepad.exe.mui",
+            "C:\\Windows\\SysWOW64\\notepad.exe",
+            "C:\\Windows\\WinSxS\\arm64.x86_microsoft-windows-notepad_31bf3856ad364e35_10.0.26100.3624_none_b05d757ca467463c\\notepad.exe",
+            "C:\\Windows\\WinSxS\\arm64.x86_microsoft-windows-notepad_31bf3856ad364e35_10.0.26100.3624_none_b05d757ca467463c\\r\\notepad.exe",
+            "C:\\Windows\\WinSxS\\arm64.x86_microsoft-windows-notepad_31bf3856ad364e35_10.0.26100.5074_none_b0a35a42a4321797\\notepad.exe"
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 9641.73309999751,
+      "chat_id": "54d791b6-3bfb-4cf0-b576-22b622653881"
+    },
+    {
+      "ts": 1761164159.5636375,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "schedule_task",
+      "arguments": {
+        "application": "C:\\Windows\\System32\\notepad.exe"
+      },
+      "result": {
+        "success": true,
+        "tool": "schedule_task",
+        "arguments": {
+          "application": "C:\\Windows\\System32\\notepad.exe"
+        },
+        "result": {
+          "pid": 31476,
+          "command": [
+            "C:\\Windows\\System32\\notepad.exe"
+          ],
+          "cwd": "C:\\Users\\tahas\\OneDrive\\desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot",
+          "started_at": 1761164159.5636375,
+          "status": "started"
+        }
+      },
+      "success": true,
+      "latency_ms": 149.3684000452049,
+      "chat_id": "54d791b6-3bfb-4cf0-b576-22b622653881"
+    },
+    {
+      "ts": 1761164198.3149152,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "search_path",
+      "arguments": {
+        "query": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "search_path",
+        "arguments": {
+          "query": "minecraft"
+        },
+        "result": {
+          "query": "minecraft",
+          "found": 5,
+          "paths": [
+            "C:\\Users\\tahas\\AppData\\Local\\MinecraftInstaller",
+            "C:\\Users\\tahas\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe",
+            "C:\\Users\\tahas\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe_bak",
+            "C:\\Users\\tahas\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalCache\\minecraftpe",
+            "C:\\Users\\tahas\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\ms-gamingoverlay--startuptips-TitleId=Microsoft.4297127D64EC6_8wekyb3d8bbwe%21Minecraft&ProcessId=11564&WindowId=787442.lnk"
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 18159.834899997804,
+      "chat_id": "54d791b6-3bfb-4cf0-b576-22b622653881"
+    },
+    {
+      "ts": 1761164247.301766,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "search_path",
+      "arguments": {
+        "query": "minecraft shortcut"
+      },
+      "result": {
+        "success": true,
+        "tool": "search_path",
+        "arguments": {
+          "query": "minecraft shortcut"
+        },
+        "result": {
+          "query": "minecraft shortcut",
+          "found": 0,
+          "paths": []
+        }
+      },
+      "success": true,
+      "latency_ms": 16494.398300012108,
+      "chat_id": "54d791b6-3bfb-4cf0-b576-22b622653881"
+    },
+    {
+      "ts": 1761184558.7075312,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "Minecraft",
+        "delay_seconds": 10
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "Minecraft",
+          "delay_seconds": 10
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'Minecraft' to launch in 10 seconds",
+          "app_name": "Minecraft",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 1350.0902999658138,
+      "chat_id": "c24267c7-8bfd-4d0a-a228-a9686e150147"
+    },
+    {
+      "ts": 1761184675.541383,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761184674.5032535,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 12.1,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 33853480960,
+            "available": 34321752064,
+            "percent": 49.7,
+            "swap_total": 4294967296,
+            "swap_used": 125566976
+          },
+          "disk": {
+            "read_bytes": 83076174848,
+            "write_bytes": 110477270016
+          },
+          "network": {
+            "bytes_sent": 467282534,
+            "bytes_recv": 1854761986
+          },
+          "battery": {
+            "available": true,
+            "percent": 31,
+            "secs_left": 2544,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 990.7,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 28452,
+              "name": "MsMpEng.exe",
+              "exe": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.25090.3009-0\\MsMpEng.exe",
+              "cpu_percent": 38.0,
+              "rss_bytes": 350027776
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 16.3,
+              "rss_bytes": 12165120
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 10.1,
+              "rss_bytes": 198733824
+            },
+            {
+              "pid": 24092,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 8.1,
+              "rss_bytes": 370876416
+            },
+            {
+              "pid": 6400,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 7.4,
+              "rss_bytes": 136892416
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 7.2,
+              "rss_bytes": 15802368
+            },
+            {
+              "pid": 25148,
+              "name": "Copilot.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.Copilot_1.25095.165.0_arm64__8wekyb3d8bbwe\\Copilot.exe",
+              "cpu_percent": 6.8,
+              "rss_bytes": 342777856
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 3.8,
+              "rss_bytes": 157143040
+            },
+            {
+              "pid": 11992,
+              "name": "PAD.Console.Host.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.Console.Host.exe",
+              "cpu_percent": 2.9,
+              "rss_bytes": 311091200
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1165.4474000097252,
+      "chat_id": "c24267c7-8bfd-4d0a-a228-a9686e150147"
+    },
+    {
+      "ts": 1761184740.7471228,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "list_apps",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "list_apps",
+        "arguments": {},
+        "result": {
+          "filter_term": "",
+          "count": 116,
+          "apps": [
+            "Access",
+            "Add-In Manager 2025",
+            "Administrative Tools",
+            "Audacity",
+            "Autodesk Access",
+            "Autodesk App Manager",
+            "Autodesk Inventor Professional 2025 - English",
+            "Character Map",
+            "Command Prompt",
+            "Component Services",
+            "Computer Management",
+            "Control Panel",
+            "Cursor",
+            "DWG TrueView 2025 - English",
+            "Database Compare",
+            "Design Assistant 2025",
+            "Disk Cleanup",
+            "DrRacket",
+            "Drawing Resource Transfer Wizard 2025",
+            "Driver Install Creator Wizard",
+            "Event Viewer",
+            "Example Source Code",
+            "Excel",
+            "File Explorer",
+            "Git Bash",
+            "Git CMD",
+            "Git GUI",
+            "Git Release Notes",
+            "Google Chrome",
+            "IDLE (Python 3.12 64-bit)",
+            "Install Additional Tools for Node.js",
+            "IntelliJ IDEA Community Edition 2025.2.3",
+            "Inventor Read-only Mode 2025 - English",
+            "Inventor Reset Utility",
+            "LiveCaptions",
+            "LockDown Browser",
+            "MATLAB R2024b",
+            "MSYS2 CLANG64",
+            "MSYS2 CLANGARM64",
+            "MSYS2 MINGW32",
+            "MSYS2 MINGW64",
+            "MSYS2 MSYS",
+            "MSYS2 UCRT64",
+            "Magnify",
+            "Microsoft Edge",
+            "MuseHub",
+            "Narrator",
+            "Node.js",
+            "Node.js command prompt",
+            "ODBC Data Sources (32-bit)",
+            "ODBC Data Sources (64-bit)",
+            "Office Language Preferences",
+            "On-Screen Keyboard",
+            "OneDrive",
+            "OneNote",
+            "Outlook (classic)",
+            "Performance Monitor",
+            "PowerPoint",
+            "PowerToys (Preview)",
+            "Project Editor 2025",
+            "Property Mapping for Imported CAD Data",
+            "Publisher",
+            "Python 3.12 (64-bit)",
+            "Python 3.12 Manuals (64-bit)",
+            "Python 3.12 Module Docs (64-bit)",
+            "Racket",
+            "Racket Folder",
+            "RecoveryDrive",
+            "Registry Editor",
+            "Remote Desktop Connection",
+            "Resource Monitor",
+            "Riot Client",
+            "Roblox Player",
+            "Roblox Studio",
+            "Run",
+            "RustDesk",
+            "RustDesk Tray",
+            "Send to OneNote",
+            "Spreadsheet Compare",
+            "Steam",
+            "Steps Recorder",
+            "Sticky Notes (new)",
+            "Style Library Manager 2025",
+            "Supplier Content Center 2025",
+            "System Configuration",
+            "System Information",
+            "Task Manager",
+            "Task Scheduler",
+            "Task Scheduler 2025",
+            "Telemetry Log for Office",
+            "Turnitin Draft Coach\u2122 - Google Workspace Marketplace",
+            "Uninstall",
+            "Uninstall Node.js",
+            "Uninstall RustDesk",
+            "Uninstall UsbK Development Kit",
+            "Uninstall Zoom Workplace",
+            "UsbK Documentation",
+            "UsbK License",
+            "VALORANT",
+            "Visual Studio Code",
+            "VoiceAccess",
+            "WSL",
+            "WSL Settings",
+            "Windows Defender Firewall with Advanced Security",
+            "Windows Media Player Legacy",
+            "Windows PowerShell",
+            "Windows PowerShell (x64)",
+            "Windows PowerShell (x86)",
+            "Windows PowerShell ISE",
+            "Windows PowerShell ISE (x64)",
+            "Windows PowerShell ISE (x86)",
+            "Word",
+            "Zoom Workplace",
+            "dfrgui",
+            "libusb-win32 Filter Wizard",
+            "services"
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 8.774999994784594,
+      "chat_id": "c24267c7-8bfd-4d0a-a228-a9686e150147"
+    }
+  ]
+}

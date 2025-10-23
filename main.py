@@ -24,11 +24,13 @@ from pydantic import BaseModel, Field
 from providers import available_providers, get_provider
 from providers.base import ChatMessage, ProviderConfig
 from tools.metrics import ensure_data_dir, gather_metrics
+from MCP import execute_tool, format_tools_for_gemini
 
 ROOT_DIR = Path(__file__).parent
 DATA_DIR = ROOT_DIR / "data"
 CHAT_FILE = DATA_DIR / "chat_history.json"
 USAGE_FILE = DATA_DIR / "usage_metrics.json"
+TOOL_HISTORY_FILE = DATA_DIR / "tool_call_history.json"
 FRONTEND_DIR = ROOT_DIR / "frontend"
 
 SYSTEM_PROMPT = (
@@ -69,6 +71,7 @@ class ChatSummary(BaseModel):
     title: str
     tokens_used: int = 0
     message_count: int = 0
+    tool_calls_count: int = 0
     last_activity: float = Field(0.0, description="Unix timestamp")
 
 
@@ -135,6 +138,7 @@ class ChatStore:
             "title": title or f"Chat {time.strftime('%H:%M:%S')}",
             "messages": [],
             "tokens_used": 0,
+            "tool_calls_count": 0,
             "created_at": time.time(),
             "updated_at": time.time(),
         }
@@ -146,7 +150,7 @@ class ChatStore:
             self._write(data)
         return session
 
-    def append_messages(self, chat_id: str, messages: List[Dict[str, object]], token_delta: int) -> Dict[str, object]:
+    def append_messages(self, chat_id: str, messages: List[Dict[str, object]], token_delta: int, tool_calls_delta: int = 0) -> Dict[str, object]:
         with self._lock:
             data = self._read()
             sessions = data.get("sessions", [])
@@ -154,19 +158,33 @@ class ChatStore:
                 if session["id"] == chat_id:
                     session["messages"].extend(messages)
                     session["tokens_used"] = int(session.get("tokens_used", 0)) + max(token_delta, 0)
+                    session["tool_calls_count"] = int(session.get("tool_calls_count", 0)) + max(tool_calls_delta, 0)
                     session["updated_at"] = time.time()
                     title = (session.get("title") or "").strip().lower()
-                    if not title or title.startswith("new chat"):
+                    if not title or title.startswith("new chat") or title.startswith("chat "):
                         first_user = next(
                             (m for m in session["messages"] if m.get("role") == "user" and m.get("content")), None
                         )
                         if first_user:
-                            snippet = first_user["content"].strip().splitlines()[0][:48]
+                            snippet = first_user["content"].strip().splitlines()[0][:50]
                             if snippet:
                                 session["title"] = snippet if len(snippet) > 2 else "Conversation"
                     self._write(data)
                     return session
         raise KeyError(chat_id)
+
+    def delete_session(self, chat_id: str) -> bool:
+        """Delete a chat session by ID."""
+        with self._lock:
+            data = self._read()
+            sessions = data.get("sessions", [])
+            original_length = len(sessions)
+            sessions = [s for s in sessions if s["id"] != chat_id]
+            if len(sessions) < original_length:
+                data["sessions"] = sessions
+                self._write(data)
+                return True
+        return False
 
 
 class UsageLogger:
@@ -217,6 +235,62 @@ class UsageLogger:
             self._write(data)
 
 
+class ToolCallLogger:
+    """Track tool calls for debugging purposes."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        ensure_data_dir(self.path.parent)
+        self._lock = threading.Lock()
+        if not self.path.exists():
+            self._write({"tool_calls": []})
+
+    def _read(self) -> Dict[str, object]:
+        with self.path.open("r", encoding="utf-8") as fh:
+            try:
+                return json.load(fh)
+            except json.JSONDecodeError:
+                return {"tool_calls": []}
+
+    def _write(self, data: Dict[str, object]) -> None:
+        tmp = self.path.with_suffix(".tmp")
+        with tmp.open("w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=2)
+        tmp.replace(self.path)
+
+    def log(
+        self,
+        *,
+        provider: str,
+        model: str,
+        tool_name: str,
+        arguments: Dict[str, object],
+        result: Dict[str, object],
+        success: bool,
+        latency_ms: float,
+        chat_id: str = None,
+    ) -> None:
+        """Log a tool call execution."""
+        record = {
+            "ts": time.time(),
+            "provider": provider,
+            "model": model,
+            "tool_name": tool_name,
+            "arguments": arguments,
+            "result": result,
+            "success": success,
+            "latency_ms": latency_ms,
+            "chat_id": chat_id,
+        }
+        with self._lock:
+            data = self._read()
+            data.setdefault("tool_calls", []).append(record)
+            # Keep only last 1000 tool calls to prevent file from growing too large
+            if len(data["tool_calls"]) > 1000:
+                data["tool_calls"] = data["tool_calls"][-1000:]
+            self._write(data)
+
+
 def load_env() -> None:
     env_path = Path("env") / ".env"
     if env_path.exists():
@@ -241,6 +315,7 @@ DEFAULT_PROVIDER = os.getenv("DEFAULT_PROVIDER", "gemini").lower()
 
 chat_store = ChatStore(CHAT_FILE)
 usage_logger = UsageLogger(USAGE_FILE)
+tool_call_logger = ToolCallLogger(TOOL_HISTORY_FILE)
 
 app = FastAPI(title="EdgePilot Backend", version="0.3.0")
 app.add_middleware(
@@ -269,6 +344,7 @@ def _to_summary(session: Dict[str, object]) -> ChatSummary:
         title=session.get("title", "Chat"),
         tokens_used=int(session.get("tokens_used", 0)),
         message_count=len(session.get("messages", [])),
+        tool_calls_count=int(session.get("tool_calls_count", 0)),
         last_activity=float(last_msg or 0.0),
     )
 
@@ -334,6 +410,14 @@ def api_get_chat(chat_id: str) -> ChatDetail:
     return _to_detail(session)
 
 
+@app.delete("/api/chats/{chat_id}")
+def api_delete_chat(chat_id: str) -> Dict[str, str]:
+    """Delete a chat session by ID."""
+    if chat_store.delete_session(chat_id):
+        return {"status": "deleted", "chat_id": chat_id}
+    raise HTTPException(status_code=404, detail="Chat not found")
+
+
 @app.post("/api/chats/{chat_id}/messages")
 def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageResponse:
     provider_name = (payload.provider or DEFAULT_PROVIDER).lower()
@@ -348,6 +432,11 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
     except KeyError:
         raise HTTPException(status_code=404, detail="Chat not found") from None
 
+    # Enable tools for providers that support them
+    if hasattr(provider, 'enable_tools'):
+        tool_schemas = format_tools_for_gemini()
+        provider.enable_tools(tool_schemas)
+
     user_message: ChatMessage = {
         "role": "user",
         "content": payload.prompt.strip(),
@@ -357,51 +446,129 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
     model_messages.extend(session.get("messages", []))
     model_messages.append(user_message)
 
-    start = time.perf_counter()
-    try:
-        llm_response = provider.generate(model_messages)
-        ok = True
-    except NotImplementedError as error:
-        raise HTTPException(status_code=501, detail=str(error)) from error
-    except Exception as error:  # noqa: BLE001
-        ok = False
-        llm_response = None
-        latency_ms = (time.perf_counter() - start) * 1000
-        usage_logger.log(
-            provider=provider_name,
-            model=config.model,
-            prompt_tokens=0,
-            response_tokens=0,
-            latency_ms=latency_ms,
-            ok=False,
-        )
-        raise HTTPException(status_code=500, detail=f"Provider error: {error}") from error
+    # Store all messages to be saved (user + assistant messages)
+    messages_to_save = [user_message]
+    total_prompt_tokens = 0
+    total_response_tokens = 0
+    total_tool_calls = 0
 
+    # Tool calling loop - continue until we get a final response
+    max_iterations = 5  # Prevent infinite loops
+    iteration = 0
+    final_text = ""
+
+    start = time.perf_counter()
+    ok = True
+
+    while iteration < max_iterations:
+        iteration += 1
+        
+        try:
+            llm_response = provider.generate(model_messages)
+            total_prompt_tokens += llm_response.prompt_tokens
+            total_response_tokens += llm_response.response_tokens
+        except NotImplementedError as error:
+            raise HTTPException(status_code=501, detail=str(error)) from error
+        except Exception as error:  # noqa: BLE001
+            ok = False
+            latency_ms = (time.perf_counter() - start) * 1000
+            usage_logger.log(
+                provider=provider_name,
+                model=config.model,
+                prompt_tokens=total_prompt_tokens,
+                response_tokens=total_response_tokens,
+                latency_ms=latency_ms,
+                ok=False,
+            )
+            raise HTTPException(status_code=500, detail=f"Provider error: {error}") from error
+        
+        # Check if there are tool calls
+        if llm_response.has_tool_calls:
+            # Execute each tool call
+            tool_results = []
+            total_tool_calls += len(llm_response.tool_calls)
+
+            for tool_call in llm_response.tool_calls:
+                tool_start = time.perf_counter()
+                result = execute_tool(tool_call.name, tool_call.arguments)
+                tool_latency = (time.perf_counter() - tool_start) * 1000
+
+                # Log tool call
+                tool_call_logger.log(
+                    provider=provider_name,
+                    model=config.model,
+                    tool_name=tool_call.name,
+                    arguments=tool_call.arguments,
+                    result=result,
+                    success=result.get("success", False),
+                    latency_ms=tool_latency,
+                    chat_id=chat_id,
+                )
+
+                tool_results.append(result)
+            
+            # Add assistant message with tool calls info
+            tool_call_summary = f"[Called tools: {', '.join(tc.name for tc in llm_response.tool_calls)}]"
+            if llm_response.text:
+                tool_call_summary = llm_response.text + " " + tool_call_summary
+
+            # Add tool results to the conversation
+            tool_results_text = "\n\nTool Results:\n"
+            for result in tool_results:
+                if result["success"]:
+                    tool_results_text += f"- {result['tool']}: {json.dumps(result['result'], indent=2)}\n"
+                else:
+                    tool_results_text += f"- {result['tool']} ERROR: {result['error']}\n"
+            
+            # Continue the conversation with tool results
+            model_messages.append({
+                "role": "assistant",
+                "content": tool_call_summary,
+            })
+            model_messages.append({
+                "role": "user",
+                "content": tool_results_text,
+            })
+        else:
+            # No tool calls, this is the final response
+            final_text = llm_response.text
+            break
+    
+    if not final_text:
+        final_text = "I attempted to use tools but could not generate a final response."
+    
     latency_ms = (time.perf_counter() - start) * 1000
     assistant_message: ChatMessage = {
         "role": "assistant",
-        "content": llm_response.text,
+        "content": final_text,
         "created_at": time.time(),
     }
+    messages_to_save.append(assistant_message)
 
-    updated_session = chat_store.append_messages(chat_id, [user_message, assistant_message], llm_response.total_tokens)
+    updated_session = chat_store.append_messages(
+        chat_id,
+        messages_to_save,
+        total_prompt_tokens + total_response_tokens,
+        tool_calls_delta=total_tool_calls
+    )
     usage_logger.log(
         provider=provider_name,
         model=config.model,
-        prompt_tokens=llm_response.prompt_tokens,
-        response_tokens=llm_response.response_tokens,
+        prompt_tokens=total_prompt_tokens,
+        response_tokens=total_response_tokens,
         latency_ms=latency_ms,
         ok=ok,
     )
 
     detail = _to_detail(updated_session)
     return SendMessageResponse(
-        reply=llm_response.text,
+        reply=final_text,
         tokens_used=detail.tokens_used,
-        prompt_tokens=llm_response.prompt_tokens,
-        response_tokens=llm_response.response_tokens,
+        prompt_tokens=total_prompt_tokens,
+        response_tokens=total_response_tokens,
         chat=detail,
     )
+
 
 
 def run_server(host: str = "127.0.0.1", port: int = int(os.getenv("PORT", "8000")), reload: bool = False) -> None:
@@ -523,6 +690,75 @@ def tool_metrics(
     payload = gather_metrics(top_n=top_n)
     indent = 2 if pretty else None
     typer.echo(json.dumps(payload, indent=indent))
+
+
+@tools_cli.command("test-tools")
+def test_tools() -> None:
+    """Test all tool calls and print their outputs."""
+    from MCP import execute_tool
+
+    typer.echo("=== Testing EdgePilot Tool Calls ===\n")
+
+    # Test 1: gather_metrics
+    typer.echo("1. Testing gather_metrics tool:")
+    result = execute_tool("gather_metrics", {"top_n": 5})
+    typer.echo(f"   Success: {result.get('success')}")
+    if result.get('success'):
+        metrics = result.get('result', {})
+        typer.echo(f"   CPU: {metrics.get('cpu', {}).get('percent')}%")
+        typer.echo(f"   Memory Used: {metrics.get('memory', {}).get('percent')}%")
+        typer.echo(f"   Top Processes: {len(metrics.get('top_processes', []))}")
+    else:
+        typer.echo(f"   Error: {result.get('error')}")
+    typer.echo()
+
+    # Test 2: search_path
+    typer.echo("2. Testing search_path tool (searching for 'notepad'):")
+    result = execute_tool("search_path", {"query": "notepad", "max_results": 3})
+    typer.echo(f"   Success: {result.get('success')}")
+    if result.get('success'):
+        search_result = result.get('result', {})
+        typer.echo(f"   Found: {search_result.get('found')} paths")
+        for i, path in enumerate(search_result.get('paths', []), 1):
+            typer.echo(f"   {i}. {path}")
+    else:
+        typer.echo(f"   Error: {result.get('error')}")
+    typer.echo()
+
+    # Test 3: schedule_task (with path from search)
+    typer.echo("3. Testing schedule_task tool (notepad):")
+    # First get a path
+    search_result = execute_tool("search_path", {"query": "notepad.exe", "max_results": 1})
+    if search_result.get('success') and search_result['result']['found'] > 0:
+        notepad_path = search_result['result']['paths'][0]
+        result = execute_tool("schedule_task", {
+            "application": notepad_path,
+            "delay_seconds": 0
+        })
+        typer.echo(f"   Success: {result.get('success')}")
+        if result.get('success'):
+            task_result = result.get('result', {})
+            typer.echo(f"   Status: {task_result.get('status')}")
+            typer.echo(f"   PID: {task_result.get('pid')}")
+            typer.echo(f"   Path: {notepad_path}")
+        else:
+            typer.echo(f"   Error: {result.get('error')}")
+    else:
+        typer.echo("   Skipped - could not find notepad.exe")
+    typer.echo()
+
+    # Test 4: end_task (test with a safe process name that likely doesn't exist)
+    typer.echo("4. Testing end_task tool (safe test - non-existent process):")
+    result = execute_tool("end_task", {
+        "identifier": "fake_process_that_doesnt_exist_12345",
+        "force": False
+    })
+    typer.echo(f"   Success: {result.get('success')}")
+    if not result.get('success'):
+        typer.echo(f"   Expected Error: {result.get('error')}")
+    typer.echo()
+
+    typer.echo("=== Tool Testing Complete ===")
 
 
 if __name__ == "__main__":

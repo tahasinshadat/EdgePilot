@@ -59,27 +59,26 @@
         <section class="composer">
           <div class="composer-top">
             <button id="mode-button" class="mode-button" aria-haspopup="true" aria-expanded="false">
-              <span class="mode-icon">+</span>
+              <span class="mode-icon">✦</span>
               <span id="mode-label">Ask a question</span>
             </button>
             <div id="mode-menu" class="mode-menu hidden" role="menu">
-              <button type="button" class="mode-option" data-mode="ask">Ask a question</button>
-              <button type="button" class="mode-option" data-mode="schedule">Schedule a task</button>
-              <button type="button" class="mode-option" data-mode="shutdown">Shut down a run</button>
+              <button type="button" class="mode-option active" data-mode="ask">💬 Ask a question</button>
+              <button type="button" class="mode-option" data-mode="schedule">⏰ Schedule a task</button>
+              <button type="button" class="mode-option" data-mode="shutdown">⛔ Shut down a run</button>
             </div>
           </div>
           <form id="chat-form" class="composer-form">
             <textarea
               id="prompt-input"
-              rows="3"
+              rows="1"
               placeholder="Ask a question"
               required
             ></textarea>
-            <div class="composer-actions">
-              <span class="composer-hint">Enter to send � Shift+Enter for newline</span>
-              <button type="submit" class="primary-btn">Send</button>
-            </div>
           </form>
+          <div class="composer-actions">
+            <span class="composer-hint">Enter to send · Shift+Enter for newline</span>
+          </div>
           <div id="status-bar" class="status-bar"></div>
         </section>
       </main>
