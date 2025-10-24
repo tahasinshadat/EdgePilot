@@ -2,12 +2,28 @@
 
 from __future__ import annotations
 
-import requests
+import os
+from typing import Dict, List
+
+import httpx
 
 from .base import BaseLLM, ChatMessage, LLMResponse, ProviderConfig
 
 DEFAULT_ENDPOINT = "https://api.anthropic.com/v1/messages"
 MAX_OUTPUT_TOKENS = 1024
+
+
+def _anthropic_headers(api_key: str) -> Dict[str, str]:
+    version = os.getenv("ANTHROPIC_VERSION", "2023-06-01")
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": version,
+        "content-type": "application/json",
+    }
+    beta = os.getenv("ANTHROPIC_BETA")
+    if beta:
+        headers["anthropic-beta"] = beta
+    return headers
 
 
 class ClaudeProvider(BaseLLM):
@@ -23,13 +39,13 @@ class ClaudeProvider(BaseLLM):
         return {
             "name": "Claude",
             "id": "claude",
-            "model": "claude-3-5-sonnet-20240620",
+            "model": "claude-3-5-haiku-20241022",
             "supports_tools": True,
         }
 
-    def generate(self, messages: list[ChatMessage]) -> LLMResponse:
+    def generate(self, messages: List[ChatMessage]) -> LLMResponse:
         prepared = self.format_messages(messages)
-        system_prompts: list[str] = []
+        system_prompts: List[str] = []
         anthropic_messages = []
 
         for msg in prepared:
@@ -40,7 +56,6 @@ class ClaudeProvider(BaseLLM):
             if role == "system":
                 system_prompts.append(content)
                 continue
-
             anthropic_messages.append(
                 {
                     "role": "assistant" if role == "assistant" else "user",
@@ -52,7 +67,7 @@ class ClaudeProvider(BaseLLM):
             raise ValueError("Claude requires at least one user message.")
 
         endpoint = self.config.base_url or DEFAULT_ENDPOINT
-        payload = {
+        payload: Dict[str, object] = {
             "model": self.config.model or self.describe()["model"],
             "messages": anthropic_messages,
             "max_tokens": MAX_OUTPUT_TOKENS,
@@ -60,14 +75,21 @@ class ClaudeProvider(BaseLLM):
         if system_prompts:
             payload["system"] = "\n\n".join(system_prompts)
 
-        headers = {
-            "x-api-key": self.config.api_key,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        }
+        headers = _anthropic_headers(self.config.api_key)
 
-        response = requests.post(endpoint, headers=headers, json=payload, timeout=self.config.timeout_sec)
-        response.raise_for_status()
+        with httpx.Client(timeout=self.config.timeout_sec) as client:
+            response = client.post(endpoint, headers=headers, json=payload)
+
+        if response.status_code == 404:
+            raise RuntimeError(
+                "Claude API returned 404. Check model access and the endpoint. "
+                f"Request model: {payload['model']}. Body: {response.text}"
+            )
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise RuntimeError(f"Claude API error {response.status_code}: {response.text}") from exc
+
         data = response.json()
 
         text_blocks = []
