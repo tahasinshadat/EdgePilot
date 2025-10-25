@@ -39,7 +39,7 @@ class ClaudeProvider(BaseLLM):
         return {
             "name": "Claude",
             "id": "claude",
-            "model": "claude-3-5-haiku-20241022",
+            "model": "claude-3-5-sonnet-20240620",
             "supports_tools": True,
         }
 

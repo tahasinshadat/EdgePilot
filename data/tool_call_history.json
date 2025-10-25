@@ -632,6 +632,4656 @@
       "success": true,
       "latency_ms": 8.774999994784594,
       "chat_id": "c24267c7-8bfd-4d0a-a228-a9686e150147"
+    },
+    {
+      "ts": 1761264512.4197469,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "chrome"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "chrome"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'chrome' to launch in 10 seconds",
+          "app_name": "chrome",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 14.387500006705523,
+      "chat_id": "c2bb1f13-4056-4f5d-92dc-4692125c629d"
+    },
+    {
+      "ts": 1761264514.224068,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 20,
+        "app_name": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 20,
+          "app_name": "minecraft"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'minecraft' to launch in 20 seconds",
+          "app_name": "minecraft",
+          "delay_seconds": 20
+        }
+      },
+      "success": true,
+      "latency_ms": 1758.2977999700233,
+      "chat_id": "c2bb1f13-4056-4f5d-92dc-4692125c629d"
+    },
+    {
+      "ts": 1761264515.090938,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 30,
+        "app_name": "notepad"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 30,
+          "app_name": "notepad"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'notepad' to launch in 30 seconds",
+          "app_name": "notepad",
+          "delay_seconds": 30
+        }
+      },
+      "success": true,
+      "latency_ms": 853.3402000321075,
+      "chat_id": "c2bb1f13-4056-4f5d-92dc-4692125c629d"
+    },
+    {
+      "ts": 1761264590.7159345,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {
+        "all_processes": false
+      },
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {
+          "all_processes": false
+        },
+        "result": {
+          "ts": 1761264589.421042,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 13.6,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 30150324224,
+            "available": 38024908800,
+            "percent": 44.2,
+            "swap_total": 4294967296,
+            "swap_used": 104701952
+          },
+          "disk": {
+            "read_bytes": 90280509952,
+            "write_bytes": 143432325632
+          },
+          "network": {
+            "bytes_sent": 294321841,
+            "bytes_recv": 328492848
+          },
+          "battery": {
+            "available": true,
+            "percent": 63,
+            "secs_left": 17409,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 1062.3,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 12.9,
+              "rss_bytes": 14073856
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 12.7,
+              "rss_bytes": 218062848
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 7.7,
+              "rss_bytes": 15835136
+            },
+            {
+              "pid": 25148,
+              "name": "Copilot.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.Copilot_1.25095.165.0_arm64__8wekyb3d8bbwe\\Copilot.exe",
+              "cpu_percent": 7.4,
+              "rss_bytes": 369123328
+            },
+            {
+              "pid": 28452,
+              "name": "MsMpEng.exe",
+              "exe": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.25090.3009-0\\MsMpEng.exe",
+              "cpu_percent": 6.1,
+              "rss_bytes": 279826432
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 5.2,
+              "rss_bytes": 163270656
+            },
+            {
+              "pid": 38456,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 3.8,
+              "rss_bytes": 103772160
+            },
+            {
+              "pid": 11992,
+              "name": "PAD.Console.Host.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.Console.Host.exe",
+              "cpu_percent": 3.7,
+              "rss_bytes": 330551296
+            },
+            {
+              "pid": 38612,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 3.2,
+              "rss_bytes": 178581504
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1425.2657999750227,
+      "chat_id": "c2bb1f13-4056-4f5d-92dc-4692125c629d"
+    },
+    {
+      "ts": 1761264630.0124943,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761264628.681086,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 13.9,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 30119284736,
+            "available": 38055948288,
+            "percent": 44.2,
+            "swap_total": 4294967296,
+            "swap_used": 104701952
+          },
+          "disk": {
+            "read_bytes": 90281439744,
+            "write_bytes": 143445985792
+          },
+          "network": {
+            "bytes_sent": 294409009,
+            "bytes_recv": 328582293
+          },
+          "battery": {
+            "available": true,
+            "percent": 63,
+            "secs_left": 17409,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 1086.4,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 10.3,
+              "rss_bytes": 14073856
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 10.1,
+              "rss_bytes": 217796608
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 7.9,
+              "rss_bytes": 15855616
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 7.4,
+              "rss_bytes": 163082240
+            },
+            {
+              "pid": 19444,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 6.6,
+              "rss_bytes": 91934720
+            },
+            {
+              "pid": 25148,
+              "name": "Copilot.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.Copilot_1.25095.165.0_arm64__8wekyb3d8bbwe\\Copilot.exe",
+              "cpu_percent": 6.2,
+              "rss_bytes": 369135616
+            },
+            {
+              "pid": 38456,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 5.2,
+              "rss_bytes": 105328640
+            },
+            {
+              "pid": 36900,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 4.4,
+              "rss_bytes": 109854720
+            },
+            {
+              "pid": 38612,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 4.2,
+              "rss_bytes": 168710144
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1454.242300009355,
+      "chat_id": "c2bb1f13-4056-4f5d-92dc-4692125c629d"
+    },
+    {
+      "ts": 1761265030.9120188,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "chrome"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "chrome"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'chrome' to launch in 10 seconds",
+          "app_name": "chrome",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 678.3941999310628,
+      "chat_id": "b66002a1-7d75-452b-98e4-5d94e2c0e1b3"
+    },
+    {
+      "ts": 1761265032.213133,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 20,
+        "app_name": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 20,
+          "app_name": "minecraft"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'minecraft' to launch in 20 seconds",
+          "app_name": "minecraft",
+          "delay_seconds": 20
+        }
+      },
+      "success": true,
+      "latency_ms": 1231.7116999765858,
+      "chat_id": "b66002a1-7d75-452b-98e4-5d94e2c0e1b3"
+    },
+    {
+      "ts": 1761265033.3491688,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 30,
+        "app_name": "notepad"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 30,
+          "app_name": "notepad"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'notepad' to launch in 30 seconds",
+          "app_name": "notepad",
+          "delay_seconds": 30
+        }
+      },
+      "success": true,
+      "latency_ms": 1117.9974999977276,
+      "chat_id": "b66002a1-7d75-452b-98e4-5d94e2c0e1b3"
+    },
+    {
+      "ts": 1761265096.8188078,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {
+        "top_n": 5
+      },
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {
+          "top_n": 5
+        },
+        "result": {
+          "ts": 1761265095.643002,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 27.5,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31058821120,
+            "available": 37116411904,
+            "percent": 45.6,
+            "swap_total": 4294967296,
+            "swap_used": 106586112
+          },
+          "disk": {
+            "read_bytes": 90296714752,
+            "write_bytes": 143581340160
+          },
+          "network": {
+            "bytes_sent": 305247383,
+            "bytes_recv": 346120106
+          },
+          "battery": {
+            "available": true,
+            "percent": 61,
+            "secs_left": 7707,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 926.9,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 13224,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 38.5,
+              "rss_bytes": 596611072
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 21.8,
+              "rss_bytes": 234471424
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 19.9,
+              "rss_bytes": 14077952
+            },
+            {
+              "pid": 11352,
+              "name": "explorer.exe",
+              "exe": "C:\\Windows\\explorer.exe",
+              "cpu_percent": 12.8,
+              "rss_bytes": 493346816
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1286.883999942802,
+      "chat_id": "b66002a1-7d75-452b-98e4-5d94e2c0e1b3"
+    },
+    {
+      "ts": 1761333874.3522,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "minecraft"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'minecraft' to launch in 10 seconds",
+          "app_name": "minecraft",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 1752.788700046949,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761333875.586332,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "notepad",
+        "delay_seconds": 20
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "notepad",
+          "delay_seconds": 20
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'notepad' to launch in 20 seconds",
+          "app_name": "notepad",
+          "delay_seconds": 20
+        }
+      },
+      "success": true,
+      "latency_ms": 1216.8072999920696,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761333875.6076021,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "chrome",
+        "delay_seconds": 20
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "chrome",
+          "delay_seconds": 20
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'chrome' to launch in 20 seconds",
+          "app_name": "chrome",
+          "delay_seconds": 20
+        }
+      },
+      "success": true,
+      "latency_ms": 4.996799980290234,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761333980.7234926,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {
+        "top_n": 5
+      },
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {
+          "top_n": 5
+        },
+        "result": {
+          "ts": 1761333979.4555156,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 19.4,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31220948992,
+            "available": 36954284032,
+            "percent": 45.8,
+            "swap_total": 4294967296,
+            "swap_used": 138809344
+          },
+          "disk": {
+            "read_bytes": 93146333184,
+            "write_bytes": 154056625664
+          },
+          "network": {
+            "bytes_sent": 366890828,
+            "bytes_recv": 137635663
+          },
+          "battery": {
+            "available": true,
+            "percent": 91,
+            "secs_left": 14154,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 941.8,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 33240,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 54.2,
+              "rss_bytes": 527351808
+            },
+            {
+              "pid": 2732,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 46.7,
+              "rss_bytes": 440279040
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 27.9,
+              "rss_bytes": 255848448
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 20.2,
+              "rss_bytes": 8028160
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1388.3183998987079,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761334066.9219136,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "notepad"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "notepad"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'notepad'",
+          "app_name": "notepad",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 974.4028999703005,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761334073.7094777,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "end_task",
+      "arguments": {
+        "identifier": "notepad"
+      },
+      "result": {
+        "success": true,
+        "tool": "end_task",
+        "arguments": {
+          "identifier": "notepad"
+        },
+        "result": {
+          "identifier": "notepad",
+          "force": false,
+          "exact_path": false,
+          "matched": [
+            39644
+          ],
+          "terminated": 1,
+          "failed": []
+        }
+      },
+      "success": true,
+      "latency_ms": 43.7024999409914,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761334098.813289,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "notepad"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "notepad"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'notepad'",
+          "app_name": "notepad",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 914.7936999797821,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761334672.2064292,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "notepad"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "notepad"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'notepad'",
+          "app_name": "notepad",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 9628.980200039223,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761334699.186002,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {
+        "all_processes": true
+      },
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {
+          "all_processes": true
+        },
+        "result": {
+          "ts": 1761334688.3050807,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 23.9,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 30968512512,
+            "available": 37206720512,
+            "percent": 45.4,
+            "swap_total": 4294967296,
+            "swap_used": 146157568
+          },
+          "disk": {
+            "read_bytes": 93152991232,
+            "write_bytes": 154475335168
+          },
+          "network": {
+            "bytes_sent": 419992703,
+            "bytes_recv": 168257014
+          },
+          "battery": {
+            "available": true,
+            "percent": 87,
+            "secs_left": 9289,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 947.1,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 17912,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 116.4,
+              "rss_bytes": 84471808
+            },
+            {
+              "pid": 33240,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 50.0,
+              "rss_bytes": 536084480
+            },
+            {
+              "pid": 2732,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 34.8,
+              "rss_bytes": 439803904
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 25.0,
+              "rss_bytes": 258334720
+            },
+            {
+              "pid": 22044,
+              "name": "audiodg.exe",
+              "exe": "C:\\Windows\\System32\\audiodg.exe",
+              "cpu_percent": 12.5,
+              "rss_bytes": 36900864
+            },
+            {
+              "pid": 25016,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 10.0,
+              "rss_bytes": 148180992
+            },
+            {
+              "pid": 25148,
+              "name": "Copilot.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.Copilot_1.25095.165.0_arm64__8wekyb3d8bbwe\\Copilot.exe",
+              "cpu_percent": 10.0,
+              "rss_bytes": 320974848
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 8.0,
+              "rss_bytes": 15822848
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 4.0,
+              "rss_bytes": 8019968
+            },
+            {
+              "pid": 8,
+              "name": "LsaIso.exe",
+              "exe": "C:\\Windows\\System32\\LsaIso.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 6111232
+            },
+            {
+              "pid": 188,
+              "name": "unknown",
+              "exe": "unknown",
+              "cpu_percent": 0.0,
+              "rss_bytes": 154202112
+            },
+            {
+              "pid": 232,
+              "name": "Registry",
+              "exe": "Registry",
+              "cpu_percent": 0.0,
+              "rss_bytes": 41254912
+            },
+            {
+              "pid": 472,
+              "name": "backgroundTaskHost.exe",
+              "exe": "C:\\Windows\\System32\\backgroundTaskHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9781248
+            },
+            {
+              "pid": 480,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14016512
+            },
+            {
+              "pid": 880,
+              "name": "smss.exe",
+              "exe": "C:\\Windows\\System32\\smss.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 1638400
+            },
+            {
+              "pid": 1052,
+              "name": "QcSkExt8380.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcskext8380.inf_arm64_1f302071dfc89f06\\QcSkExt8380.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 2510848
+            },
+            {
+              "pid": 1068,
+              "name": "lsass.exe",
+              "exe": "C:\\Windows\\System32\\lsass.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 40259584
+            },
+            {
+              "pid": 1560,
+              "name": "csrss.exe",
+              "exe": "C:\\Windows\\System32\\csrss.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7741440
+            },
+            {
+              "pid": 1900,
+              "name": "wininit.exe",
+              "exe": "C:\\Windows\\System32\\wininit.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9625600
+            },
+            {
+              "pid": 1908,
+              "name": "csrss.exe",
+              "exe": "C:\\Windows\\System32\\csrss.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 90431488
+            },
+            {
+              "pid": 1912,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7335936
+            },
+            {
+              "pid": 1964,
+              "name": "winlogon.exe",
+              "exe": "C:\\Windows\\System32\\winlogon.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 24473600
+            },
+            {
+              "pid": 1976,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 45088768
+            },
+            {
+              "pid": 2044,
+              "name": "services.exe",
+              "exe": "C:\\Windows\\System32\\services.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 22552576
+            },
+            {
+              "pid": 2072,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 66097152
+            },
+            {
+              "pid": 2084,
+              "name": "fontdrvhost.exe",
+              "exe": "C:\\Windows\\System32\\fontdrvhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 4595712
+            },
+            {
+              "pid": 2092,
+              "name": "fontdrvhost.exe",
+              "exe": "C:\\Windows\\System32\\fontdrvhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8327168
+            },
+            {
+              "pid": 2168,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8552448
+            },
+            {
+              "pid": 2240,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 25268224
+            },
+            {
+              "pid": 2300,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12144640
+            },
+            {
+              "pid": 2308,
+              "name": "WUDFCompanionHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFCompanionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8216576
+            },
+            {
+              "pid": 2368,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 26857472
+            },
+            {
+              "pid": 2420,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11345920
+            },
+            {
+              "pid": 2428,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7008256
+            },
+            {
+              "pid": 2440,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16130048
+            },
+            {
+              "pid": 2500,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13533184
+            },
+            {
+              "pid": 2516,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 28065792
+            },
+            {
+              "pid": 2544,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19202048
+            },
+            {
+              "pid": 2564,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20520960
+            },
+            {
+              "pid": 2596,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10858496
+            },
+            {
+              "pid": 2664,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13770752
+            },
+            {
+              "pid": 2672,
+              "name": "GenuineService.exe",
+              "exe": "C:\\Program Files\\Autodesk\\Genuine Service\\GenuineService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 26181632
+            },
+            {
+              "pid": 2720,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17403904
+            },
+            {
+              "pid": 2740,
+              "name": "PAD.AutomationServer.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.AutomationServer.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 129298432
+            },
+            {
+              "pid": 2812,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11874304
+            },
+            {
+              "pid": 2832,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 125390848
+            },
+            {
+              "pid": 2868,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 67833856
+            },
+            {
+              "pid": 2876,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 18767872
+            },
+            {
+              "pid": 2884,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15581184
+            },
+            {
+              "pid": 2892,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14422016
+            },
+            {
+              "pid": 2904,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 83156992
+            },
+            {
+              "pid": 2928,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16719872
+            },
+            {
+              "pid": 2992,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 411123712
+            },
+            {
+              "pid": 3080,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7950336
+            },
+            {
+              "pid": 3100,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9293824
+            },
+            {
+              "pid": 3120,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 29061120
+            },
+            {
+              "pid": 3152,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16867328
+            },
+            {
+              "pid": 3192,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 34570240
+            },
+            {
+              "pid": 3304,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10395648
+            },
+            {
+              "pid": 3312,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 132063232
+            },
+            {
+              "pid": 3316,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15847424
+            },
+            {
+              "pid": 3420,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11919360
+            },
+            {
+              "pid": 3472,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7880704
+            },
+            {
+              "pid": 3476,
+              "name": "SecurityHealthSystray.exe",
+              "exe": "C:\\Windows\\System32\\SecurityHealthSystray.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15265792
+            },
+            {
+              "pid": 3624,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 22548480
+            },
+            {
+              "pid": 3700,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15622144
+            },
+            {
+              "pid": 3748,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 115662848
+            },
+            {
+              "pid": 3848,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12955648
+            },
+            {
+              "pid": 3912,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17489920
+            },
+            {
+              "pid": 3924,
+              "name": "AdskIdentityManager.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdskIdentityManager\\1.12.0.7\\AdskIdentityManager.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 42434560
+            },
+            {
+              "pid": 3936,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9986048
+            },
+            {
+              "pid": 3968,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 331665408
+            },
+            {
+              "pid": 3984,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 24313856
+            },
+            {
+              "pid": 3992,
+              "name": "XtaCache.exe",
+              "exe": "C:\\Windows\\System32\\XtaCache.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16801792
+            },
+            {
+              "pid": 4060,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19312640
+            },
+            {
+              "pid": 4088,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11419648
+            },
+            {
+              "pid": 4116,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 153997312
+            },
+            {
+              "pid": 4220,
+              "name": "MemCompression",
+              "exe": "MemCompression",
+              "cpu_percent": 0.0,
+              "rss_bytes": 1836761088
+            },
+            {
+              "pid": 4264,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12943360
+            },
+            {
+              "pid": 4292,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 36417536
+            },
+            {
+              "pid": 4328,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 66158592
+            },
+            {
+              "pid": 4344,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12939264
+            },
+            {
+              "pid": 4352,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14802944
+            },
+            {
+              "pid": 4464,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13565952
+            },
+            {
+              "pid": 4468,
+              "name": "spoolsv.exe",
+              "exe": "C:\\Windows\\System32\\spoolsv.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 31711232
+            },
+            {
+              "pid": 4504,
+              "name": "ISM.exe",
+              "exe": "C:\\Windows\\System32\\ISM.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14290944
+            },
+            {
+              "pid": 4512,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 31330304
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 185741312
+            },
+            {
+              "pid": 4624,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 6762496
+            },
+            {
+              "pid": 4640,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 67624960
+            },
+            {
+              "pid": 4664,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8781824
+            },
+            {
+              "pid": 4668,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 48721920
+            },
+            {
+              "pid": 4684,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17043456
+            },
+            {
+              "pid": 4708,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 33452032
+            },
+            {
+              "pid": 4860,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14544896
+            },
+            {
+              "pid": 4928,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 32690176
+            },
+            {
+              "pid": 4956,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15663104
+            },
+            {
+              "pid": 4984,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 24285184
+            },
+            {
+              "pid": 5028,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 412774400
+            },
+            {
+              "pid": 5112,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10608640
+            },
+            {
+              "pid": 5136,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14073856
+            },
+            {
+              "pid": 5152,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 31232000
+            },
+            {
+              "pid": 5160,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10633216
+            },
+            {
+              "pid": 5244,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10756096
+            },
+            {
+              "pid": 5280,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16666624
+            },
+            {
+              "pid": 5296,
+              "name": "DAX3API.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\DAB95A~1.INF\\DAX3API.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16998400
+            },
+            {
+              "pid": 5332,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11567104
+            },
+            {
+              "pid": 5356,
+              "name": "NgcIso.exe",
+              "exe": "C:\\Windows\\System32\\NgcIso.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 6828032
+            },
+            {
+              "pid": 5452,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 70242304
+            },
+            {
+              "pid": 5460,
+              "name": "DAX3API.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\dax3_swc_aposvc_sdw_arm64.inf_arm64_d6b97a780ee18ae9\\DAX3API.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 23691264
+            },
+            {
+              "pid": 5468,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 61308928
+            },
+            {
+              "pid": 5476,
+              "name": "FNPLicensingService64.exe",
+              "exe": "C:\\Program Files\\Common Files\\Macrovision Shared\\FlexNet Publisher\\FNPLicensingService64.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15044608
+            },
+            {
+              "pid": 5484,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 33161216
+            },
+            {
+              "pid": 5496,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11800576
+            },
+            {
+              "pid": 5504,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17506304
+            },
+            {
+              "pid": 5544,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20426752
+            },
+            {
+              "pid": 5576,
+              "name": "cer_service.exe",
+              "exe": "C:\\Program Files\\Autodesk\\Autodesk CER\\service\\cer_service.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 42225664
+            },
+            {
+              "pid": 5584,
+              "name": "AdskLicensingService.exe",
+              "exe": "C:\\Program Files (x86)\\Common Files\\Autodesk Shared\\AdskLicensing\\15.1.0.12339\\AdskLicensingService\\AdskLicensingService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 23744512
+            },
+            {
+              "pid": 5644,
+              "name": "AdskAccessServiceHost.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdODIS\\V1\\Setup\\AdskAccessServiceHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 54308864
+            },
+            {
+              "pid": 5684,
+              "name": "rustdesk.exe",
+              "exe": "C:\\Program Files\\RustDesk\\rustdesk.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 21704704
+            },
+            {
+              "pid": 5708,
+              "name": "SurfaceMLService.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\surfacemachinelearningservicenulldriver.inf_arm64_66ac1e875455f382\\SurfaceMLService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 117710848
+            },
+            {
+              "pid": 5724,
+              "name": "SurfaceService.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\surfaceservicenulldriver.inf_arm64_e22363e87117bd43\\SurfaceService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 27373568
+            },
+            {
+              "pid": 5812,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 27090944
+            },
+            {
+              "pid": 5928,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 33779712
+            },
+            {
+              "pid": 5932,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 44572672
+            },
+            {
+              "pid": 5952,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13631488
+            },
+            {
+              "pid": 5956,
+              "name": "wslservice.exe",
+              "exe": "C:\\Program Files\\WSL\\wslservice.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 35897344
+            },
+            {
+              "pid": 6052,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9224192
+            },
+            {
+              "pid": 6240,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 43966464
+            },
+            {
+              "pid": 6280,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10981376
+            },
+            {
+              "pid": 6440,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13934592
+            },
+            {
+              "pid": 6632,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 35160064
+            },
+            {
+              "pid": 6656,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14290944
+            },
+            {
+              "pid": 6676,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10457088
+            },
+            {
+              "pid": 6792,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10575872
+            },
+            {
+              "pid": 6820,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 25681920
+            },
+            {
+              "pid": 6900,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11161600
+            },
+            {
+              "pid": 7004,
+              "name": "rustdesk.exe",
+              "exe": "C:\\Program Files\\RustDesk\\rustdesk.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 44036096
+            },
+            {
+              "pid": 7112,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 39313408
+            },
+            {
+              "pid": 7144,
+              "name": "WorkloadsSessionManager.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionManager.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14217216
+            },
+            {
+              "pid": 7360,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16932864
+            },
+            {
+              "pid": 7720,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 38182912
+            },
+            {
+              "pid": 7820,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11837440
+            },
+            {
+              "pid": 7968,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 26005504
+            },
+            {
+              "pid": 7988,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16146432
+            },
+            {
+              "pid": 8256,
+              "name": "WUDFHost.exe",
+              "exe": "C:\\Windows\\System32\\WUDFHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13742080
+            },
+            {
+              "pid": 8292,
+              "name": "gamingservices.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.GamingServices_31.106.13001.0_arm64__8wekyb3d8bbwe\\gamingservices.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 65622016
+            },
+            {
+              "pid": 8300,
+              "name": "gamingservicesnet.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.GamingServices_31.106.13001.0_arm64__8wekyb3d8bbwe\\gamingservicesnet.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13017088
+            },
+            {
+              "pid": 8308,
+              "name": "SurfaceBroker.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.SurfaceHub_75.9170.107.0_arm64__8wekyb3d8bbwe\\Services\\SurfaceBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 18931712
+            },
+            {
+              "pid": 8704,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 34082816
+            },
+            {
+              "pid": 8740,
+              "name": "SecurityHealthService.exe",
+              "exe": "C:\\Windows\\System32\\SecurityHealthService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 28340224
+            },
+            {
+              "pid": 8944,
+              "name": "AggregatorHost.exe",
+              "exe": "C:\\Windows\\System32\\AggregatorHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15228928
+            },
+            {
+              "pid": 8976,
+              "name": "taskhostw.exe",
+              "exe": "C:\\Windows\\System32\\taskhostw.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 38068224
+            },
+            {
+              "pid": 9088,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 38313984
+            },
+            {
+              "pid": 9124,
+              "name": "sihost.exe",
+              "exe": "C:\\Windows\\System32\\sihost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 66203648
+            },
+            {
+              "pid": 9288,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 18878464
+            },
+            {
+              "pid": 9352,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 52666368
+            },
+            {
+              "pid": 9364,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 35524608
+            },
+            {
+              "pid": 9524,
+              "name": "ApplicationFrameHost.exe",
+              "exe": "C:\\Windows\\System32\\ApplicationFrameHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 59424768
+            },
+            {
+              "pid": 9760,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 132579328
+            },
+            {
+              "pid": 9828,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 46292992
+            },
+            {
+              "pid": 9964,
+              "name": "taskhostw.exe",
+              "exe": "C:\\Windows\\System32\\taskhostw.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 28528640
+            },
+            {
+              "pid": 9984,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11010048
+            },
+            {
+              "pid": 10252,
+              "name": "AdskAccessUIHost.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdODIS\\V1\\Setup\\ui-launcher\\AdskAccessUIHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 51359744
+            },
+            {
+              "pid": 10504,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13475840
+            },
+            {
+              "pid": 10648,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 252530688
+            },
+            {
+              "pid": 10676,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 136376320
+            },
+            {
+              "pid": 10704,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15757312
+            },
+            {
+              "pid": 10808,
+              "name": "aomhost64.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\aomhost64.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 129544192
+            },
+            {
+              "pid": 10928,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 24936448
+            },
+            {
+              "pid": 10948,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19304448
+            },
+            {
+              "pid": 10956,
+              "name": "ShellExperienceHost.exe",
+              "exe": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 122580992
+            },
+            {
+              "pid": 10996,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 132165632
+            },
+            {
+              "pid": 11204,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 233013248
+            },
+            {
+              "pid": 11260,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 34922496
+            },
+            {
+              "pid": 11272,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 21245952
+            },
+            {
+              "pid": 11352,
+              "name": "explorer.exe",
+              "exe": "C:\\Windows\\explorer.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 452292608
+            },
+            {
+              "pid": 11436,
+              "name": "SteamService.exe",
+              "exe": "C:\\Program Files (x86)\\Common Files\\Steam\\SteamService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 22319104
+            },
+            {
+              "pid": 11536,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20140032
+            },
+            {
+              "pid": 11744,
+              "name": "AIXHost.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.AIX_cw5n1h2txyewy\\AIXHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 55488512
+            },
+            {
+              "pid": 11756,
+              "name": "ClickToDo.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CoreAI_cw5n1h2txyewy\\ClickToDo.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 131342336
+            },
+            {
+              "pid": 11796,
+              "name": "aihost.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.AIX_cw5n1h2txyewy\\aihost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 34189312
+            },
+            {
+              "pid": 11844,
+              "name": "CrossDeviceResume.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 70963200
+            },
+            {
+              "pid": 11952,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 22491136
+            },
+            {
+              "pid": 11992,
+              "name": "PAD.Console.Host.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.Console.Host.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 330522624
+            },
+            {
+              "pid": 12080,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 41664512
+            },
+            {
+              "pid": 12092,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 42381312
+            },
+            {
+              "pid": 12108,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 69877760
+            },
+            {
+              "pid": 12188,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 42680320
+            },
+            {
+              "pid": 12616,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 32976896
+            },
+            {
+              "pid": 12636,
+              "name": "SearchHost.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 169451520
+            },
+            {
+              "pid": 12668,
+              "name": "StartMenuExperienceHost.exe",
+              "exe": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 194945024
+            },
+            {
+              "pid": 12736,
+              "name": "Widgets.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\MicrosoftWindows.Client.WebExperience_525.24401.50.0_arm64__cw5n1h2txyewy\\Dashboard\\Widgets.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 97067008
+            },
+            {
+              "pid": 12744,
+              "name": "dllhost.exe",
+              "exe": "C:\\Windows\\System32\\dllhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 21073920
+            },
+            {
+              "pid": 12772,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 112668672
+            },
+            {
+              "pid": 12788,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 28528640
+            },
+            {
+              "pid": 12796,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14499840
+            },
+            {
+              "pid": 12820,
+              "name": "OneDrive.Sync.Service.exe",
+              "exe": "C:\\Program Files\\Microsoft OneDrive\\25.184.0921.0004\\OneDrive.Sync.Service.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 6344704
+            },
+            {
+              "pid": 12996,
+              "name": "vmcompute.exe",
+              "exe": "C:\\Windows\\System32\\vmcompute.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19476480
+            },
+            {
+              "pid": 13344,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15511552
+            },
+            {
+              "pid": 13416,
+              "name": "xgamehelper.exe",
+              "exe": "C:\\Windows\\System32\\xgamehelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19382272
+            },
+            {
+              "pid": 13488,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 170684416
+            },
+            {
+              "pid": 13516,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15138816
+            },
+            {
+              "pid": 13584,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 1126400
+            },
+            {
+              "pid": 14056,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 122535936
+            },
+            {
+              "pid": 14100,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8331264
+            },
+            {
+              "pid": 14148,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15007744
+            },
+            {
+              "pid": 14320,
+              "name": "steam.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\steam.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 117628928
+            },
+            {
+              "pid": 14352,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 44003328
+            },
+            {
+              "pid": 14452,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20815872
+            },
+            {
+              "pid": 14524,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 150200320
+            },
+            {
+              "pid": 14556,
+              "name": "PowerToys.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\PowerToys.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 52502528
+            },
+            {
+              "pid": 14572,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 87666688
+            },
+            {
+              "pid": 14652,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 131223552
+            },
+            {
+              "pid": 14772,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 168751104
+            },
+            {
+              "pid": 14816,
+              "name": "RiotClientCrashHandler.exe",
+              "exe": "C:\\Riot Games\\Riot Client\\RiotClientCrashHandler.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13967360
+            },
+            {
+              "pid": 14836,
+              "name": "ctfmon.exe",
+              "exe": "C:\\Windows\\System32\\ctfmon.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 48955392
+            },
+            {
+              "pid": 14848,
+              "name": "AdskAccessUIHost.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdODIS\\V1\\Setup\\ui-launcher\\AdskAccessUIHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 46821376
+            },
+            {
+              "pid": 14856,
+              "name": "AdskAccessUIHost.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdODIS\\V1\\Setup\\ui-launcher\\AdskAccessUIHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 121905152
+            },
+            {
+              "pid": 14940,
+              "name": "TabTip.exe",
+              "exe": "C:\\Program Files\\Common Files\\microsoft shared\\ink\\TabTip.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 74346496
+            },
+            {
+              "pid": 15404,
+              "name": "RiotClientServices.exe",
+              "exe": "C:\\Riot Games\\Riot Client\\RiotClientServices.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 144379904
+            },
+            {
+              "pid": 15484,
+              "name": "AppActions.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\AppActions.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 49704960
+            },
+            {
+              "pid": 15528,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 38195200
+            },
+            {
+              "pid": 15640,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8929280
+            },
+            {
+              "pid": 15720,
+              "name": "SearchIndexer.exe",
+              "exe": "C:\\Windows\\System32\\SearchIndexer.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 53952512
+            },
+            {
+              "pid": 15740,
+              "name": "PowerToys.FancyZones.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\PowerToys.FancyZones.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 26050560
+            },
+            {
+              "pid": 15792,
+              "name": "zWebview2Agent.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\zWebview2Agent.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 44363776
+            },
+            {
+              "pid": 15884,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 117825536
+            },
+            {
+              "pid": 15972,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 86847488
+            },
+            {
+              "pid": 16064,
+              "name": "rustdesk.exe",
+              "exe": "C:\\Program Files\\RustDesk\\rustdesk.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 27095040
+            },
+            {
+              "pid": 16104,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 30474240
+            },
+            {
+              "pid": 16216,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 28983296
+            },
+            {
+              "pid": 16228,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10838016
+            },
+            {
+              "pid": 16444,
+              "name": "AdskAccessService.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdODIS\\V1\\Setup\\AdskAccessService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 60768256
+            },
+            {
+              "pid": 16472,
+              "name": "MathWorksServiceHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\MathWorks\\ServiceHost\\v2025.11.0.2\\bin\\win64\\MathWorksServiceHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 148619264
+            },
+            {
+              "pid": 16496,
+              "name": "WidgetService.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.WidgetsPlatformRuntime_1.6.14.0_arm64__8wekyb3d8bbwe\\WidgetService\\WidgetService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 33263616
+            },
+            {
+              "pid": 16672,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 318984192
+            },
+            {
+              "pid": 16684,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20480
+            },
+            {
+              "pid": 16760,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 138190848
+            },
+            {
+              "pid": 16980,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 30711808
+            },
+            {
+              "pid": 17156,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 27832320
+            },
+            {
+              "pid": 17164,
+              "name": "vgtray.exe",
+              "exe": "C:\\Program Files\\Riot Vanguard\\vgtray.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20062208
+            },
+            {
+              "pid": 17220,
+              "name": "PhoneExperienceHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.YourPhone_1.25082.142.0_arm64__8wekyb3d8bbwe\\PhoneExperienceHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 237678592
+            },
+            {
+              "pid": 17308,
+              "name": "TextInputHost.exe",
+              "exe": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 97845248
+            },
+            {
+              "pid": 17392,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11022336
+            },
+            {
+              "pid": 17424,
+              "name": "PAD.BridgeToUIAutomation2.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.BridgeToUIAutomation2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 51994624
+            },
+            {
+              "pid": 17496,
+              "name": "PowerToys.AdvancedPaste.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\WinUI3Apps\\PowerToys.AdvancedPaste.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9981952
+            },
+            {
+              "pid": 17528,
+              "name": "Notepad.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2507.26.0_arm64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 142757888
+            },
+            {
+              "pid": 17768,
+              "name": "PowerToys.KeyboardManagerEngine.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 3399680
+            },
+            {
+              "pid": 17812,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 27693056
+            },
+            {
+              "pid": 17920,
+              "name": "steamwebhelper.exe",
+              "exe": "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win7x64\\steamwebhelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 155930624
+            },
+            {
+              "pid": 17956,
+              "name": "ShellHost.exe",
+              "exe": "C:\\Windows\\System32\\ShellHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 53010432
+            },
+            {
+              "pid": 18056,
+              "name": "node.exe",
+              "exe": "C:\\Program Files\\nodejs\\node.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 32698368
+            },
+            {
+              "pid": 18244,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12365824
+            },
+            {
+              "pid": 18252,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 751075328
+            },
+            {
+              "pid": 18288,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15028224
+            },
+            {
+              "pid": 18504,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 26898432
+            },
+            {
+              "pid": 18732,
+              "name": "PowerToys.Peek.UI.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\WinUI3Apps\\PowerToys.Peek.UI.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10379264
+            },
+            {
+              "pid": 18740,
+              "name": "PowerToys.PowerLauncher.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\PowerToys.PowerLauncher.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 254205952
+            },
+            {
+              "pid": 18880,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 55451648
+            },
+            {
+              "pid": 19004,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 270479360
+            },
+            {
+              "pid": 19092,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 77803520
+            },
+            {
+              "pid": 19172,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 54874112
+            },
+            {
+              "pid": 19244,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 66654208
+            },
+            {
+              "pid": 19276,
+              "name": "PowerToys.AlwaysOnTop.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\PowerToys.AlwaysOnTop.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 18726912
+            },
+            {
+              "pid": 19288,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 120926208
+            },
+            {
+              "pid": 19316,
+              "name": "PowerToys.ColorPickerUI.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\PowerToys\\PowerToys.ColorPickerUI.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 79372288
+            },
+            {
+              "pid": 19320,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 121466880
+            },
+            {
+              "pid": 19448,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 263192576
+            },
+            {
+              "pid": 19484,
+              "name": "AdskAccessCore.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdODIS\\V1\\Access\\AdskAccessCore.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 199667712
+            },
+            {
+              "pid": 20396,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 54378496
+            },
+            {
+              "pid": 21104,
+              "name": "ONENOTEM.EXE",
+              "exe": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTEM.EXE",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7159808
+            },
+            {
+              "pid": 21116,
+              "name": "WmiPrvSE.exe",
+              "exe": "C:\\Windows\\System32\\wbem\\WmiPrvSE.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17645568
+            },
+            {
+              "pid": 21200,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 27119616
+            },
+            {
+              "pid": 21348,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 22638592
+            },
+            {
+              "pid": 21568,
+              "name": "dasHost.exe",
+              "exe": "C:\\Windows\\System32\\dasHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12087296
+            },
+            {
+              "pid": 21716,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 39550976
+            },
+            {
+              "pid": 21812,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 308457472
+            },
+            {
+              "pid": 21852,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 20316160
+            },
+            {
+              "pid": 22248,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 59469824
+            },
+            {
+              "pid": 22408,
+              "name": "BackgroundTransferHost.exe",
+              "exe": "C:\\Windows\\System32\\BackgroundTransferHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 26992640
+            },
+            {
+              "pid": 22660,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15044608
+            },
+            {
+              "pid": 22760,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 58101760
+            },
+            {
+              "pid": 22948,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 131289088
+            },
+            {
+              "pid": 23208,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17575936
+            },
+            {
+              "pid": 23472,
+              "name": "CrossDeviceService.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\MicrosoftWindows.CrossDevice_1.25092.33.0_arm64__cw5n1h2txyewy\\CrossDeviceService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 115007488
+            },
+            {
+              "pid": 23488,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 123904000
+            },
+            {
+              "pid": 23672,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 120795136
+            },
+            {
+              "pid": 23880,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 18227200
+            },
+            {
+              "pid": 24268,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19480576
+            },
+            {
+              "pid": 24388,
+              "name": "XboxPcAppFT.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.GamingApp_2510.1001.55.0_arm64__8wekyb3d8bbwe\\XboxPcAppFT.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 59990016
+            },
+            {
+              "pid": 24672,
+              "name": "OfficeClickToRun.exe",
+              "exe": "C:\\Program Files\\Common Files\\microsoft shared\\ClickToRun\\OfficeClickToRun.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 85569536
+            },
+            {
+              "pid": 24860,
+              "name": "SystemSettings.exe",
+              "exe": "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 5500928
+            },
+            {
+              "pid": 24892,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 91832320
+            },
+            {
+              "pid": 24924,
+              "name": "WWAHost.exe",
+              "exe": "C:\\Windows\\System32\\WWAHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 347992064
+            },
+            {
+              "pid": 24968,
+              "name": "codex.exe",
+              "exe": "C:\\Users\\tahas\\.vscode\\extensions\\openai.chatgpt-0.4.21-win32-arm64\\bin\\windows-aarch64\\codex.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14995456
+            },
+            {
+              "pid": 25316,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 70115328
+            },
+            {
+              "pid": 25420,
+              "name": "MathWorksServiceHost-Monitor.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\MathWorks\\ServiceHost\\v2025.11.0.2\\bin\\win64\\MathWorksServiceHost-Monitor.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 55582720
+            },
+            {
+              "pid": 25560,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 110690304
+            },
+            {
+              "pid": 25596,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 572956672
+            },
+            {
+              "pid": 25636,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 23355392
+            },
+            {
+              "pid": 26356,
+              "name": "explorer.exe",
+              "exe": "C:\\Windows\\explorer.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 76201984
+            },
+            {
+              "pid": 26672,
+              "name": "UserOOBEBroker.exe",
+              "exe": "C:\\Windows\\System32\\oobe\\UserOOBEBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14249984
+            },
+            {
+              "pid": 26700,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 131358720
+            },
+            {
+              "pid": 26984,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.71\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 2686976
+            },
+            {
+              "pid": 27372,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11661312
+            },
+            {
+              "pid": 27832,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12439552
+            },
+            {
+              "pid": 27908,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 21307392
+            },
+            {
+              "pid": 28184,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 146427904
+            },
+            {
+              "pid": 28304,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 14036992
+            },
+            {
+              "pid": 28452,
+              "name": "MsMpEng.exe",
+              "exe": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.25090.3009-0\\MsMpEng.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 300388352
+            },
+            {
+              "pid": 29340,
+              "name": "WindowsPackageManagerServer.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.510.0_arm64__8wekyb3d8bbwe\\WindowsPackageManagerServer.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 38162432
+            },
+            {
+              "pid": 29408,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13815808
+            },
+            {
+              "pid": 29480,
+              "name": "dllhost.exe",
+              "exe": "C:\\Windows\\System32\\dllhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17752064
+            },
+            {
+              "pid": 29552,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 146083840
+            },
+            {
+              "pid": 29864,
+              "name": "AppVShNotify.exe",
+              "exe": "C:\\Program Files\\Common Files\\microsoft shared\\ClickToRun\\AppVShNotify.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11964416
+            },
+            {
+              "pid": 29948,
+              "name": "MuseAuthService.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseAuthService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 25145344
+            },
+            {
+              "pid": 30048,
+              "name": "mintty.exe",
+              "exe": "C:\\Program Files\\Git\\usr\\bin\\mintty.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 34349056
+            },
+            {
+              "pid": 30128,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 76107776
+            },
+            {
+              "pid": 30372,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 42487808
+            },
+            {
+              "pid": 30376,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 166711296
+            },
+            {
+              "pid": 30396,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 83435520
+            },
+            {
+              "pid": 30436,
+              "name": "msedgewebview2.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\141.0.3537.85\\msedgewebview2.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 174825472
+            },
+            {
+              "pid": 30564,
+              "name": "RuntimeBroker.exe",
+              "exe": "C:\\Windows\\System32\\RuntimeBroker.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 39632896
+            },
+            {
+              "pid": 30912,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 23916544
+            },
+            {
+              "pid": 31372,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 65130496
+            },
+            {
+              "pid": 31592,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 181043200
+            },
+            {
+              "pid": 31804,
+              "name": "MpDefenderCoreService.exe",
+              "exe": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.25090.3009-0\\MpDefenderCoreService.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 34385920
+            },
+            {
+              "pid": 32008,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9347072
+            },
+            {
+              "pid": 32044,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 178868224
+            },
+            {
+              "pid": 32120,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 129187840
+            },
+            {
+              "pid": 32248,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 2425868288
+            },
+            {
+              "pid": 32324,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 51458048
+            },
+            {
+              "pid": 32352,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 374386688
+            },
+            {
+              "pid": 32736,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 57692160
+            },
+            {
+              "pid": 32744,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9998336
+            },
+            {
+              "pid": 32788,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 76587008
+            },
+            {
+              "pid": 32952,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 817913856
+            },
+            {
+              "pid": 32992,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 297664512
+            },
+            {
+              "pid": 33116,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 119599104
+            },
+            {
+              "pid": 33424,
+              "name": "XboxGameBarSpotify.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\SpotifyAB.SpotifyMusic_1.274.477.0_arm64__zpdnekdrzrea0\\XboxGameBarSpotify.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 103034880
+            },
+            {
+              "pid": 33480,
+              "name": "WorkloadsSessionHost.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\WindowsWorkload.Manager.1_1.2506.707.0_arm64__8wekyb3d8bbwe\\WorkloadsSessionHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 127700992
+            },
+            {
+              "pid": 33616,
+              "name": "pet.exe",
+              "exe": "C:\\Users\\tahas\\.vscode\\extensions\\ms-python.python-2025.16.0-win32-arm64\\python-env-tools\\bin\\pet.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 9003008
+            },
+            {
+              "pid": 34180,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 178081792
+            },
+            {
+              "pid": 34688,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 106889216
+            },
+            {
+              "pid": 34752,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 189644800
+            },
+            {
+              "pid": 35228,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 373280768
+            },
+            {
+              "pid": 35288,
+              "name": "MoNotificationUx.exe",
+              "exe": "C:\\Windows\\UUS\\Packages\\Preview\\arm64\\MoNotificationUx.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 17657856
+            },
+            {
+              "pid": 35488,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 22773760
+            },
+            {
+              "pid": 35568,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10862592
+            },
+            {
+              "pid": 35760,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 108462080
+            },
+            {
+              "pid": 35900,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 15273984
+            },
+            {
+              "pid": 35948,
+              "name": "NisSrv.exe",
+              "exe": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.25090.3009-0\\NisSrv.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16486400
+            },
+            {
+              "pid": 36036,
+              "name": "EdgeGameAssist.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.Edge.GameAssist_1.0.3590.0_arm64__8wekyb3d8bbwe\\EdgeGameAssist.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 101310464
+            },
+            {
+              "pid": 36196,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 174399488
+            },
+            {
+              "pid": 36376,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 13721600
+            },
+            {
+              "pid": 36556,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 88137728
+            },
+            {
+              "pid": 36576,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 146735104
+            },
+            {
+              "pid": 37452,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12156928
+            },
+            {
+              "pid": 37728,
+              "name": "WmiPrvSE.exe",
+              "exe": "C:\\Windows\\System32\\wbem\\WmiPrvSE.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 16011264
+            },
+            {
+              "pid": 38776,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10919936
+            },
+            {
+              "pid": 38856,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10002432
+            },
+            {
+              "pid": 38860,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 106127360
+            },
+            {
+              "pid": 38940,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 36331520
+            },
+            {
+              "pid": 39196,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 12726272
+            },
+            {
+              "pid": 39392,
+              "name": "LockApp.exe",
+              "exe": "C:\\Windows\\SystemApps\\Microsoft.LockApp_cw5n1h2txyewy\\LockApp.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 113192960
+            },
+            {
+              "pid": 39416,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 43778048
+            },
+            {
+              "pid": 39504,
+              "name": "cmd.exe",
+              "exe": "C:\\Windows\\System32\\cmd.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 10067968
+            },
+            {
+              "pid": 39548,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 49106944
+            },
+            {
+              "pid": 39600,
+              "name": "SDXHelper.exe",
+              "exe": "C:\\Program Files\\Microsoft Office\\root\\Office16\\SDXHelper.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 32952320
+            },
+            {
+              "pid": 39768,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19451904
+            },
+            {
+              "pid": 40260,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 183967744
+            },
+            {
+              "pid": 40316,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 185950208
+            },
+            {
+              "pid": 41840,
+              "name": "git-bash.exe",
+              "exe": "C:\\Program Files\\Git\\git-bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 11014144
+            },
+            {
+              "pid": 42060,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 100343808
+            },
+            {
+              "pid": 42528,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 54661120
+            },
+            {
+              "pid": 42624,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 160067584
+            },
+            {
+              "pid": 42684,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 316928000
+            },
+            {
+              "pid": 42916,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 80412672
+            },
+            {
+              "pid": 42964,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 51007488
+            },
+            {
+              "pid": 43220,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 28585984
+            },
+            {
+              "pid": 43376,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 144613376
+            },
+            {
+              "pid": 43692,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 126554112
+            },
+            {
+              "pid": 43772,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 79187968
+            },
+            {
+              "pid": 43784,
+              "name": "msedge.exe",
+              "exe": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 39243776
+            },
+            {
+              "pid": 43868,
+              "name": "chrome.exe",
+              "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 156303360
+            },
+            {
+              "pid": 44184,
+              "name": "bash.exe",
+              "exe": "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 19820544
+            },
+            {
+              "pid": 44196,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 163995648
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 11064.85490000341,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761335011.8447537,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761335010.5958252,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 26.3,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31067652096,
+            "available": 37107580928,
+            "percent": 45.6,
+            "swap_total": 4294967296,
+            "swap_used": 146157568
+          },
+          "disk": {
+            "read_bytes": 93156088320,
+            "write_bytes": 154649509888
+          },
+          "network": {
+            "bytes_sent": 446049330,
+            "bytes_recv": 180687935
+          },
+          "battery": {
+            "available": true,
+            "percent": 84,
+            "secs_left": 14568,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 935.5,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 33240,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 71.2,
+              "rss_bytes": 536711168
+            },
+            {
+              "pid": 2732,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 43.5,
+              "rss_bytes": 439398400
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 25.1,
+              "rss_bytes": 257847296
+            },
+            {
+              "pid": 34180,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 17.2,
+              "rss_bytes": 178192384
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 15.8,
+              "rss_bytes": 8019968
+            },
+            {
+              "pid": 42684,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 7.7,
+              "rss_bytes": 310312960
+            },
+            {
+              "pid": 35228,
+              "name": "Code.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+              "cpu_percent": 7.5,
+              "rss_bytes": 418803712
+            },
+            {
+              "pid": 10808,
+              "name": "aomhost64.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\aomhost64.exe",
+              "cpu_percent": 6.7,
+              "rss_bytes": 129478656
+            },
+            {
+              "pid": 22044,
+              "name": "audiodg.exe",
+              "exe": "C:\\Windows\\System32\\audiodg.exe",
+              "cpu_percent": 5.9,
+              "rss_bytes": 36900864
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1364.7943000542,
+      "chat_id": "c67eddce-df18-429f-be3a-c5633c75be8a"
+    },
+    {
+      "ts": 1761355556.5042288,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761355554.933561,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 15.5,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31058821120,
+            "available": 37116411904,
+            "percent": 45.6,
+            "swap_total": 4294967296,
+            "swap_used": 144175104
+          },
+          "disk": {
+            "read_bytes": 93765804544,
+            "write_bytes": 161013787136
+          },
+          "network": {
+            "bytes_sent": 603402457,
+            "bytes_recv": 1343829891
+          },
+          "battery": {
+            "available": true,
+            "percent": 35,
+            "secs_left": 6887,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 956.6,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 43104,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 87.5,
+              "rss_bytes": 89780224
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 18.5,
+              "rss_bytes": 279052288
+            },
+            {
+              "pid": 38800,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 16.7,
+              "rss_bytes": 493862912
+            },
+            {
+              "pid": 6632,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 10.0,
+              "rss_bytes": 36704256
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 9.5,
+              "rss_bytes": 8224768
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 6.7,
+              "rss_bytes": 15855616
+            },
+            {
+              "pid": 29896,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 5.0,
+              "rss_bytes": 178319360
+            },
+            {
+              "pid": 37180,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 4.8,
+              "rss_bytes": 173252608
+            },
+            {
+              "pid": 2664,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 3.7,
+              "rss_bytes": 14020608
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1701.247499906458,
+      "chat_id": "dc9315e4-3ee5-4f6c-bd23-60ac396f2817"
+    },
+    {
+      "ts": 1761356071.665299,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761356070.6751575,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 17.5,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31166623744,
+            "available": 37008609280,
+            "percent": 45.7,
+            "swap_total": 4294967296,
+            "swap_used": 131608576
+          },
+          "disk": {
+            "read_bytes": 93780224512,
+            "write_bytes": 161180099584
+          },
+          "network": {
+            "bytes_sent": 642324626,
+            "bytes_recv": 1350349769
+          },
+          "battery": {
+            "available": true,
+            "percent": 29,
+            "secs_left": 4372,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 992.8,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 38800,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 67.8,
+              "rss_bytes": 505958400
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 21.7,
+              "rss_bytes": 306618368
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 13.3,
+              "rss_bytes": 8237056
+            },
+            {
+              "pid": 29896,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 11.9,
+              "rss_bytes": 178450432
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 6.4,
+              "rss_bytes": 15851520
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 4.9,
+              "rss_bytes": 191496192
+            },
+            {
+              "pid": 11992,
+              "name": "PAD.Console.Host.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.Console.Host.exe",
+              "cpu_percent": 4.5,
+              "rss_bytes": 330932224
+            },
+            {
+              "pid": 21684,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 4.5,
+              "rss_bytes": 91291648
+            },
+            {
+              "pid": 42556,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 4.2,
+              "rss_bytes": 111448064
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1116.594500024803,
+      "chat_id": "0ce52aed-c58f-4aa7-a8d8-231e6f296e70"
+    },
+    {
+      "ts": 1761356314.7774575,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761356312.4718373,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 25.7,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 30995333120,
+            "available": 37179899904,
+            "percent": 45.5,
+            "swap_total": 4294967296,
+            "swap_used": 166473728
+          },
+          "disk": {
+            "read_bytes": 93792706560,
+            "write_bytes": 161316572672
+          },
+          "network": {
+            "bytes_sent": 662444057,
+            "bytes_recv": 1353600494
+          },
+          "battery": {
+            "available": true,
+            "percent": 27,
+            "secs_left": 2892,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 1757.8,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 43088,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 74.2,
+              "rss_bytes": 88911872
+            },
+            {
+              "pid": 38800,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 61.8,
+              "rss_bytes": 507576320
+            },
+            {
+              "pid": 28452,
+              "name": "MsMpEng.exe",
+              "exe": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.25090.3009-0\\MsMpEng.exe",
+              "cpu_percent": 33.6,
+              "rss_bytes": 281440256
+            },
+            {
+              "pid": 4668,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 23.2,
+              "rss_bytes": 66641920
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 19.6,
+              "rss_bytes": 293122048
+            },
+            {
+              "pid": 2240,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 12.9,
+              "rss_bytes": 26624000
+            },
+            {
+              "pid": 32104,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 11.6,
+              "rss_bytes": 157728768
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 11.4,
+              "rss_bytes": 8241152
+            },
+            {
+              "pid": 29896,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 10.3,
+              "rss_bytes": 178536448
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 2412.432200042531,
+      "chat_id": "e176bb64-3d04-4c1f-8ee3-fa9c93054e95"
+    },
+    {
+      "ts": 1761356457.6429675,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "minecraft"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'minecraft'",
+          "app_name": "minecraft",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 1499.7702999971807,
+      "chat_id": "e176bb64-3d04-4c1f-8ee3-fa9c93054e95"
+    },
+    {
+      "ts": 1761356788.3175213,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761356786.4352307,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 16.7,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31315111936,
+            "available": 36860121088,
+            "percent": 45.9,
+            "swap_total": 4294967296,
+            "swap_used": 166158336
+          },
+          "disk": {
+            "read_bytes": 93858288128,
+            "write_bytes": 161669747200
+          },
+          "network": {
+            "bytes_sent": 685340041,
+            "bytes_recv": 1362272794
+          },
+          "battery": {
+            "available": true,
+            "percent": 23,
+            "secs_left": 2627,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 818.5,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 13420,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 92.4,
+              "rss_bytes": 506511360
+            },
+            {
+              "pid": 7312,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 81.2,
+              "rss_bytes": 89407488
+            },
+            {
+              "pid": 3168,
+              "name": "qcdpps.exe",
+              "exe": "C:\\Windows\\System32\\DriverStore\\FileRepository\\qcdpps8380.inf_arm64_602d28951530038a\\ARM64\\qcdpps.exe",
+              "cpu_percent": 16.7,
+              "rss_bytes": 15859712
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 12.5,
+              "rss_bytes": 293539840
+            },
+            {
+              "pid": 35568,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 12.5,
+              "rss_bytes": 16756736
+            },
+            {
+              "pid": 6632,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 11.8,
+              "rss_bytes": 36945920
+            },
+            {
+              "pid": 31592,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 9.1,
+              "rss_bytes": 191410176
+            },
+            {
+              "pid": 16228,
+              "name": "conhost.exe",
+              "exe": "C:\\Windows\\System32\\conhost.exe",
+              "cpu_percent": 7.7,
+              "rss_bytes": 16744448
+            },
+            {
+              "pid": 11992,
+              "name": "PAD.Console.Host.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.Console.Host.exe",
+              "cpu_percent": 6.7,
+              "rss_bytes": 330952704
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 2032.755000051111,
+      "chat_id": "7c0766d2-57b9-4240-ba19-529f05fe2a25"
+    },
+    {
+      "ts": 1761356828.9474819,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761356827.0296495,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 19.3,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31342747648,
+            "available": 36832485376,
+            "percent": 46.0,
+            "swap_total": 4294967296,
+            "swap_used": 166158336
+          },
+          "disk": {
+            "read_bytes": 93861777920,
+            "write_bytes": 161691034112
+          },
+          "network": {
+            "bytes_sent": 686460394,
+            "bytes_recv": 1362622803
+          },
+          "battery": {
+            "available": true,
+            "percent": 23,
+            "secs_left": 2627,
+            "power_plugged": false
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 1008.1,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 7312,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 99.7,
+              "rss_bytes": 89391104
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 28.1,
+              "rss_bytes": 284999680
+            },
+            {
+              "pid": 31592,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 27.3,
+              "rss_bytes": 191311872
+            },
+            {
+              "pid": 13420,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 12.5,
+              "rss_bytes": 506257408
+            },
+            {
+              "pid": 35960,
+              "name": "audiodg.exe",
+              "exe": "C:\\Windows\\System32\\audiodg.exe",
+              "cpu_percent": 12.5,
+              "rss_bytes": 38182912
+            },
+            {
+              "pid": 32636,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 10.0,
+              "rss_bytes": 111751168
+            },
+            {
+              "pid": 29948,
+              "name": "MuseAuthService.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseAuthService.exe",
+              "cpu_percent": 7.7,
+              "rss_bytes": 25325568
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 0.0,
+              "rss_bytes": 8261632
+            },
+            {
+              "pid": 8,
+              "name": "LsaIso.exe",
+              "exe": "C:\\Windows\\System32\\LsaIso.exe",
+              "cpu_percent": 0.0,
+              "rss_bytes": 7999488
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 2036.3287000218406,
+      "chat_id": "7c0766d2-57b9-4240-ba19-529f05fe2a25"
+    },
+    {
+      "ts": 1761356855.863044,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "minecraft"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'minecraft'",
+          "app_name": "minecraft",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 1777.6752000208944,
+      "chat_id": "7c0766d2-57b9-4240-ba19-529f05fe2a25"
+    },
+    {
+      "ts": 1761357391.336406,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {},
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {},
+        "result": {
+          "ts": 1761357389.228856,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 11.9,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31515041792,
+            "available": 36660191232,
+            "percent": 46.2,
+            "swap_total": 4294967296,
+            "swap_used": 145084416
+          },
+          "disk": {
+            "read_bytes": 94037479936,
+            "write_bytes": 162104591872
+          },
+          "network": {
+            "bytes_sent": 705311897,
+            "bytes_recv": 1373893118
+          },
+          "battery": {
+            "available": true,
+            "percent": 21,
+            "secs_left": -2,
+            "power_plugged": true
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 944.4,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 33288,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 86.5,
+              "rss_bytes": 88596480
+            },
+            {
+              "pid": 26684,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 24.0,
+              "rss_bytes": 505360384
+            },
+            {
+              "pid": 4,
+              "name": "System",
+              "exe": "unknown",
+              "cpu_percent": 18.3,
+              "rss_bytes": 8273920
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 16.2,
+              "rss_bytes": 297521152
+            },
+            {
+              "pid": 41636,
+              "name": "backgroundTaskHost.exe",
+              "exe": "C:\\Windows\\System32\\backgroundTaskHost.exe",
+              "cpu_percent": 8.8,
+              "rss_bytes": 151658496
+            },
+            {
+              "pid": 5600,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 7.0,
+              "rss_bytes": 98496512
+            },
+            {
+              "pid": 24668,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 5.6,
+              "rss_bytes": 182321152
+            },
+            {
+              "pid": 42580,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 5.1,
+              "rss_bytes": 177741824
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 4.5,
+              "rss_bytes": 191426560
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 2217.854900052771,
+      "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
+    },
+    {
+      "ts": 1761357424.5561154,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "gather_metrics",
+      "arguments": {
+        "all_processes": false
+      },
+      "result": {
+        "success": true,
+        "tool": "gather_metrics",
+        "arguments": {
+          "all_processes": false
+        },
+        "result": {
+          "ts": 1761357422.7357342,
+          "platform": {
+            "system": "Windows",
+            "release": "11",
+            "python_version": "3.12.6"
+          },
+          "cpu": {
+            "percent": 7.5,
+            "cores_logical": 12,
+            "cores_physical": 12
+          },
+          "memory": {
+            "total": 68175233024,
+            "used": 31508402176,
+            "available": 36666830848,
+            "percent": 46.2,
+            "swap_total": 4294967296,
+            "swap_used": 145084416
+          },
+          "disk": {
+            "read_bytes": 94038565376,
+            "write_bytes": 162140239360
+          },
+          "network": {
+            "bytes_sent": 706365884,
+            "bytes_recv": 1374093040
+          },
+          "battery": {
+            "available": true,
+            "percent": 21,
+            "secs_left": -2,
+            "power_plugged": true
+          },
+          "gpu": {
+            "available": false
+          },
+          "top_processes": [
+            {
+              "pid": 0,
+              "name": "System Idle Process",
+              "exe": "unknown",
+              "cpu_percent": 983.8,
+              "rss_bytes": 8192
+            },
+            {
+              "pid": 33288,
+              "name": "python.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+              "cpu_percent": 76.8,
+              "rss_bytes": 90337280
+            },
+            {
+              "pid": 26684,
+              "name": "Zoom.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe",
+              "cpu_percent": 38.8,
+              "rss_bytes": 504893440
+            },
+            {
+              "pid": 2600,
+              "name": "dwm.exe",
+              "exe": "C:\\Windows\\System32\\dwm.exe",
+              "cpu_percent": 15.7,
+              "rss_bytes": 290484224
+            },
+            {
+              "pid": 3924,
+              "name": "AdskIdentityManager.exe",
+              "exe": "C:\\Program Files\\Autodesk\\AdskIdentityManager\\1.12.0.7\\AdskIdentityManager.exe",
+              "cpu_percent": 7.9,
+              "rss_bytes": 42536960
+            },
+            {
+              "pid": 42580,
+              "name": "CptHost.exe",
+              "exe": "C:\\Users\\tahas\\AppData\\Roaming\\Zoom\\bin\\CptHost.exe",
+              "cpu_percent": 6.5,
+              "rss_bytes": 177733632
+            },
+            {
+              "pid": 4528,
+              "name": "MuseHub.exe",
+              "exe": "C:\\Program Files\\MuseHub\\current\\MuseHub.exe",
+              "cpu_percent": 6.4,
+              "rss_bytes": 191426560
+            },
+            {
+              "pid": 11992,
+              "name": "PAD.Console.Host.exe",
+              "exe": "C:\\Program Files\\WindowsApps\\Microsoft.PowerAutomateDesktop_11.2509.83.0_x64__8wekyb3d8bbwe\\dotnet\\PAD.Console.Host.exe",
+              "cpu_percent": 6.3,
+              "rss_bytes": 331436032
+            },
+            {
+              "pid": 2240,
+              "name": "svchost.exe",
+              "exe": "C:\\Windows\\System32\\svchost.exe",
+              "cpu_percent": 6.0,
+              "rss_bytes": 25911296
+            },
+            {
+              "pid": 24668,
+              "name": "electron.exe",
+              "exe": "C:\\Users\\tahas\\OneDrive\\Desktop\\NWCS\\338 - Practicum of Intelligent Systems\\EdgePilot\\ui\\node_modules\\electron\\dist\\electron.exe",
+              "cpu_percent": 5.2,
+              "rss_bytes": 163090432
+            }
+          ]
+        }
+      },
+      "success": true,
+      "latency_ms": 1941.6684999596328,
+      "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
+    },
+    {
+      "ts": 1761357450.5033402,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "minecraft"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "minecraft"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'minecraft'",
+          "app_name": "minecraft",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 1535.615799948573,
+      "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
     }
   ]
 }

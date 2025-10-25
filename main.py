@@ -49,7 +49,7 @@ PROVIDER_ENV_SETTINGS = {
     "claude": {
         "api_key": "ANTHROPIC_API_KEY",
         "model": "CLAUDE_MODEL",
-        "default_model": "claude-3-5-sonnet-20240620",
+        "default_model": "claude-3-5-haiku-20241022",
         "base_url": "CLAUDE_BASE_URL",
     },
     "gpt": {
