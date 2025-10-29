@@ -5282,6 +5282,1468 @@
       "success": true,
       "latency_ms": 1535.615799948573,
       "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
+    },
+    {
+      "ts": 1761668321.960238,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "Spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "Spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'Spotify'",
+          "app_name": "Spotify",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 17.360666999593377,
+      "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
+    },
+    {
+      "ts": 1761668348.39998,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'spotify'",
+          "app_name": "spotify",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 5.943500087596476,
+      "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
+    },
+    {
+      "ts": 1761670924.121587,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "search",
+      "arguments": {
+        "app_name": "GarageBand"
+      },
+      "result": {
+        "success": true,
+        "tool": "search",
+        "arguments": {
+          "app_name": "GarageBand"
+        },
+        "result": {
+          "query": "GarageBand",
+          "found": 0,
+          "apps": []
+        }
+      },
+      "success": true,
+      "latency_ms": 23.329999996349216,
+      "chat_id": "e0229522-15e6-44ad-998d-ca16349f60c6"
+    },
+    {
+      "ts": 1761671446.934664,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'spotify'",
+          "app_name": "spotify",
+          "delay_seconds": 0
+        }
+      },
+      "success": true,
+      "latency_ms": 6424.594499985687,
+      "chat_id": "502d8f6d-ccd1-4a20-80f0-d21178b6aed8"
+    },
+    {
+      "ts": 1761671496.1604211,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'spotify' to launch in 10 seconds",
+          "app_name": "spotify",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 0.2263339702039957,
+      "chat_id": "502d8f6d-ccd1-4a20-80f0-d21178b6aed8"
+    },
+    {
+      "ts": 1761671496.166257,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 15,
+        "app_name": "GarageBand"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 15,
+          "app_name": "GarageBand"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'GarageBand' to launch in 15 seconds",
+          "app_name": "GarageBand",
+          "delay_seconds": 15
+        }
+      },
+      "success": true,
+      "latency_ms": 0.07354200351983309,
+      "chat_id": "502d8f6d-ccd1-4a20-80f0-d21178b6aed8"
+    },
+    {
+      "ts": 1761752146.0126479,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_shell",
+      "arguments": {
+        "command": "ls"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_shell",
+        "arguments": {
+          "command": "ls"
+        },
+        "result": {
+          "action": "run_shell",
+          "command": [
+            "ls"
+          ],
+          "cwd": null,
+          "started_at": 1761752145.998695,
+          "finished_at": 1761752146.0125608,
+          "stdout": "MCP\nREADME.md\n__pycache__\ndata\nenv\nmain.py\nproviders\nrequirements.txt\ntest\ntools\nui\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 13.962458004243672,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761752179.638256,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761752179.6105611,
+          "finished_at": 1761752179.638145,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 28.37616705801338,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761752711.151019,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'spotify' to launch in 10 seconds",
+          "app_name": "spotify",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 5959.798833006062,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761752711.200064,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "args": [],
+        "cwd": null
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "args": [],
+          "cwd": null
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761752711.1582131,
+          "finished_at": 1761752711.199958,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 42.376916971988976,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761753446.9927669,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "args": [],
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "cwd": null
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "args": [],
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "cwd": null
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761753446.962486,
+          "finished_at": 1761753446.992643,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 30.87716700974852,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761753468.1985989,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "args": [],
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "cwd": null
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "args": [],
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "cwd": null
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761753468.172385,
+          "finished_at": 1761753468.198462,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 26.73595806118101,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761754004.812762,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "cwd": null,
+        "args": [],
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "cwd": null,
+          "args": [],
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754004.772108,
+          "finished_at": 1761754004.812663,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 41.44095804076642,
+      "chat_id": "748eb80e-aacd-48a1-b9bd-19ebbc1e1492"
+    },
+    {
+      "ts": 1761754013.149607,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "cwd": null,
+        "args": [],
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "cwd": null,
+          "args": [],
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754013.128039,
+          "finished_at": 1761754013.149507,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 21.73716702964157,
+      "chat_id": "e00c43e1-e6d1-4212-a9b7-a6e4ffe75bf2"
+    },
+    {
+      "ts": 1761754051.29314,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "cwd": null,
+        "args": []
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "cwd": null,
+          "args": []
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754051.270128,
+          "finished_at": 1761754051.293045,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 23.187541984952986,
+      "chat_id": "e00c43e1-e6d1-4212-a9b7-a6e4ffe75bf2"
+    },
+    {
+      "ts": 1761754441.093013,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "args": [],
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "cwd": null
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "args": [],
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "cwd": null
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754441.044532,
+          "finished_at": 1761754441.0929432,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 50.12337490916252,
+      "chat_id": "e00c43e1-e6d1-4212-a9b7-a6e4ffe75bf2"
+    },
+    {
+      "ts": 1761754489.949537,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "cwd": null,
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "args": []
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "cwd": null,
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "args": []
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754489.9247801,
+          "finished_at": 1761754489.94941,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 24.971458013169467,
+      "chat_id": "c04e77d0-43f9-4c59-bbe2-ec000d67aff6"
+    },
+    {
+      "ts": 1761754501.602293,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "args": [],
+        "cwd": null
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "args": [],
+          "cwd": null
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754501.576519,
+          "finished_at": 1761754501.602089,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 26.27529203891754,
+      "chat_id": "c04e77d0-43f9-4c59-bbe2-ec000d67aff6"
+    },
+    {
+      "ts": 1761754507.606268,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "delay_seconds": 30
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 30
+        },
+        "result": {
+          "success": false,
+          "error": "Could not find or launch '/Users/monish/Desktop/Practicum/Test/fib.py'",
+          "app_name": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        }
+      },
+      "success": true,
+      "latency_ms": 5996.91641703248,
+      "chat_id": "c04e77d0-43f9-4c59-bbe2-ec000d67aff6"
+    },
+    {
+      "ts": 1761754656.959671,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "delay_seconds": 30,
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "delay_seconds": 30,
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "status": "scheduled",
+          "action": "run_python",
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 30
+        }
+      },
+      "success": true,
+      "latency_ms": 0.57366699911654,
+      "chat_id": "bfc1f2cc-5515-4aa5-b318-d37144002d4e"
+    },
+    {
+      "ts": 1761754721.810663,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754721.774231,
+          "finished_at": 1761754721.81053,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 36.93408297840506,
+      "chat_id": "bfc1f2cc-5515-4aa5-b318-d37144002d4e"
+    },
+    {
+      "ts": 1761754769.431958,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_shell",
+      "arguments": {
+        "command": "echo \"hello\""
+      },
+      "result": {
+        "success": true,
+        "tool": "run_shell",
+        "arguments": {
+          "command": "echo \"hello\""
+        },
+        "result": {
+          "action": "run_shell",
+          "command": [
+            "echo",
+            "hello"
+          ],
+          "cwd": null,
+          "started_at": 1761754769.4248471,
+          "finished_at": 1761754769.4318678,
+          "stdout": "hello\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 7.162624970078468,
+      "chat_id": "bfc1f2cc-5515-4aa5-b318-d37144002d4e"
+    },
+    {
+      "ts": 1761754790.827521,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_shell",
+      "arguments": {
+        "command": "echo \"hello\"",
+        "delay_seconds": 20
+      },
+      "result": {
+        "success": true,
+        "tool": "run_shell",
+        "arguments": {
+          "command": "echo \"hello\"",
+          "delay_seconds": 20
+        },
+        "result": {
+          "status": "scheduled",
+          "action": "run_shell",
+          "command": "echo \"hello\"",
+          "delay_seconds": 20
+        }
+      },
+      "success": true,
+      "latency_ms": 0.4392919363453984,
+      "chat_id": "bfc1f2cc-5515-4aa5-b318-d37144002d4e"
+    },
+    {
+      "ts": 1761754909.5742269,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "delay_seconds": 30,
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "delay_seconds": 30,
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761754909.5314581,
+          "finished_at": 1761754909.574087,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true
+        }
+      },
+      "success": true,
+      "latency_ms": 30048.738916986622,
+      "chat_id": "bfc1f2cc-5515-4aa5-b318-d37144002d4e"
+    },
+    {
+      "ts": 1761757846.073109,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "spotify",
+        "delay_seconds": 10
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "spotify",
+          "delay_seconds": 10
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'spotify' to launch in 10 seconds",
+          "app_name": "spotify",
+          "delay_seconds": 10
+        }
+      },
+      "success": true,
+      "latency_ms": 5844.248750014231,
+      "chat_id": "87ba17b6-7c38-48aa-a046-6b5a1d82afd9"
+    },
+    {
+      "ts": 1761757901.69745,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "get_task_status",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "get_task_status",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "status": "not_found",
+          "action": "run_python",
+          "target": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        }
+      },
+      "success": true,
+      "latency_ms": 0.02316699828952551,
+      "chat_id": "87ba17b6-7c38-48aa-a046-6b5a1d82afd9"
+    },
+    {
+      "ts": 1761757956.580064,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "get_task_status",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "get_task_status",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "status": "not_found",
+          "action": "run_python",
+          "target": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        }
+      },
+      "success": true,
+      "latency_ms": 0.027916976250708103,
+      "chat_id": "87ba17b6-7c38-48aa-a046-6b5a1d82afd9"
+    },
+    {
+      "ts": 1761758169.451245,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "action": "run_python",
+          "command": [
+            "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+            "/Users/monish/Desktop/Practicum/Test/fib.py"
+          ],
+          "cwd": null,
+          "started_at": 1761758169.42691,
+          "finished_at": 1761758169.451038,
+          "stdout": "Fib done: 55 in 0.000s\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true,
+          "task_id": "run_python:1761758169426:1",
+          "status": "completed"
+        }
+      },
+      "success": true,
+      "latency_ms": 25.27670795097947,
+      "chat_id": "c60f8725-345e-4640-b215-35e8de148fd3"
+    },
+    {
+      "ts": 1761758195.8290439,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "delay_seconds": 10
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 10
+        },
+        "result": {
+          "status": "scheduled",
+          "task_id": "run_python:1761758195828:2",
+          "action": "run_python",
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 10,
+          "scheduled_for": 1761758205.8285282
+        }
+      },
+      "success": true,
+      "latency_ms": 1.1762500507757068,
+      "chat_id": "c60f8725-345e-4640-b215-35e8de148fd3"
+    },
+    {
+      "ts": 1761758236.21366,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "get_task_status",
+      "arguments": {
+        "task_id": "run_python:1761758195828:2"
+      },
+      "result": {
+        "success": true,
+        "tool": "get_task_status",
+        "arguments": {
+          "task_id": "run_python:1761758195828:2"
+        },
+        "result": {
+          "task_id": "run_python:1761758195828:2",
+          "action": "run_python",
+          "target": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "status": "completed",
+          "created_at": 1761758195.8285282,
+          "scheduled_for": 1761758205.8285282,
+          "delay_seconds": 10,
+          "started_at": 1761758205.846404,
+          "finished_at": 1761758205.8812852,
+          "result": {
+            "action": "run_python",
+            "command": [
+              "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+              "/Users/monish/Desktop/Practicum/Test/fib.py"
+            ],
+            "cwd": null,
+            "started_at": 1761758205.8472672,
+            "finished_at": 1761758205.8811939,
+            "stdout": "Fib done: 55 in 0.000s\n",
+            "stderr": "",
+            "exit_code": 0,
+            "pid": null,
+            "ok": true
+          },
+          "error": null,
+          "metadata": {
+            "args": [],
+            "cwd": null
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 0.13791699893772602,
+      "chat_id": "c60f8725-345e-4640-b215-35e8de148fd3"
+    },
+    {
+      "ts": 1761758314.1219509,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_shell",
+      "arguments": {
+        "command": "ls"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_shell",
+        "arguments": {
+          "command": "ls"
+        },
+        "result": {
+          "action": "run_shell",
+          "command": [
+            "ls"
+          ],
+          "cwd": null,
+          "started_at": 1761758314.1053839,
+          "finished_at": 1761758314.121386,
+          "stdout": "MCP\nREADME.md\n__pycache__\ndata\nenv\nmain.py\nproviders\nrequirements.txt\ntest\ntools\nui\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true,
+          "task_id": "run_shell:1761758314104:3",
+          "status": "completed"
+        }
+      },
+      "success": true,
+      "latency_ms": 17.03491702210158,
+      "chat_id": "c60f8725-345e-4640-b215-35e8de148fd3"
+    },
+    {
+      "ts": 1761758914.574238,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'spotify' to launch in 10 seconds",
+          "app_name": "spotify",
+          "delay_seconds": 10,
+          "task": {
+            "task_id": "open_application:1761758914573:1",
+            "action": "open_application",
+            "target": "/Applications/Spotify.app",
+            "status": "scheduled",
+            "created_at": 1761758914.573961,
+            "scheduled_for": 1761758924.573961,
+            "delay_seconds": 10,
+            "started_at": null,
+            "finished_at": null,
+            "result": null,
+            "error": null,
+            "metadata": {
+              "app_name": "spotify"
+            }
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 5904.961166903377,
+      "chat_id": "c60f8725-345e-4640-b215-35e8de148fd3"
+    },
+    {
+      "ts": 1761758982.7368052,
+      "provider": "claude",
+      "model": "claude-3-5-haiku-20241022",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'spotify'",
+          "app_name": "spotify",
+          "delay_seconds": 0,
+          "task": {
+            "task_id": "open_application:1761758982647:2",
+            "action": "open_application",
+            "target": "/Applications/Spotify.app",
+            "status": "completed",
+            "created_at": 1761758982.6476889,
+            "scheduled_for": 1761758982.6476889,
+            "delay_seconds": 0,
+            "started_at": 1761758982.6478112,
+            "finished_at": 1761758982.736649,
+            "result": {
+              "action": "open_application",
+              "command": [
+                "open",
+                "/Applications/Spotify.app"
+              ],
+              "cwd": null,
+              "started_at": 1761758982.6480398,
+              "finished_at": 1761758982.736576,
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "pid": null,
+              "ok": true
+            },
+            "error": null,
+            "metadata": {
+              "app_name": "spotify"
+            }
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 89.29429098498076,
+      "chat_id": "c60f8725-345e-4640-b215-35e8de148fd3"
+    },
+    {
+      "ts": 1761759039.232266,
+      "provider": "claude",
+      "model": "claude-3-5-haiku-20241022",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "spotify",
+        "delay_seconds": 10
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "spotify",
+          "delay_seconds": 10
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'spotify' to launch in 10 seconds",
+          "app_name": "spotify",
+          "delay_seconds": 10,
+          "task": {
+            "task_id": "open_application:1761759039230:3",
+            "action": "open_application",
+            "target": "/Applications/Spotify.app",
+            "status": "scheduled",
+            "created_at": 1761759039.2308302,
+            "scheduled_for": 1761759049.2308302,
+            "delay_seconds": 10,
+            "started_at": null,
+            "finished_at": null,
+            "result": null,
+            "error": null,
+            "metadata": {
+              "app_name": "spotify"
+            }
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 1.4964999863877892,
+      "chat_id": "501439e5-cde3-454f-a8e6-d1f82e068036"
+    },
+    {
+      "ts": 1761759070.0278752,
+      "provider": "claude",
+      "model": "claude-3-5-haiku-20241022",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "delay_seconds": 10
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 10
+        },
+        "result": {
+          "status": "scheduled",
+          "task_id": "run_python:1761759070027:4",
+          "action": "run_python",
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 10,
+          "scheduled_for": 1761759080.0274172
+        }
+      },
+      "success": true,
+      "latency_ms": 2.4299579672515392,
+      "chat_id": "501439e5-cde3-454f-a8e6-d1f82e068036"
+    },
+    {
+      "ts": 1761759089.895592,
+      "provider": "claude",
+      "model": "claude-3-5-haiku-20241022",
+      "tool_name": "get_task_status",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+      },
+      "result": {
+        "success": true,
+        "tool": "get_task_status",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py"
+        },
+        "result": {
+          "task_id": "run_python:1761759070027:4",
+          "action": "run_python",
+          "target": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "status": "completed",
+          "created_at": 1761759070.0274172,
+          "scheduled_for": 1761759080.0274172,
+          "delay_seconds": 10,
+          "started_at": 1761759080.033222,
+          "finished_at": 1761759080.064928,
+          "result": {
+            "action": "run_python",
+            "command": [
+              "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+              "/Users/monish/Desktop/Practicum/Test/fib.py"
+            ],
+            "cwd": null,
+            "started_at": 1761759080.034081,
+            "finished_at": 1761759080.064769,
+            "stdout": "Fib done: 55 in 0.000s\n",
+            "stderr": "",
+            "exit_code": 0,
+            "pid": null,
+            "ok": true
+          },
+          "error": null,
+          "metadata": {
+            "args": [],
+            "cwd": null
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 0.04700000863522291,
+      "chat_id": "501439e5-cde3-454f-a8e6-d1f82e068036"
+    },
+    {
+      "ts": 1761760793.27216,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "delay_seconds": 10,
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "delay_seconds": 10,
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Scheduled 'spotify' to launch in 10 seconds",
+          "app_name": "spotify",
+          "delay_seconds": 10,
+          "task": {
+            "task_id": "open_application:1761760793271:1",
+            "action": "open_application",
+            "target": "/Applications/Spotify.app",
+            "status": "scheduled",
+            "created_at": 1761760793.271956,
+            "scheduled_for": 1761760803.271956,
+            "delay_seconds": 10,
+            "started_at": null,
+            "finished_at": null,
+            "result": null,
+            "error": null,
+            "metadata": {
+              "app_name": "spotify"
+            }
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 5854.462250019424,
+      "chat_id": "535cdcef-4978-41c2-a881-c836cf7c0a7e"
+    },
+    {
+      "ts": 1761760830.82577,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_python",
+      "arguments": {
+        "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+        "delay_seconds": 10
+      },
+      "result": {
+        "success": true,
+        "tool": "run_python",
+        "arguments": {
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 10
+        },
+        "result": {
+          "status": "scheduled",
+          "task_id": "run_python:1761760830825:2",
+          "action": "run_python",
+          "path": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "delay_seconds": 10,
+          "scheduled_for": 1761760840.8251898
+        }
+      },
+      "success": true,
+      "latency_ms": 1.3798750005662441,
+      "chat_id": "535cdcef-4978-41c2-a881-c836cf7c0a7e"
+    },
+    {
+      "ts": 1761760853.1237981,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "get_task_status",
+      "arguments": {
+        "task_id": "run_python:1761760830825:2"
+      },
+      "result": {
+        "success": true,
+        "tool": "get_task_status",
+        "arguments": {
+          "task_id": "run_python:1761760830825:2"
+        },
+        "result": {
+          "task_id": "run_python:1761760830825:2",
+          "action": "run_python",
+          "target": "/Users/monish/Desktop/Practicum/Test/fib.py",
+          "status": "completed",
+          "created_at": 1761760830.8251898,
+          "scheduled_for": 1761760840.8251898,
+          "delay_seconds": 10,
+          "started_at": null,
+          "finished_at": 1761760840.853964,
+          "result": {
+            "action": "run_python",
+            "command": [
+              "/Users/monish/Desktop/Practicum/EdgePilot/.venv/bin/python",
+              "/Users/monish/Desktop/Practicum/Test/fib.py"
+            ],
+            "cwd": null,
+            "started_at": 1761760840.828994,
+            "finished_at": 1761760840.853806,
+            "stdout": "Fib done: 55 in 0.000s\n",
+            "stderr": "",
+            "exit_code": 0,
+            "pid": null,
+            "ok": true
+          },
+          "error": null,
+          "metadata": {
+            "args": [],
+            "cwd": null
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 0.11749996338039637,
+      "chat_id": "535cdcef-4978-41c2-a881-c836cf7c0a7e"
+    },
+    {
+      "ts": 1761760867.706159,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "run_shell",
+      "arguments": {
+        "command": "ls"
+      },
+      "result": {
+        "success": true,
+        "tool": "run_shell",
+        "arguments": {
+          "command": "ls"
+        },
+        "result": {
+          "action": "run_shell",
+          "command": [
+            "ls"
+          ],
+          "cwd": null,
+          "started_at": 1761760867.690031,
+          "finished_at": 1761760867.706003,
+          "stdout": "MCP\nREADME.md\n__pycache__\ndata\nenv\nmain.py\nproviders\nrequirements.txt\ntest\ntools\nui\n",
+          "stderr": "",
+          "exit_code": 0,
+          "pid": null,
+          "ok": true,
+          "task_id": "run_shell:1761760867689:3",
+          "status": "completed"
+        }
+      },
+      "success": true,
+      "latency_ms": 16.25291700474918,
+      "chat_id": "535cdcef-4978-41c2-a881-c836cf7c0a7e"
+    },
+    {
+      "ts": 1761763091.911357,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "report_edge_status",
+      "arguments": {
+        "window": "6h"
+      },
+      "result": {
+        "success": true,
+        "tool": "report_edge_status",
+        "arguments": {
+          "window": "6h"
+        },
+        "result": {
+          "status": "ok",
+          "window": "6h",
+          "top_k": 5,
+          "facts": [
+            "Current CPU utilization is 41.5%.",
+            "Memory usage is 85.2% with 1.19 GiB free out of 8.00 GiB.",
+            "Disk usage is 29.6% with 26.73 GiB free out of 228.27 GiB.",
+            "Top CPU processes: python3.8 (100.0% CPU), com.apple.SafariPlatformSupport.Helper (37.9% CPU), contactsd (19.3% CPU), accountsd (15.7% CPU), ReportCrash (13.7% CPU).",
+            "Top memory processes (RSS): ReportCrash (70.0 MiB RSS), com.apple.SafariPlatformSupport.Helper (46.9 MiB RSS), contactsd (41.5 MiB RSS), accountsd (12.0 MiB RSS), python3.8 (136.0 KiB RSS)."
+          ],
+          "source": "local"
+        }
+      },
+      "success": true,
+      "latency_ms": 204.6299590729177,
+      "chat_id": "3535abfb-386b-4c0d-94c2-caa41ffab60b"
+    },
+    {
+      "ts": 1761763121.926761,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "tool_name": "launch",
+      "arguments": {
+        "app_name": "spotify"
+      },
+      "result": {
+        "success": true,
+        "tool": "launch",
+        "arguments": {
+          "app_name": "spotify"
+        },
+        "result": {
+          "success": true,
+          "message": "Launched 'spotify'",
+          "app_name": "spotify",
+          "delay_seconds": 0,
+          "task": {
+            "task_id": "open_application:1761763121746:1",
+            "action": "open_application",
+            "target": "/Applications/Spotify.app",
+            "status": "completed",
+            "created_at": 1761763121.7464561,
+            "scheduled_for": 1761763121.7464561,
+            "delay_seconds": 0,
+            "started_at": 1761763121.746529,
+            "finished_at": 1761763121.925843,
+            "result": {
+              "action": "open_application",
+              "command": [
+                "open",
+                "/Applications/Spotify.app"
+              ],
+              "cwd": null,
+              "started_at": 1761763121.746596,
+              "finished_at": 1761763121.92559,
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "pid": null,
+              "ok": true
+            },
+            "error": null,
+            "metadata": {
+              "app_name": "spotify"
+            }
+          }
+        }
+      },
+      "success": true,
+      "latency_ms": 6570.210290956311,
+      "chat_id": "3535abfb-386b-4c0d-94c2-caa41ffab60b"
     }
   ]
 }

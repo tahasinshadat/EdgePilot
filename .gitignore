@@ -13,4 +13,7 @@ __pycache__/
 .vscode
 .claude
 
-data/
+# Ignore Chat History
+data/chat_history.json
+data/tool_call_history.json
+data/usage_metrics.json

@@ -5,7 +5,24 @@ from __future__ import annotations
 import json
 from typing import Any, Dict
 
-from tools import end_task, gather_metrics, launch, search, list_apps
+from tools import (
+    end_task,
+    evaluate_capacity,
+    gather_metrics,
+    launch,
+    list_apps,
+    list_recent_tasks as list_recent_task_records,
+    list_tasks as list_task_records,
+    list_tasks_by_metadata as list_tasks_by_metadata_record,
+    report_edge_status,
+    run_python as launcher_run_python,
+    run_shell as launcher_run_shell,
+    search,
+    suggest_capacity_window,
+    get_task as get_task_record,
+    get_latest_task as get_latest_task_record,
+    get_latest_task_any as get_latest_task_any_record,
+)
 
 
 class ToolExecutor:
@@ -15,10 +32,16 @@ class ToolExecutor:
         """Initialize the tool executor with available tools."""
         self.tools = {
             "gather_metrics": self._execute_gather_metrics,
+            "report_edge_status": self._execute_report_edge_status,
+            "evaluate_capacity": self._execute_evaluate_capacity,
+            "suggest_capacity_window": self._execute_suggest_capacity_window,
             "launch": self._execute_launch,
             "search": self._execute_search,
             "list_apps": self._execute_list_apps,
             "end_task": self._execute_end_task,
+            "run_shell": self._execute_run_shell,
+            "run_python": self._execute_run_python,
+            "get_task_status": self._execute_get_task_status,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -66,6 +89,33 @@ class ToolExecutor:
         all_processes = args.get("all_processes", False)
         return gather_metrics(top_n=top_n, all_processes=all_processes)
 
+    def _execute_report_edge_status(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        window = args.get("window", "1h")
+        top_k = args.get("top_k", 5)
+        return report_edge_status(window=window, top_k=top_k)
+
+    def _execute_evaluate_capacity(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        requirements = args.get("requirements") or {}
+        if not isinstance(requirements, dict):
+            raise ValueError("requirements must be an object")
+        duration = args.get("duration", "45m")
+        host = args.get("host")
+        return evaluate_capacity(requirements, duration=duration, host=host)
+
+    def _execute_suggest_capacity_window(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        requirements = args.get("requirements") or {}
+        if not isinstance(requirements, dict):
+            raise ValueError("requirements must be an object")
+        duration = args.get("duration", "45m")
+        horizon_hours = int(args.get("horizon_hours", 24) or 24)
+        host = args.get("host")
+        return suggest_capacity_window(
+            requirements,
+            duration=duration,
+            horizon_hours=horizon_hours,
+            host=host,
+        )
+
     def _execute_launch(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Execute launch tool to start an application."""
         app_name = args.get("app_name")
@@ -76,6 +126,7 @@ class ToolExecutor:
 
         # Use launcher.py's launch function
         success = launch(app_name, delay_seconds)
+        task_record = get_latest_task_any_record("open_application")
 
         if success:
             if delay_seconds > 0:
@@ -83,12 +134,15 @@ class ToolExecutor:
             else:
                 message = f"Launched '{app_name}'"
 
-            return {
+            payload = {
                 "success": True,
                 "message": message,
                 "app_name": app_name,
                 "delay_seconds": delay_seconds,
             }
+            if task_record:
+                payload["task"] = task_record
+            return payload
         else:
             return {
                 "success": False,
@@ -132,6 +186,123 @@ class ToolExecutor:
             "count": len(results),
             "apps": results,
         }
+
+    def _execute_run_shell(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        command = args.get("command")
+        if not isinstance(command, str) or not command.strip():
+            raise ValueError("command parameter is required")
+        cwd = args.get("cwd")
+        result = launcher_run_shell(
+            command,
+            cwd=cwd,
+            delay_seconds=args.get("delay_seconds"),
+            seconds=args.get("seconds"),
+            delay=args.get("delay"),
+        )
+        return result
+
+    def _execute_run_python(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        path = args.get("path")
+        if not isinstance(path, str) or not path.strip():
+            raise ValueError("path parameter is required")
+        script_args = args.get("args")
+        if script_args is not None and not isinstance(script_args, list):
+            raise ValueError("args must be a list when provided")
+        cwd = args.get("cwd")
+        result = launcher_run_python(
+            path,
+            args=script_args,
+            cwd=cwd,
+            delay_seconds=args.get("delay_seconds"),
+            seconds=args.get("seconds"),
+            delay=args.get("delay"),
+        )
+        return result
+
+    def _execute_get_task_status(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        task_id = args.get("task_id")
+        if task_id:
+            record = get_task_record(task_id)
+            if record:
+                return record
+            return {
+                "status": "not_found",
+                "task_id": task_id,
+            }
+
+        action = args.get("action")
+        path = args.get("path")
+        command = args.get("command")
+        identifier = args.get("identifier")
+
+        if not action:
+            if path:
+                action = "run_python"
+            elif command:
+                action = "run_shell"
+            elif identifier:
+                action = "open_application"
+
+        if action and action not in {"run_python", "run_shell", "open_application"}:
+            raise ValueError("action must be 'run_python', 'run_shell', or 'open_application'")
+
+        limit = int(args.get("limit") or 1)
+
+        if action == "open_application" and identifier:
+            meta_records = list_tasks_by_metadata_record(action, "app_name", identifier, limit=limit)
+            if limit > 1:
+                return {
+                    "status": "ok" if meta_records else "not_found",
+                    "action": action,
+                    "records": meta_records,
+                    "limit": limit,
+                }
+            if meta_records:
+                return meta_records[0]
+
+        target = identifier or path or command
+        if isinstance(target, str):
+            target = target.strip()
+            if not target:
+                target = None
+
+        if target:
+            if limit > 1:
+                records = list_task_records(action, target, limit=limit)
+                return {
+                    "status": "ok" if records else "not_found",
+                    "action": action,
+                    "target": target,
+                    "records": records,
+                    "limit": limit,
+                }
+
+            record = get_latest_task_record(action, target)
+            if record:
+                return record
+            return {
+                "status": "not_found",
+                "action": action,
+                "target": target,
+            }
+
+        if limit > 1:
+            records = list_recent_task_records(action, limit=limit)
+            return {
+                "status": "ok" if records else "not_found",
+                "action": action,
+                "records": records,
+                "limit": limit,
+            }
+
+        record = get_latest_task_any_record(action)
+        if record:
+            return record
+        return {
+            "status": "not_found",
+            "action": action,
+        }
+
 
 
 def parse_tool_calls_from_text(text: str) -> list[Dict[str, Any]]:

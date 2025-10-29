@@ -1,0 +1,36 @@
+{
+  "report": "edge_status",
+  "description": "Local host resource snapshot derived from psutil metrics.",
+  "plans": [
+    {
+      "entity": "LocalHost",
+      "attribute": "cpu_utilization",
+      "template": "LOCAL_VALUE",
+      "statement": "Current CPU utilization is {value:.1f}%."
+    },
+    {
+      "entity": "LocalHost",
+      "attribute": "memory_usage",
+      "template": "LOCAL_VALUE",
+      "statement": "Memory usage is {percent:.1f}% with {available_gib:.2f} GiB free out of {total_gib:.2f} GiB."
+    },
+    {
+      "entity": "LocalHost",
+      "attribute": "disk_usage",
+      "template": "LOCAL_VALUE",
+      "statement": "Disk usage is {percent:.1f}% with {free_gib:.2f} GiB free out of {total_gib:.2f} GiB."
+    },
+    {
+      "entity": "LocalHost",
+      "attribute": "top_process_cpu",
+      "template": "LOCAL_TOP",
+      "statement": "Top CPU processes: {items}."
+    },
+    {
+      "entity": "LocalHost",
+      "attribute": "top_process_memory",
+      "template": "LOCAL_TOP",
+      "statement": "Top memory processes (RSS): {items}."
+    }
+  ]
+}

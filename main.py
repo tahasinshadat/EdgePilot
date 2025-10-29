@@ -24,7 +24,12 @@ from pydantic import BaseModel, Field
 from providers import available_providers, get_provider
 from providers.base import ChatMessage, ProviderConfig
 from tools.metrics import ensure_data_dir, gather_metrics
-from MCP import execute_tool, format_tools_for_gemini
+from MCP import (
+    execute_tool,
+    format_tools_for_gemini,
+    format_tools_for_claude,
+    get_all_tool_schemas,
+)
 
 ROOT_DIR = Path(__file__).parent
 DATA_DIR = ROOT_DIR / "data"
@@ -433,8 +438,19 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
         raise HTTPException(status_code=404, detail="Chat not found") from None
 
     # Enable tools for providers that support them
-    if hasattr(provider, 'enable_tools'):
-        tool_schemas = format_tools_for_gemini()
+    if hasattr(provider, "enable_tools"):
+        provider_id = ""
+        try:
+            provider_id = (type(provider).describe() or {}).get("id", "")
+        except Exception:
+            provider_id = ""
+
+        if provider_id == "claude":
+            tool_schemas = format_tools_for_claude()
+        elif provider_id == "gemini":
+            tool_schemas = format_tools_for_gemini()
+        else:
+            tool_schemas = get_all_tool_schemas()
         provider.enable_tools(tool_schemas)
 
     user_message: ChatMessage = {
