@@ -36,9 +36,19 @@ class PrometheusClient:
 
     @property
     def available(self) -> bool:
-        return bool(self.base_url)
+        if self.base_url:
+            return True
+        env_url = os.getenv("PROM_URL")
+        if env_url:
+            self.base_url = env_url
+            return True
+        return False
 
     def _require_url(self) -> str:
+        if not self.base_url:
+            env_url = os.getenv("PROM_URL")
+            if env_url:
+                self.base_url = env_url
         if not self.base_url:
             raise PrometheusUnavailable("PROM_URL environment variable is not configured.")
         return self.base_url
@@ -267,19 +277,23 @@ def report_edge_status(window: str = "1h", top_k: int = 5, *, client: Prometheus
 
     _maybe_apply_datasource(client, ring)
 
+    prom_facts: List[str] = []
     if client.available and ring and blueprint:
         try:
             for plan in blueprint.get("plans", []):
+                template = plan.get("template") or ""
+                if template.startswith("LOCAL"):
+                    continue
                 entity = _find_entity(ring, plan["entity"])
                 attribute = _find_attribute(entity, plan["attribute"])
                 base_query = attribute.get("promql")
                 if not base_query:
                     raise KeyError(f"Attribute {plan['entity']}.{plan['attribute']} missing promql.")
 
-                template = plan.get("template")
                 if template == "TREND":
                     value = client.avg_over_time(base_query, window)
-                    facts.append(plan["statement"].format(range=window, value=value))
+                    if math.isfinite(value):
+                        prom_facts.append(plan["statement"].format(range=window, value=value))
                 elif template == "RANKING":
                     k_value = int(plan.get("k") or top_k)
                     rows = client.topk_over_time(base_query, window, k_value)
@@ -288,7 +302,7 @@ def report_edge_status(window: str = "1h", top_k: int = 5, *, client: Prometheus
                         for row in rows
                         if _is_finite_value(row.get("value"))
                     ]
-                    facts.append(plan["statement"].format(k=k_value, items=", ".join(items) or "none"))
+                    prom_facts.append(plan["statement"].format(k=k_value, items=", ".join(items) or "none"))
                 elif template == "THRESHOLD":
                     operator = plan.get("operator")
                     value = plan.get("value")
@@ -297,7 +311,7 @@ def report_edge_status(window: str = "1h", top_k: int = 5, *, client: Prometheus
                     query = f"{base_query} {operator} {value}"
                     rows = client.query(query)
                     if not rows:
-                        facts.append(plan["statement"].format(items="none"))
+                        prom_facts.append(plan["statement"].format(items="none"))
                     else:
                         labels = []
                         for row in rows:
@@ -313,12 +327,18 @@ def report_edge_status(window: str = "1h", top_k: int = 5, *, client: Prometheus
                                 )
                             )
                             labels.append(label or "unknown")
-                        facts.append(plan["statement"].format(items=", ".join(labels)))
+                        prom_facts.append(plan["statement"].format(items=", ".join(labels)))
                 else:
                     raise ValueError(f"Unknown plan template '{template}'")
         except (PrometheusUnavailable, KeyError, ValueError):
+            prom_facts = []
             source = "local"
-            facts = []
+        else:
+            if prom_facts:
+                facts.extend(prom_facts)
+                source = "prometheus"
+            else:
+                source = "local"
     else:
         source = "local"
 
@@ -343,6 +363,14 @@ def report_edge_status(window: str = "1h", top_k: int = 5, *, client: Prometheus
                     f"Top {top_k} processes by CPU right now: {top_processes or 'none'}",
                 ]
             )
+    else:
+        # Supplement Prometheus facts with local snapshots (e.g., top processes)
+        process_limit = max(top_k, _max_process_limit(ring)) or top_k
+        snapshot = gather_metrics(top_n=process_limit)
+        local_facts = _facts_from_local(snapshot, ring, blueprint, window=window, top_k=top_k)
+        for fact in local_facts:
+            if fact not in facts:
+                facts.append(fact)
     return {"status": "ok", "window": window, "top_k": top_k, "facts": facts, "source": source}
 
 

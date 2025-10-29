@@ -1277,6 +1277,204 @@
       "response_tokens": 14,
       "latency_ms": 11123.535207938403,
       "ok": true
+    },
+    {
+      "ts": 1761763533.996434,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 2693,
+      "response_tokens": 88,
+      "latency_ms": 3453.9216249249876,
+      "ok": true
+    },
+    {
+      "ts": 1761763558.787943,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 3158,
+      "response_tokens": 75,
+      "latency_ms": 1785.3858330054209,
+      "ok": true
+    },
+    {
+      "ts": 1761763644.039804,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1458,
+      "response_tokens": 63,
+      "latency_ms": 1526.0237080510706,
+      "ok": true
+    },
+    {
+      "ts": 1761763659.291285,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1552,
+      "response_tokens": 47,
+      "latency_ms": 860.4241251014173,
+      "ok": true
+    },
+    {
+      "ts": 1761763720.933857,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1633,
+      "response_tokens": 62,
+      "latency_ms": 989.2801669193432,
+      "ok": true
+    },
+    {
+      "ts": 1761763736.4133608,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1727,
+      "response_tokens": 47,
+      "latency_ms": 937.1764999814332,
+      "ok": true
+    },
+    {
+      "ts": 1761763756.051316,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 2692,
+      "response_tokens": 85,
+      "latency_ms": 1781.618749955669,
+      "ok": true
+    },
+    {
+      "ts": 1761763769.040927,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 2957,
+      "response_tokens": 87,
+      "latency_ms": 1771.7069160426036,
+      "ok": true
+    },
+    {
+      "ts": 1761763791.9509299,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 3139,
+      "response_tokens": 87,
+      "latency_ms": 1764.3574579851702,
+      "ok": true
+    },
+    {
+      "ts": 1761763836.338767,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1556,
+      "response_tokens": 59,
+      "latency_ms": 911.0279170563444,
+      "ok": true
+    },
+    {
+      "ts": 1761763885.919667,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1647,
+      "response_tokens": 59,
+      "latency_ms": 1002.2758330451325,
+      "ok": true
+    },
+    {
+      "ts": 1761763923.625213,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1738,
+      "response_tokens": 58,
+      "latency_ms": 971.9169160816818,
+      "ok": true
+    },
+    {
+      "ts": 1761763932.935717,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1828,
+      "response_tokens": 50,
+      "latency_ms": 983.385624946095,
+      "ok": true
+    },
+    {
+      "ts": 1761763956.4080799,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 4244,
+      "response_tokens": 103,
+      "latency_ms": 2119.638166972436,
+      "ok": true
+    },
+    {
+      "ts": 1761764965.4004521,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 2801,
+      "response_tokens": 98,
+      "latency_ms": 3574.9180000275373,
+      "ok": true
+    },
+    {
+      "ts": 1761764982.321385,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 3017,
+      "response_tokens": 53,
+      "latency_ms": 1941.334208007902,
+      "ok": true
+    },
+    {
+      "ts": 1761769499.035635,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 2958,
+      "response_tokens": 41,
+      "latency_ms": 1656.9357080152258,
+      "ok": true
+    },
+    {
+      "ts": 1761769576.136935,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 3987,
+      "response_tokens": 44,
+      "latency_ms": 1897.0819580135867,
+      "ok": true
+    },
+    {
+      "ts": 1761769596.615634,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1516,
+      "response_tokens": 43,
+      "latency_ms": 988.6618750169873,
+      "ok": true
+    },
+    {
+      "ts": 1761770713.8653839,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 1569,
+      "response_tokens": 28,
+      "latency_ms": 1151.9306249683723,
+      "ok": true
+    },
+    {
+      "ts": 1761770724.5812988,
+      "provider": "gemini",
+      "model": "gemini-2.0-flash",
+      "prompt_tokens": 2787,
+      "response_tokens": 104,
+      "latency_ms": 4748.467541998252,
+      "ok": true
+    },
+    {
+      "ts": 1761770749.296066,
+      "provider": "claude",
+      "model": "claude-3-5-haiku-20241022",
+      "prompt_tokens": 5492,
+      "response_tokens": 340,
+      "latency_ms": 8040.535666048527,
+      "ok": true
     }
   ]
 }

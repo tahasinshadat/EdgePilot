@@ -5,20 +5,26 @@
     {
       "entity": "LocalHost",
       "attribute": "cpu_utilization",
-      "template": "LOCAL_VALUE",
-      "statement": "Current CPU utilization is {value:.1f}%."
+      "template": "TREND",
+      "statement": "Average CPU utilization over {range} is {value:.1f}%."
+    },
+    {
+      "entity": "LocalHost",
+      "attribute": "memory_usage",
+      "template": "TREND",
+      "statement": "Average memory usage over {range} is {value:.1f}%."
     },
     {
       "entity": "LocalHost",
       "attribute": "memory_usage",
       "template": "LOCAL_VALUE",
-      "statement": "Memory usage is {percent:.1f}% with {available_gib:.2f} GiB free out of {total_gib:.2f} GiB."
+      "statement": "Current memory usage is {percent:.1f}% with {available_gib:.2f} GiB free out of {total_gib:.2f} GiB."
     },
     {
       "entity": "LocalHost",
       "attribute": "disk_usage",
-      "template": "LOCAL_VALUE",
-      "statement": "Disk usage is {percent:.1f}% with {free_gib:.2f} GiB free out of {total_gib:.2f} GiB."
+      "template": "TREND",
+      "statement": "Average disk utilization over {range} is {value:.1f}%."
     },
     {
       "entity": "LocalHost",

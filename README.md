@@ -65,6 +65,23 @@ Open the UI and try these prompts with **Gemini**:
 - "Close all Chrome instances"
 - "End the notepad process"
 
+### Optional: Enable Prometheus Metrics
+EdgePilot can pull historical metrics from Prometheus when `PROM_URL` is set. A helper script downloads Prometheus, prepares a default config, installs node_exporter, and prints the commands to launch both services:
+
+```bash
+chmod +x scripts/bootstrap_prometheus.sh
+./scripts/bootstrap_prometheus.sh   # follow the start instructions it prints
+```
+
+After the script runs it updates `env/.env` with sensible defaults (`PROM_URL=http://localhost:9090`, `PROM_TIMEOUT_SEC=15`) and adds a `node` scrape job. You can launch/stop the metrics stack in the background at any time:
+```bash
+./scripts/bootstrap_prometheus.sh start   # starts Prometheus + node_exporter (logs in ~/.edgepilot/logs)
+./scripts/bootstrap_prometheus.sh status  # check running pids
+./scripts/bootstrap_prometheus.sh stop    # stop both services
+```
+
+Finally, restart the EdgePilot backend so it picks up the new environment variables. Queries like `report_edge_status(window="6h")` will then read from Prometheus instead of the local fallback.
+
 ## Environment Configuration
 Edit `env/.env`:
 ```bash
@@ -93,19 +110,23 @@ EdgePilot/
 │   ├── claude.py            # Claude adapter
 │   └── gpt.py               # GPT placeholder
 ├── tools/                   # System utilities exposed as tools
-│   ├── __init__.py          # Export gather_metrics, launch, search, list_apps, end_task
-│   ├── metrics.py           # System monitoring (CPU, memory, processes)
-│   ├── launcher.py          # Application launcher with Windows Start Menu search
+│   ├── __init__.py          # Export metrics, scheduler, process helpers
+│   ├── metrics.py           # psutil + Prometheus-backed host reporting
+│   ├── scheduler.py         # Task registry + app launcher + shell/python runner
 │   └── end_task.py          # Process termination
 ├── MCP/                     # Model Context Protocol integration
 │   ├── tool_schemas.py      # Function calling schemas for all 5 tools
 │   ├── tool_executor.py     # Tool execution engine
 │   └── README.md            # Full MCP documentation
 ├── env/.env                 # API keys and configuration
-└── data/                    # JSON persistence
+├── scripts/
+│   └── bootstrap_prometheus.sh  # Installs Prometheus + node_exporter and updates env/config
+└── data/                    # JSON persistence + blueprints
     ├── chat_history.json    # Chat sessions
     ├── usage_metrics.json   # API usage tracking
-    └── tool_call_history.json  # Tool execution logs
+    ├── tool_call_history.json  # Tool execution logs
+    ├── ring.edgepilot.json      # Metrics entity definitions
+    └── blueprint.edge_status.json # Edge status reporting plan
 ```
 
 ## API Overview
