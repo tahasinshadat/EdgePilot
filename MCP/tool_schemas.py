@@ -110,6 +110,10 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
                     "description": "Number of seconds to wait before launching. Default is 0 (launch immediately). Examples: 30 for '30 seconds', 120 for '2 minutes'.",
                     "default": 0,
                 },
+                "chat_id": {
+                    "type": "string",
+                    "description": "Optional chat session identifier so the launch can be surfaced on the jobs view.",
+                },
             },
             "required": ["app_name"],
         },
@@ -169,6 +173,10 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
                     "type": "string",
                     "description": "Natural language delay value (e.g., 'in 45 seconds', 'after 2 minutes').",
                 },
+                "chat_id": {
+                    "type": "string",
+                    "description": "Optional chat session identifier so the job can be associated with a conversation thread.",
+                },
             },
             "required": ["command"]
         }
@@ -208,6 +216,10 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
                     "type": "string",
                     "description": "Natural language delay value (e.g., 'after 2 minutes').",
                 },
+                "chat_id": {
+                    "type": "string",
+                    "description": "Optional chat session identifier so the job can be associated with a conversation thread.",
+                },
             },
             "required": ["path"]
         }
@@ -221,6 +233,10 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
                 "task_id": {
                     "type": "string",
                     "description": "Unique task identifier returned when the action was scheduled.",
+                },
+                "run_id": {
+                    "type": "string",
+                    "description": "Alias for task_id. EdgePilot always sets run_id = task_id in responses.",
                 },
                 "action": {
                     "type": "string",

@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import functools
 import itertools
+import json
 import os
 import re
 import shlex
@@ -14,7 +15,17 @@ import threading
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT_DIR / "data"
+TASK_HISTORY_FILE = DATA_DIR / "task_history.json"
+MAX_TASK_HISTORY = 500
+
+
+def _ensure_task_storage() -> None:
+    TASK_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 
 class TaskExecutionError(RuntimeError):
@@ -48,7 +59,7 @@ class CommandResult:
 
 
 class _TaskRegistry:
-    """In-memory registry for tracking scheduled operations."""
+    """Registry for tracking scheduled operations with persistence."""
 
     def __init__(self) -> None:
         self._records: Dict[str, Dict[str, Any]] = {}
@@ -57,6 +68,66 @@ class _TaskRegistry:
         self._recent_by_action: Dict[str, List[str]] = {}
         self._lock = threading.Lock()
         self._counter = itertools.count(1)
+        self._load_from_disk()
+
+    def _load_from_disk(self) -> None:
+        if not TASK_HISTORY_FILE.exists():
+            return
+        try:
+            with TASK_HISTORY_FILE.open("r", encoding="utf-8") as fh:
+                data = json.load(fh)
+        except (json.JSONDecodeError, OSError):
+            return
+        tasks = data.get("tasks", [])
+        for record in tasks:
+            task_id = record.get("task_id")
+            if not task_id:
+                continue
+            self._records[task_id] = record
+        self._rebuild_indexes_unlocked()
+        self._reset_counter_unlocked()
+
+    def _reset_counter_unlocked(self) -> None:
+        max_id = 0
+        for task_id in self._records:
+            try:
+                suffix = int(str(task_id).split(":")[-1])
+            except (ValueError, IndexError):
+                continue
+            max_id = max(max_id, suffix)
+        self._counter = itertools.count(max_id + 1)
+
+    def _rebuild_indexes_unlocked(self) -> None:
+        ordered = sorted(self._records.values(), key=lambda r: r.get("created_at", 0))
+        self._index = {}
+        self._recent = []
+        self._recent_by_action = {}
+        for record in ordered:
+            task_id = record.get("task_id")
+            if not task_id:
+                continue
+            key = (record.get("action"), record.get("target"))
+            self._index.setdefault(key, []).append(task_id)
+            self._recent.append(task_id)
+            self._recent_by_action.setdefault(record.get("action"), []).append(task_id)
+
+    def _trim_unlocked(self) -> None:
+        if len(self._records) <= MAX_TASK_HISTORY:
+            return
+        ordered = sorted(self._records.values(), key=lambda r: r.get("created_at", 0))
+        keep = ordered[-MAX_TASK_HISTORY:]
+        self._records = {rec["task_id"]: rec for rec in keep if rec.get("task_id")}
+        self._rebuild_indexes_unlocked()
+        self._reset_counter_unlocked()
+
+    def _persist_locked(self) -> None:
+        self._trim_unlocked()
+        ordered = sorted(self._records.values(), key=lambda r: r.get("created_at", 0))
+        _ensure_task_storage()
+        tmp = TASK_HISTORY_FILE.with_suffix(".tmp")
+        with tmp.open("w", encoding="utf-8") as fh:
+            json.dump({"tasks": ordered}, fh, indent=2)
+        tmp.replace(TASK_HISTORY_FILE)
 
     def register(
         self,
@@ -89,6 +160,7 @@ class _TaskRegistry:
             self._index.setdefault(key, []).append(task_id)
             self._recent.append(task_id)
             self._recent_by_action.setdefault(action, []).append(task_id)
+            self._persist_locked()
         return copy.deepcopy(record)
 
     def mark_running(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -98,6 +170,7 @@ class _TaskRegistry:
                 return None
             record["status"] = "running"
             record["started_at"] = time.time()
+            self._persist_locked()
             return copy.deepcopy(record)
 
     def mark_completed(self, task_id: str, result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -109,6 +182,7 @@ class _TaskRegistry:
             record["finished_at"] = time.time()
             record["result"] = result
             record["error"] = None
+            self._persist_locked()
             return copy.deepcopy(record)
 
     def mark_failed(self, task_id: str, error: str) -> Optional[Dict[str, Any]]:
@@ -119,6 +193,7 @@ class _TaskRegistry:
             record["status"] = "failed"
             record["finished_at"] = time.time()
             record["error"] = error
+            self._persist_locked()
             return copy.deepcopy(record)
 
     def get(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -181,6 +256,10 @@ class _TaskRegistry:
                         break
             return matches
 
+    def list_all(self) -> List[Dict[str, Any]]:
+        with self._lock:
+            return [copy.deepcopy(record) for record in self._records.values()]
+
 
 _REGISTRY = _TaskRegistry()
 
@@ -218,6 +297,26 @@ def get_latest_task(action: str, target: str) -> Optional[Dict[str, Any]]:
 
 def list_tasks(action: str, target: str, limit: int = 5) -> List[Dict[str, Any]]:
     return _REGISTRY.list_latest(action, target, limit=limit)
+
+
+def list_all_tasks(
+    limit: int = 100,
+    action: Optional[str] = None,
+    status: Optional[str] = None,
+    chat_id: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    records = _REGISTRY.list_all()
+    if action:
+        records = [rec for rec in records if rec.get("action") == action]
+    if status:
+        status_lower = status.lower()
+        records = [rec for rec in records if str(rec.get("status", "")).lower() == status_lower]
+    if chat_id:
+        records = [rec for rec in records if rec.get("metadata", {}).get("chat_id") == chat_id]
+    records.sort(key=lambda rec: rec.get("created_at", 0), reverse=True)
+    if limit > 0:
+        return records[:limit]
+    return records
 
 
 def get_latest_task_any(action: Optional[str] = None) -> Optional[Dict[str, Any]]:
@@ -377,6 +476,7 @@ def run_python(
     delay_seconds: object = 0,
     seconds: object = None,
     delay: object = None,
+    chat_id: Optional[str] = None,
 ) -> Dict[str, object]:
     if args is not None and not isinstance(args, list):
         raise TaskExecutionError("'args' must be a list when provided.")
@@ -397,11 +497,14 @@ def run_python(
     script_str = str(script_path)
     args_list = list(args) if args else []
     call_args = args_list if args is not None else None
+    metadata = {"args": args_list, "cwd": cwd}
+    if chat_id:
+        metadata["chat_id"] = chat_id
     record = register_task(
         "run_python",
         script_str,
         delay_seconds=delay_value,
-        metadata={"args": args_list, "cwd": cwd},
+        metadata=metadata,
     )
 
     def _execute() -> Dict[str, object]:
@@ -431,6 +534,7 @@ def run_python(
         return {
             "status": "scheduled",
             "task_id": record["task_id"],
+            "run_id": record["task_id"],
             "action": "run_python",
             "path": script_str,
             "delay_seconds": delay_value,
@@ -439,6 +543,7 @@ def run_python(
 
     result = _execute()
     result["task_id"] = record["task_id"]
+    result["run_id"] = record["task_id"]
     result["status"] = "completed"
     return result
 
@@ -449,6 +554,7 @@ def run_shell(
     delay_seconds: object = 0,
     seconds: object = None,
     delay: object = None,
+    chat_id: Optional[str] = None,
 ) -> Dict[str, object]:
     if cwd is not None and not isinstance(cwd, str):
         raise TaskExecutionError("'cwd' must be a string when provided.")
@@ -459,11 +565,14 @@ def run_shell(
 
     delay_value = _normalize_delay(delay_seconds, seconds, delay)
 
+    metadata = {"cwd": cwd}
+    if chat_id:
+        metadata["chat_id"] = chat_id
     record = register_task(
         "run_shell",
         cleaned,
         delay_seconds=delay_value,
-        metadata={"cwd": cwd},
+        metadata=metadata,
     )
 
     def _execute() -> Dict[str, object]:
@@ -493,6 +602,7 @@ def run_shell(
         return {
             "status": "scheduled",
             "task_id": record["task_id"],
+            "run_id": record["task_id"],
             "action": "run_shell",
             "command": cleaned,
             "delay_seconds": delay_value,
@@ -501,6 +611,7 @@ def run_shell(
 
     result = _execute()
     result["task_id"] = record["task_id"]
+    result["run_id"] = record["task_id"]
     result["status"] = "completed"
     return result
 
@@ -678,17 +789,20 @@ if sys.platform == "darwin":
         return None
 
 
-def _launch_macos(app_name: str, delay_seconds: int) -> bool:
+def _launch_macos(app_name: str, delay_seconds: int, chat_id: Optional[str]) -> bool:
     resolved = _resolve_mac_application(app_name)
     if not resolved:
         print(f"✗ Could not find an application matching '{app_name}'.")
         return False
 
+    metadata = {"app_name": app_name}
+    if chat_id:
+        metadata["chat_id"] = chat_id
     record = register_task(
         "open_application",
         str(resolved),
         delay_seconds=delay_seconds,
-        metadata={"app_name": app_name},
+        metadata=metadata,
     )
 
     def _launch_now() -> bool:
@@ -715,12 +829,15 @@ def _launch_macos(app_name: str, delay_seconds: int) -> bool:
     return _launch_now()
 
 
-def _launch_windows(app_name: str, delay_seconds: int) -> bool:
+def _launch_windows(app_name: str, delay_seconds: int, chat_id: Optional[str]) -> bool:
+    metadata = {"app_name": app_name}
+    if chat_id:
+        metadata["chat_id"] = chat_id
     record = register_task(
         "open_application",
         app_name,
         delay_seconds=delay_seconds,
-        metadata={"app_name": app_name},
+        metadata=metadata,
     )
 
     def _launch_shortcut(path: str) -> bool:
@@ -817,12 +934,15 @@ def _launch_windows(app_name: str, delay_seconds: int) -> bool:
     return True
 
 
-def _launch_generic(app_name: str, delay_seconds: int) -> bool:
+def _launch_generic(app_name: str, delay_seconds: int, chat_id: Optional[str]) -> bool:
+    metadata = {"app_name": app_name}
+    if chat_id:
+        metadata["chat_id"] = chat_id
     record = register_task(
         "open_application",
         app_name,
         delay_seconds=delay_seconds,
-        metadata={"app_name": app_name},
+        metadata=metadata,
     )
 
     def _do_launch() -> None:
@@ -848,12 +968,12 @@ def _launch_generic(app_name: str, delay_seconds: int) -> bool:
     return True
 
 
-def launch(app_name: str, delay_seconds: int = 0) -> bool:
+def launch(app_name: str, delay_seconds: int = 0, chat_id: Optional[str] = None) -> bool:
     if sys.platform == "darwin":
-        return _launch_macos(app_name, delay_seconds)
+        return _launch_macos(app_name, delay_seconds, chat_id)
     if os.name == "nt":
-        return _launch_windows(app_name, delay_seconds)
-    return _launch_generic(app_name, delay_seconds)
+        return _launch_windows(app_name, delay_seconds, chat_id)
+    return _launch_generic(app_name, delay_seconds, chat_id)
 
 
 def launch_now(app_name: str) -> bool:
@@ -895,6 +1015,121 @@ def list_apps(filter_term: str = "") -> List[str]:
     return list_installed_apps(filter_term)
 
 
+def _format_task_status(record: Dict[str, object], task_id: str) -> str:
+    status = record.get("status", "unknown")
+    if status == "not_found":
+        return f"The task `{task_id}` was not found. Check the Jobs tab for scheduled work."
+    if status == "scheduled":
+        scheduled_for = record.get("scheduled_for")
+        if scheduled_for:
+            eta = time.strftime("%H:%M:%S", time.localtime(float(scheduled_for)))
+            return (
+                f"Task `{task_id}` is scheduled for {eta}. "
+                "Track progress in the Jobs tab."
+            )
+        return f"Task `{task_id}` is scheduled. Track updates in the Jobs tab."
+    if status == "running":
+        return f"Task `{task_id}` is currently running. Details are available in the Jobs tab."
+    if status == "failed":
+        return f"Task `{task_id}` failed. Open the Jobs tab to view the error."
+    if status == "completed":
+        return f"Task `{task_id}` completed. See the Jobs tab for output."
+    return f"Task `{task_id}` status: {status}. View details in the Jobs tab."
+
+
+def handle_scheduler_shortcut(
+    prompt: str,
+    executor: Callable[[str, Dict[str, Any]], Dict[str, Any]],
+    chat_id: Optional[str] = None,
+) -> Optional[Tuple[str, int]]:
+    """
+    Parse natural language scheduler commands and dispatch matching tool calls.
+
+    Returns:
+        Optional tuple of (assistant reply, tool_calls_used)
+    """
+    prefix = "i need to schedule a task"
+    text = prompt.strip()
+    lower = text.lower()
+    forced = lower.startswith(prefix)
+    body = text[len(prefix):].lstrip(": ").strip() if forced else text
+
+    # Task status updates
+    task_match = re.search(r"(run_python|run_shell|open_application):\d+:\d+", body, re.IGNORECASE)
+    if task_match and any(keyword in lower for keyword in ("update", "output", "result", task_match.group(1).lower())):
+        task_id = task_match.group(0)
+        record = executor("get_task_status", {"task_id": task_id})
+        if not record.get("success"):
+            return (f"Unable to retrieve `{task_id}`: {record.get('error', 'unknown error')}", 1)
+        payload = record.get("result") or {}
+        status_text = _format_task_status(payload, task_id)
+        eta = payload.get("scheduled_for")
+        detail_hint = ""
+        if not eta and payload.get("status") == "scheduled":
+            eta = payload.get("created_at")
+        if eta:
+            detail_hint = f" (scheduled around {time.strftime('%H:%M:%S', time.localtime(float(eta)))})"
+        return (f"{status_text}{detail_hint}", 1)
+
+    # Delayed Python script
+    script_delay = re.search(r"run\s+\w*\s*script.*?in\s+(\d+)\s*seconds?:\s*(.+)", body, re.IGNORECASE)
+    if script_delay:
+        delay = int(script_delay.group(1))
+        path = script_delay.group(2).strip().strip("`\"")
+        payload = {"path": path, "delay_seconds": delay}
+        if chat_id:
+            payload["chat_id"] = chat_id
+        result = executor("run_python", payload)
+        if not result.get("success"):
+            return (f"Couldn't schedule `{path}`: {result.get('error', 'unknown error')}", 1)
+        payload = result.get("result") or {}
+        task_id = payload.get("task_id") or payload.get("run_id")
+        if task_id:
+            return (f"Scheduled `{path}` to run in {delay} seconds. Task ID `{task_id}`. Track it in the Jobs tab.", 1)
+        return (f"Scheduled `{path}` to run in {delay} seconds. Track it in the Jobs tab.", 1)
+
+    # Immediate script execution
+    script_now = re.search(r"run\s+\w*\s*script.*?:\s*(.+)", body, re.IGNORECASE)
+    if script_now:
+        path = script_now.group(1).strip().strip("`\"")
+        payload = {"path": path}
+        if chat_id:
+            payload["chat_id"] = chat_id
+        result = executor("run_python", payload)
+        if not result.get("success"):
+            return (f"Couldn't run `{path}`: {result.get('error', 'unknown error')}", 1)
+        payload = result.get("result") or {}
+        stdout = (payload.get("stdout") or "").strip()
+        if stdout:
+            trimmed = stdout if len(stdout) < 500 else stdout[:500] + "..."
+            return (f"Ran `{path}`.\n```\n{trimmed}\n```", 1)
+        return (f"Ran `{path}` successfully.", 1)
+
+    # Delayed app launch
+    launch_delay = re.search(r"launch\s+(.+?)\s+in\s+(\d+)\s*seconds?", body, re.IGNORECASE)
+    if launch_delay:
+        app_name = launch_delay.group(1).strip(" `\"'")
+        delay = int(launch_delay.group(2))
+        payload = {"app_name": app_name, "delay_seconds": delay}
+        if chat_id:
+            payload["chat_id"] = chat_id
+        result = executor("launch", payload)
+        if not result.get("success"):
+            return (f"Couldn't schedule `{app_name}`: {result.get('error', 'unknown error')}", 1)
+        payload = result.get("result") or {}
+        task = payload.get("task") or {}
+        task_id = task.get("task_id")
+        message = payload.get("message") or f"Scheduled `{app_name}` to launch."
+        if task_id:
+            message += f" Task ID `{task_id}`."
+        message += " Track it in the Jobs tab."
+        return (message, 1)
+
+    if forced:
+        return ("I couldn't parse that scheduler command. Please try again.", 0)
+    return None
+
+
 def execute_task(payload: Dict[str, object]) -> Dict[str, object]:
     """Dispatch the requested task and return a normalized result."""
     action = str(payload.get("action") or "").strip().lower()
@@ -902,12 +1137,14 @@ def execute_task(payload: Dict[str, object]) -> Dict[str, object]:
         raise TaskExecutionError("Task request missing 'action'.")
 
     try:
+        chat_id = payload.get("chat_id")
+
         if action == "open_application":
             target = payload.get("path") or payload.get("name") or ""
             if not isinstance(target, str) or not target.strip():
                 raise TaskExecutionError("Open application action requires a name or path.")
             delay = _normalize_delay(payload.get("delay"), payload.get("delay_seconds"), payload.get("seconds"))
-            if launch(target, delay):
+            if launch(target, delay, chat_id=chat_id):
                 return {"status": "ok", "message": "launched"}
             raise TaskExecutionError(f"Could not locate application '{target}'.")
 
@@ -923,8 +1160,8 @@ def execute_task(payload: Dict[str, object]) -> Dict[str, object]:
                 raise TaskExecutionError("'cwd' must be a string when provided.")
             delay = _normalize_delay(payload.get("delay"), payload.get("delay_seconds"), payload.get("seconds"))
             if delay > 0:
-                return run_python(path, args=args, cwd=cwd, delay_seconds=delay)
-            return run_python(path, args=args, cwd=cwd)
+                return run_python(path, args=args, cwd=cwd, delay_seconds=delay, chat_id=chat_id)
+            return run_python(path, args=args, cwd=cwd, chat_id=chat_id)
 
         if action == "run_shell":
             command = payload.get("command")
@@ -935,8 +1172,8 @@ def execute_task(payload: Dict[str, object]) -> Dict[str, object]:
                 raise TaskExecutionError("'cwd' must be a string when provided.")
             delay = _normalize_delay(payload.get("delay"), payload.get("delay_seconds"), payload.get("seconds"))
             if delay > 0:
-                return run_shell(command, cwd=cwd, delay_seconds=delay)
-            return run_shell(command, cwd=cwd)
+                return run_shell(command, cwd=cwd, delay_seconds=delay, chat_id=chat_id)
+            return run_shell(command, cwd=cwd, chat_id=chat_id)
 
         raise TaskExecutionError(f"Unsupported action '{action}'.")
     except FileNotFoundError as exc:

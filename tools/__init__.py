@@ -14,6 +14,7 @@ from .scheduler import (
     get_task,
     launch,
     list_apps,
+    list_all_tasks,
     list_recent_tasks,
     list_tasks,
     list_tasks_by_metadata,
@@ -30,3 +31,4 @@ list_task_records = list_tasks
 list_recent_task_records = list_recent_tasks
 get_latest_task_by_metadata_record = get_latest_task_by_metadata
 list_tasks_by_metadata_record = list_tasks_by_metadata
+list_all_task_records = list_all_tasks

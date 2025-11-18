@@ -52,8 +52,29 @@
           <span id="token-counter"></span>
         </header>
 
+        <div class="view-tabs" role="tablist">
+          <button type="button" class="view-tab active" data-view="chat">Chat</button>
+          <button type="button" class="view-tab" data-view="jobs">Jobs</button>
+        </div>
+
         <section id="messages" class="messages">
           <div class="empty-state">Create a chat to begin.</div>
+        </section>
+
+        <section id="jobs-panel" class="jobs-panel hidden">
+          <div class="jobs-toolbar">
+            <div class="jobs-scope">
+              <label for="jobs-scope" class="sr-only">Jobs scope</label>
+              <select id="jobs-scope">
+                <option value="chat">Current chat</option>
+                <option value="all">All jobs</option>
+              </select>
+            </div>
+            <button id="jobs-refresh-btn" class="ghost-btn" type="button">Refresh</button>
+          </div>
+          <div id="jobs-container" class="jobs-list">
+            <div class="empty-state">No jobs yet. Schedule a task to get started.</div>
+          </div>
         </section>
 
         <section class="composer">

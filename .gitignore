@@ -17,3 +17,4 @@ __pycache__/
 data/chat_history.json
 data/tool_call_history.json
 data/usage_metrics.json
+data/task_history.json

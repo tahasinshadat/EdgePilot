@@ -9,7 +9,12 @@ const state = {
   metricsMode: 'live',
   metricsTimer: null,
   isThinking: false,
-  currentMode: 'ask'
+  currentMode: 'ask',
+  viewMode: 'chat',
+  jobs: [],
+  jobsScope: 'chat',
+  jobsTimer: null,
+  jobsLoading: false
 };
 
 const providerSelectEl = document.getElementById('provider-select');
@@ -28,6 +33,11 @@ const modeButtonEl = document.getElementById('mode-button');
 const modeLabelEl = document.getElementById('mode-label');
 const modeMenuEl = document.getElementById('mode-menu');
 const modeOptions = Array.from(document.querySelectorAll('.mode-option'));
+const viewTabButtons = Array.from(document.querySelectorAll('.view-tab'));
+const jobsPanelEl = document.getElementById('jobs-panel');
+const jobsContainerEl = document.getElementById('jobs-container');
+const jobsScopeSelect = document.getElementById('jobs-scope');
+const jobsRefreshBtn = document.getElementById('jobs-refresh-btn');
 
 const setStatus = (message, isError = false) => {
   statusBarEl.textContent = message || '';
@@ -140,6 +150,10 @@ const deleteChat = async (chatId, event) => {
       tokenCounterEl.textContent = '';
     }
     await loadChats();
+    updateJobsScopeControl();
+    if (state.viewMode === 'jobs') {
+      loadJobs().catch(() => {});
+    }
     setStatus('Chat deleted');
   } catch (error) {
     setStatus(`Delete failed: ${error.message}`, true);
@@ -233,6 +247,116 @@ const renderMessages = () => {
   const tokens = state.activeChat.tokens_used ?? 0;
   const messages = state.activeChat.messages.length;
   tokenCounterEl.textContent = `${messages} messages • ${tokens.toLocaleString()} tokens`;
+};
+
+const formatTimestamp = (value) => {
+  if (!value) return '—';
+  const date = new Date(value * 1000);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+const formatDuration = (start, end) => {
+  if (!start || !end) return null;
+  const seconds = end - start;
+  if (seconds < 1) return `${(seconds * 1000).toFixed(0)} ms`;
+  if (seconds < 60) return `${seconds.toFixed(1)} s`;
+  return `${(seconds / 60).toFixed(1)} min`;
+};
+
+const describeJobTarget = (job) => {
+  if (job.target) return job.target;
+  if (job.metadata?.app_name) return job.metadata.app_name;
+  if (job.metadata?.cwd) return job.metadata.cwd;
+  if (job.metadata?.identifier) return job.metadata.identifier;
+  if (job.metadata?.args?.length) return job.metadata.args.join(' ');
+  return '';
+};
+
+const renderJobs = () => {
+  if (!jobsContainerEl) return;
+
+  jobsContainerEl.innerHTML = '';
+
+  if (state.jobsLoading) {
+    jobsContainerEl.innerHTML = '<div class="empty-state">Loading jobs...</div>';
+    return;
+  }
+
+  if (state.jobsScope === 'chat' && !state.activeChat) {
+    jobsContainerEl.innerHTML = '<div class="empty-state">Select a chat to view its jobs.</div>';
+    return;
+  }
+
+  if (!state.jobs.length) {
+    jobsContainerEl.innerHTML = '<div class="empty-state">No jobs found.</div>';
+    return;
+  }
+
+  state.jobs.forEach((job) => {
+    const card = document.createElement('article');
+    card.className = 'job-card';
+
+    const header = document.createElement('div');
+    header.className = 'job-card-header';
+
+    const titleWrap = document.createElement('div');
+    const title = document.createElement('div');
+    title.className = 'job-title';
+    title.textContent = job.action?.replace(/_/g, ' ') || 'task';
+    const target = describeJobTarget(job);
+    if (target) {
+      const targetEl = document.createElement('div');
+      targetEl.className = 'job-target';
+      targetEl.textContent = target;
+      titleWrap.appendChild(targetEl);
+    }
+    titleWrap.prepend(title);
+
+    const status = document.createElement('span');
+    const statusLabel = (job.status || 'unknown').replace(/_/g, ' ');
+    status.className = `job-status ${job.status || 'unknown'}`;
+    status.textContent = statusLabel;
+
+    header.appendChild(titleWrap);
+    header.appendChild(status);
+    card.appendChild(header);
+
+    const meta = document.createElement('div');
+    meta.className = 'job-meta';
+    const rows = [
+      `Task ID: ${job.task_id}`,
+      `Scheduled: ${formatTimestamp(job.scheduled_for)}`,
+      `Started: ${formatTimestamp(job.started_at)}`,
+      `Finished: ${formatTimestamp(job.finished_at)}`
+    ];
+    const duration = formatDuration(job.started_at, job.finished_at);
+    if (duration) {
+      rows.push(`Duration: ${duration}`);
+    }
+    if (job.metadata?.chat_id && state.jobsScope === 'all') {
+      rows.push(`Chat: ${job.metadata.chat_id.slice(0, 8)}…`);
+    }
+    rows.forEach((value) => {
+      const span = document.createElement('span');
+      span.textContent = value;
+      meta.appendChild(span);
+    });
+    card.appendChild(meta);
+
+    if (job.error) {
+      const errorEl = document.createElement('div');
+      errorEl.className = 'job-error';
+      errorEl.textContent = `Error: ${job.error}`;
+      card.appendChild(errorEl);
+    } else if (job.result?.stdout) {
+      const output = document.createElement('pre');
+      output.className = 'job-output';
+      output.textContent = job.result.stdout.trim();
+      card.appendChild(output);
+    }
+
+    jobsContainerEl.appendChild(card);
+  });
 };
 
 const calculateSessionMetrics = (chat) => {
@@ -338,6 +462,85 @@ const setMetricsMode = (mode) => {
   }
 };
 
+const updateJobsScopeControl = () => {
+  if (!jobsScopeSelect) return;
+  const chatOption = Array.from(jobsScopeSelect.options).find(opt => opt.value === 'chat');
+  if (chatOption) {
+    chatOption.disabled = !state.activeChat;
+  }
+  if (!state.activeChat && state.jobsScope === 'chat') {
+    state.jobsScope = 'all';
+  }
+  jobsScopeSelect.value = state.jobsScope;
+};
+
+const loadJobs = async (quiet = false) => {
+  if (!jobsPanelEl || state.viewMode !== 'jobs') return;
+  if (state.jobsScope === 'chat' && !state.activeChat) {
+    state.jobs = [];
+    state.jobsLoading = false;
+    renderJobs();
+    return;
+  }
+  state.jobsLoading = true;
+  renderJobs();
+  try {
+    const params = new URLSearchParams({ limit: '200' });
+    if (state.jobsScope === 'chat' && state.activeChat) {
+      params.append('chat_id', state.activeChat.id);
+    }
+    const data = await fetchJSON(`/api/tasks?${params.toString()}`);
+    state.jobs = data.tasks || [];
+    renderJobs();
+  } catch (error) {
+    if (!quiet) {
+      setStatus(`Jobs unavailable: ${error.message}`, true);
+    }
+  } finally {
+    state.jobsLoading = false;
+    renderJobs();
+  }
+};
+
+const startJobsPolling = () => {
+  if (state.jobsTimer) return;
+  state.jobsTimer = setInterval(() => {
+    loadJobs(true).catch(() => {});
+  }, 4000);
+};
+
+const stopJobsPolling = () => {
+  if (state.jobsTimer) {
+    clearInterval(state.jobsTimer);
+    state.jobsTimer = null;
+  }
+};
+
+const setJobsScope = (scope) => {
+  state.jobsScope = scope;
+  updateJobsScopeControl();
+  loadJobs().catch(() => {});
+};
+
+const setViewMode = (mode) => {
+  state.viewMode = mode;
+  viewTabButtons.forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.view === mode);
+  });
+
+  if (mode === 'jobs') {
+    messagesEl.classList.add('hidden');
+    jobsPanelEl.classList.remove('hidden');
+    updateJobsScopeControl();
+    loadJobs().catch(() => {});
+    startJobsPolling();
+  } else {
+    messagesEl.classList.remove('hidden');
+    jobsPanelEl.classList.add('hidden');
+    stopJobsPolling();
+  }
+};
+
 const loadProviders = async () => {
   const data = await fetchJSON('/api/providers');
   state.providers = data;
@@ -351,6 +554,7 @@ const loadChats = async () => {
   if (!state.activeChat && chats.length) {
     await selectChat(chats[0].id);
   }
+  updateJobsScopeControl();
 };
 
 const loadMetrics = async (quiet = false) => {
@@ -383,6 +587,10 @@ const selectChat = async (chatId) => {
   chatTitleEl.textContent = detail.title || 'Conversation';
   renderChats();
   renderMessages();
+  updateJobsScopeControl();
+  if (state.viewMode === 'jobs' && state.jobsScope === 'chat') {
+    loadJobs().catch(() => {});
+  }
 
   // Update session metrics if in session mode
   if (state.metricsMode === 'session') {
@@ -448,6 +656,9 @@ const sendMessage = async (prompt) => {
     if (state.metricsMode === 'session') {
       renderMetrics(null);
     }
+    if (state.viewMode === 'jobs') {
+      loadJobs(true).catch(() => {});
+    }
 
     setStatus('Ready');
   } catch (error) {
@@ -504,6 +715,24 @@ metricsTabs.forEach((tab) => {
   });
 });
 
+viewTabButtons.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    setViewMode(tab.dataset.view);
+  });
+});
+
+if (jobsScopeSelect) {
+  jobsScopeSelect.addEventListener('change', (event) => {
+    setJobsScope(event.target.value);
+  });
+}
+
+if (jobsRefreshBtn) {
+  jobsRefreshBtn.addEventListener('click', () => {
+    loadJobs().catch(() => {});
+  });
+}
+
 // Mode selection
 modeButtonEl.addEventListener('click', () => {
   const isExpanded = modeButtonEl.getAttribute('aria-expanded') === 'true';
@@ -545,5 +774,6 @@ const init = async () => {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
+  setViewMode(state.viewMode);
   init();
 });

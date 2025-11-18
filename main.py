@@ -15,7 +15,7 @@ from typing import Dict, List, Optional
 import typer
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,6 +24,8 @@ from pydantic import BaseModel, Field
 from providers import available_providers, get_provider
 from providers.base import ChatMessage, ProviderConfig
 from tools.metrics import ensure_data_dir, gather_metrics
+from tools.scheduler import handle_scheduler_shortcut
+from tools import list_all_tasks, get_task as scheduler_get_task
 from MCP import (
     execute_tool,
     format_tools_for_gemini,
@@ -357,8 +359,6 @@ def _to_summary(session: Dict[str, object]) -> ChatSummary:
 def _to_detail(session: Dict[str, object]) -> ChatDetail:
     summary = _to_summary(session)
     return ChatDetail(**summary.model_dump(), messages=session.get("messages", []))
-
-
 @app.get("/", include_in_schema=False)
 def root():
     if FRONTEND_DIR.exists():
@@ -464,6 +464,30 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
 
     # Store all messages to be saved (user + assistant messages)
     messages_to_save = [user_message]
+
+    direct_result = handle_scheduler_shortcut(payload.prompt.strip(), execute_tool, chat_id=chat_id)
+    if direct_result:
+        reply_text, tool_calls_used = direct_result
+        assistant_message: ChatMessage = {
+            "role": "assistant",
+            "content": reply_text,
+            "created_at": time.time(),
+        }
+        messages_to_save.append(assistant_message)
+        updated_session = chat_store.append_messages(
+            chat_id,
+            messages_to_save,
+            0,
+            tool_calls_delta=tool_calls_used,
+        )
+        detail = _to_detail(updated_session)
+        return SendMessageResponse(
+            reply=reply_text,
+            tokens_used=detail.tokens_used,
+            prompt_tokens=0,
+            response_tokens=0,
+            chat=detail,
+        )
     total_prompt_tokens = 0
     total_response_tokens = 0
     total_tool_calls = 0
@@ -506,7 +530,10 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
 
             for tool_call in llm_response.tool_calls:
                 tool_start = time.perf_counter()
-                result = execute_tool(tool_call.name, tool_call.arguments)
+                arguments = dict(tool_call.arguments or {})
+                if tool_call.name in {"run_python", "run_shell", "launch"}:
+                    arguments.setdefault("chat_id", chat_id)
+                result = execute_tool(tool_call.name, arguments)
                 tool_latency = (time.perf_counter() - tool_start) * 1000
 
                 # Log tool call
@@ -584,6 +611,25 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
         response_tokens=total_response_tokens,
         chat=detail,
     )
+
+
+@app.get("/api/tasks")
+def api_list_tasks(
+    limit: int = Query(100, ge=1, le=500),
+    action: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    chat_id: Optional[str] = Query(None),
+) -> Dict[str, object]:
+    tasks = list_all_tasks(limit=limit, action=action, status=status, chat_id=chat_id)
+    return {"tasks": tasks, "count": len(tasks)}
+
+
+@app.get("/api/tasks/{task_id}")
+def api_task_detail(task_id: str) -> Dict[str, object]:
+    record = scheduler_get_task(task_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return record
 
 
 

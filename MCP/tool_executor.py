@@ -123,9 +123,10 @@ class ToolExecutor:
             raise ValueError("app_name parameter is required")
 
         delay_seconds = args.get("delay_seconds", 0)
+        chat_id = args.get("chat_id")
 
         # Use launcher.py's launch function
-        success = launch(app_name, delay_seconds)
+        success = launch(app_name, delay_seconds, chat_id=chat_id)
         task_record = get_latest_task_any_record("open_application")
 
         if success:
@@ -192,12 +193,14 @@ class ToolExecutor:
         if not isinstance(command, str) or not command.strip():
             raise ValueError("command parameter is required")
         cwd = args.get("cwd")
+        chat_id = args.get("chat_id")
         result = launcher_run_shell(
             command,
             cwd=cwd,
             delay_seconds=args.get("delay_seconds"),
             seconds=args.get("seconds"),
             delay=args.get("delay"),
+            chat_id=chat_id,
         )
         return result
 
@@ -209,6 +212,7 @@ class ToolExecutor:
         if script_args is not None and not isinstance(script_args, list):
             raise ValueError("args must be a list when provided")
         cwd = args.get("cwd")
+        chat_id = args.get("chat_id")
         result = launcher_run_python(
             path,
             args=script_args,
@@ -216,11 +220,21 @@ class ToolExecutor:
             delay_seconds=args.get("delay_seconds"),
             seconds=args.get("seconds"),
             delay=args.get("delay"),
+            chat_id=chat_id,
         )
         return result
 
     def _execute_get_task_status(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        task_id = args.get("task_id")
+        task_id = args.get("task_id") or args.get("run_id")
+        identifier = args.get("identifier")
+        # Allow passing the run/task id via identifier for backwards compatibility
+        if not task_id and isinstance(identifier, str):
+            normalized_identifier = identifier.strip()
+            if ":" in normalized_identifier:
+                prefix = normalized_identifier.split(":", 1)[0]
+                if prefix in {"run_python", "run_shell", "open_application"}:
+                    task_id = normalized_identifier
+
         if task_id:
             record = get_task_record(task_id)
             if record:
@@ -233,7 +247,6 @@ class ToolExecutor:
         action = args.get("action")
         path = args.get("path")
         command = args.get("command")
-        identifier = args.get("identifier")
 
         if not action:
             if path:
