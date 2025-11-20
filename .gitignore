@@ -23,7 +23,6 @@ data/chat_history.json
 data/tool_call_history.json
 data/usage_metrics.json
 data/task_history.json
-
 # Ignore settings with potentially sensitive data
 data/settings.json
 data/usage_monitor.pid
