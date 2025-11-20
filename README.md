@@ -44,6 +44,51 @@ python test_tools.py
 python tools/launcher.py
 ```
 
+## Command-Line Interface (CLI)
+The CLI lets you ask questions, schedule jobs, and inspect the queue without opening the UI.
+
+```bash
+# Start an interactive REPL (works on macOS, Linux, and Windows)
+python -m edgepilot_cli start
+
+# One-shot questions
+python -m edgepilot_cli ask "Can I run a heavy build right now?"
+python -m edgepilot_cli ask "List my last few jobs" --format json
+
+# Queue new work
+python -m edgepilot_cli schedule --action run_shell --command "echo hello" --delay 5
+python -m edgepilot_cli schedule --action launch --command "Calculator"
+
+# Inspect the scheduler
+python -m edgepilot_cli status --limit 10
+```
+
+Additional commands:
+- `edgepilot_cli activate` – alias for the interactive REPL
+- `edgepilot_cli ask --context-file context.json` – include JSON context or change the system prompt
+
+EdgePilot automatically detects your OS and picks the right application launcher or shell runner.
+
+## Local REST API
+Run the backend (`python -m main serve --host 127.0.0.1`) and interact with the new endpoints:
+
+- `POST /api/ask` — submit natural-language questions via JSON payloads.  
+  Example:
+  ```bash
+  curl -X POST http://127.0.0.1:8000/api/ask \
+    -H "Content-Type: application/json" \
+    -d '{"query": "Is it safe to start a GPU job?", "response_format": "json"}'
+  ```
+- `POST /api/schedule` — queue new shell/python/launch tasks.
+  ```bash
+  curl -X POST http://127.0.0.1:8000/api/schedule \
+    -H "Content-Type: application/json" \
+    -d '{"action":"run_shell","command":"echo from API","delay_seconds":0}'
+  ```
+- `GET /api/tasks` — list recent scheduled tasks or filter by action.
+
+The API binds to localhost by default, rejects malformed payloads with HTTP 400, and never writes request bodies to logs.
+
 ### 4. Try It Out!
 Open the UI and try these prompts with **Gemini**:
 
@@ -136,6 +181,9 @@ EdgePilot/
 - `GET /api/chats/{chat_id}` – fetch full conversation history
 - `POST /api/chats/{chat_id}/messages` – send a prompt and get LLM response (with tool calling)
 - `GET /api/metrics` – retrieve current system metrics snapshot
+- `POST /api/ask` – answer natural-language questions with shared assistant logic
+- `POST /api/schedule` – queue shell/python/launch tasks
+- `GET /api/tasks` – show the scheduler queue/status
 
 ## MCP (Model Context Protocol)
 

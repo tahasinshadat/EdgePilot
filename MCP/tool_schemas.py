@@ -97,13 +97,13 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
     },
     {
         "name": "launch",
-        "description": "Launch an application by name, immediately or after a delay. The application name will be searched in Windows Start Menu shortcuts and Microsoft Store apps. You can use simple names like 'chrome', 'minecraft', 'notepad'. If you need to check if an app exists first, use the 'search' tool.",
+        "description": "Launch an application by name, immediately or after a delay. Cross-platform: on Windows we search Start Menu shortcuts and Microsoft Store apps; on macOS we resolve .app bundles and fall back to 'open -a <name>'; on Linux we scan .desktop files in standard locations (including Flatpak/Snap) and fall back to $PATH. Use simple names like 'chrome', 'safari', 'calculator', 'notepad'. If you need to check if an app exists first, use the 'search' tool.",
         "parameters": {
             "type": "object",
             "properties": {
                 "app_name": {
                     "type": "string",
-                    "description": "Application name to launch (e.g., 'chrome', 'minecraft', 'notepad', 'discord'). The system will search for matching apps in Start Menu and Microsoft Store.",
+                    "description": "Application name to launch (e.g., 'chrome', 'safari', 'calculator', 'discord'). The system searches Windows Start Menu/Store, macOS .app bundles, and Linux .desktop entries; if not found, it may try the name on $PATH.",
                 },
                 "delay_seconds": {
                     "type": "number",
@@ -116,13 +116,13 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
     },
     {
         "name": "search",
-        "description": "Search for installed applications by name. Use this to check if an app is installed or to find the correct app name before launching. Returns a list of matching application names found in Start Menu and Microsoft Store.",
+        "description": "Search for installed applications by name. Cross-platform: searches Windows Start Menu/Microsoft Store, macOS .app bundles, and Linux .desktop entries (including Flatpak/Snap). Returns friendly application names that you can pass to 'launch'.",
         "parameters": {
             "type": "object",
             "properties": {
                 "app_name": {
                     "type": "string",
-                    "description": "Application name to search for (e.g., 'game', 'chrome', 'office'). Partial matches are supported.",
+                    "description": "Application name to search for (e.g., 'term', 'chrome', 'office'). Partial matches are supported.",
                 },
             },
             "required": ["app_name"],
@@ -130,13 +130,13 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
     },
     {
         "name": "list_apps",
-        "description": "List all installed applications, optionally filtered by a search term. Use this when the user asks 'what apps do I have?' or 'list my games'. Returns a sorted list of all applications found in Start Menu.",
+        "description": "List all installed applications, optionally filtered by a search term. Cross-platform: enumerates Windows Start Menu, macOS .app bundles, and Linux .desktop entries. Returns a sorted list of friendly application names.",
         "parameters": {
             "type": "object",
             "properties": {
                 "filter_term": {
                     "type": "string",
-                    "description": "Optional search term to filter results (e.g., 'game', 'microsoft'). Leave empty to get all apps.",
+                    "description": "Optional search term to filter results (e.g., 'term', 'microsoft'). Leave empty to get all apps.",
                     "default": "",
                 },
             },

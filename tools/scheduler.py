@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import functools
 import itertools
+import shutil
 import os
 import re
 import shlex
@@ -183,6 +184,173 @@ class _TaskRegistry:
 
 
 _REGISTRY = _TaskRegistry()
+
+
+# ---------------------------------------------------------------------------
+# Linux desktop entry support
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class DesktopEntry:
+    id: str
+    name: str
+    exec: List[str]
+    file: Path
+
+
+_DESKTOP_FIELD_CODE_RE = re.compile(r"%[fFuUdDnNickvmK]")
+
+# System-wide and per-user .desktop locations plus Flatpak/Snap exports
+LINUX_DESKTOP_DIRS: List[Path] = [
+    Path("/usr/share/applications"),
+    Path("/usr/local/share/applications"),
+    Path.home() / ".local/share/applications",
+    Path("/var/lib/flatpak/exports/share/applications"),
+    Path.home() / ".local/share/flatpak/exports/share/applications",
+    Path("/var/lib/snapd/desktop/applications"),
+]
+
+
+def _strip_exec_field_codes(exec_str: str) -> str:
+    """Remove field codes like %f, %F, %u, %U etc. per Desktop Entry spec."""
+    cleaned = _DESKTOP_FIELD_CODE_RE.sub("", exec_str)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _split_exec(exec_str: str) -> List[str]:
+    """Split Exec string into argv list using shlex after stripping field codes."""
+    cleaned = _strip_exec_field_codes(exec_str)
+    if not cleaned:
+        return []
+    try:
+        return shlex.split(cleaned)
+    except ValueError:
+        return cleaned.split()
+
+
+def _iter_desktop_files() -> Iterable[Path]:
+    """Yield existing .desktop files from known locations."""
+    seen: set[Path] = set()
+    for base in LINUX_DESKTOP_DIRS:
+        if not base.exists():
+            continue
+        for entry in base.glob("*.desktop"):
+            if entry not in seen:
+                seen.add(entry)
+                yield entry
+
+
+def _parse_desktop_file(path: Path) -> Optional[DesktopEntry]:
+    """
+    Minimal .desktop parser for keys we need: Name, Exec, NoDisplay.
+    """
+    name: Optional[str] = None
+    exec_val: Optional[str] = None
+    no_display = False
+
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as fh:
+            for raw in fh:
+                line = raw.strip()
+                if not line or line.startswith("#") or line.startswith(";"):
+                    continue
+                if "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key_low = key.strip().lower()
+                if key_low == "name" and not name:
+                    name = value.strip()
+                elif key_low.startswith("name[") and not name:
+                    name = value.strip()
+                elif key_low == "exec" and not exec_val:
+                    exec_val = value.strip()
+                elif key_low == "nodisplay":
+                    no_display = value.strip().lower() in ("1", "true", "yes")
+    except Exception:
+        return None
+
+    if no_display or not name or not exec_val:
+        return None
+
+    argv = _split_exec(exec_val)
+    if not argv:
+        return None
+    return DesktopEntry(id=path.stem, name=name, exec=argv, file=path)
+
+
+@functools.lru_cache(maxsize=1)
+def _gather_linux_apps() -> Dict[str, DesktopEntry]:
+    """Build a mapping from lowercase display name and desktop id to DesktopEntry."""
+    apps: Dict[str, DesktopEntry] = {}
+    for desktop in _iter_desktop_files():
+        entry = _parse_desktop_file(desktop)
+        if not entry:
+            continue
+        apps.setdefault(entry.name.lower(), entry)
+        apps.setdefault(entry.id.lower(), entry)
+    return apps
+
+
+def _resolve_linux_application(app_name: str) -> Optional[DesktopEntry]:
+    """Resolve by exact (name or id) then fuzzy substring match."""
+    if not app_name:
+        return None
+    normalized = app_name.strip().lower()
+    apps = _gather_linux_apps()
+    if normalized in apps:
+        return apps[normalized]
+    for key, entry in apps.items():
+        if normalized in key:
+            return entry
+    return None
+
+
+def _launch_linux(app_name: str, delay_seconds: int) -> bool:
+    """
+    Launch a Linux application by friendly name using parsed Exec argv from .desktop,
+    with fallbacks to PATH resolution and raw Popen.
+    """
+    entry = _resolve_linux_application(app_name)
+    argv: List[str]
+    metadata: Dict[str, Any] = {"app_name": app_name}
+    if entry:
+        argv = list(entry.exec)
+        metadata["desktop_file"] = str(entry.file)
+        metadata["resolved_name"] = entry.name
+    else:
+        which = shutil.which(app_name)
+        if which:
+            argv = [which]
+            metadata["resolved_path"] = which
+        else:
+            argv = [app_name]
+
+    record = register_task("open_application", app_name, delay_seconds=delay_seconds, metadata=metadata)
+
+    def _do_launch() -> None:
+        mark_task_running(record["task_id"])
+        try:
+            subprocess.Popen(argv)  # noqa: S603
+            mark_task_completed(record["task_id"], {"command": argv})
+            pretty = entry.name if entry else app_name
+            print(f"✓ Launched {pretty}")
+        except Exception as exc:  # noqa: BLE001
+            mark_task_failed(record["task_id"], str(exc))
+            print(f"✗ Error launching {app_name}: {exc}")
+
+    if delay_seconds > 0:
+        def _delayed() -> None:
+            time.sleep(delay_seconds)
+            _do_launch()
+
+        threading.Thread(target=_delayed, daemon=True).start()
+        target_name = entry.name if entry else app_name
+        print(f"Scheduled {target_name} to launch in {delay_seconds} seconds (task {record['task_id']})...")
+        return True
+
+    _do_launch()
+    return True
 
 
 def register_task(
@@ -680,13 +848,10 @@ if sys.platform == "darwin":
 
 def _launch_macos(app_name: str, delay_seconds: int) -> bool:
     resolved = _resolve_mac_application(app_name)
-    if not resolved:
-        print(f"✗ Could not find an application matching '{app_name}'.")
-        return False
 
     record = register_task(
         "open_application",
-        str(resolved),
+        str(resolved) if resolved else app_name,
         delay_seconds=delay_seconds,
         metadata={"app_name": app_name},
     )
@@ -694,9 +859,13 @@ def _launch_macos(app_name: str, delay_seconds: int) -> bool:
     def _launch_now() -> bool:
         mark_task_running(record["task_id"])
         try:
-            result = open_application(str(resolved)).to_dict()
+            if resolved:
+                result = open_application(str(resolved)).to_dict()
+            else:
+                result = _run_subprocess(["open", "-a", app_name], capture_output=True).to_dict()
             mark_task_completed(record["task_id"], result)
-            print(f"✓ Launched {resolved.stem}")
+            pretty = resolved.stem if resolved else app_name
+            print(f"✓ Launched {pretty}")
             return True
         except Exception as exc:  # noqa: BLE001
             mark_task_failed(record["task_id"], str(exc))
@@ -709,7 +878,8 @@ def _launch_macos(app_name: str, delay_seconds: int) -> bool:
             _launch_now()
 
         threading.Thread(target=_delayed, daemon=True).start()
-        print(f"Scheduled {resolved.stem} to launch in {delay_seconds} seconds (task {record['task_id']})...")
+        pretty = resolved.stem if resolved else app_name
+        print(f"Scheduled {pretty} to launch in {delay_seconds} seconds (task {record['task_id']})...")
         return True
 
     return _launch_now()
@@ -853,6 +1023,8 @@ def launch(app_name: str, delay_seconds: int = 0) -> bool:
         return _launch_macos(app_name, delay_seconds)
     if os.name == "nt":
         return _launch_windows(app_name, delay_seconds)
+    if sys.platform.startswith("linux"):
+        return _launch_linux(app_name, delay_seconds)
     return _launch_generic(app_name, delay_seconds)
 
 
@@ -878,9 +1050,27 @@ def search(app_name: str) -> List[str]:
         results.append(app_name.title())
 
     if sys.platform == "darwin":
+        normalized = app_name.strip().lower()
         resolved = _resolve_mac_application(app_name)
-        if resolved:
+        if resolved and resolved.stem not in results:
             results.append(resolved.stem)
+        else:
+            for key, bundle in _gather_mac_apps().items():
+                if normalized and normalized in key:
+                    name = bundle.stem
+                    if name not in results:
+                        results.append(name)
+
+    if sys.platform.startswith("linux"):
+        normalized = app_name.strip().lower()
+        apps = _gather_linux_apps()
+        seen: set[str] = {name.lower() for name in results}
+        for key, entry in apps.items():
+            if normalized and normalized in key:
+                friendly = entry.name
+                if friendly.lower() not in seen:
+                    results.append(friendly)
+                    seen.add(friendly.lower())
 
     return results
 
@@ -892,7 +1082,16 @@ def list_apps(filter_term: str = "") -> List[str]:
             term = filter_term.lower()
             apps = [name for name in apps if term in name.lower()]
         return apps
-    return list_installed_apps(filter_term)
+    if os.name == "nt":
+        return list_installed_apps(filter_term)
+    if sys.platform.startswith("linux"):
+        entries = _gather_linux_apps()
+        names = sorted({entry.name for entry in entries.values()})
+        if filter_term:
+            term = filter_term.lower()
+            names = [n for n in names if term in n.lower()]
+        return names
+    return []
 
 
 def execute_task(payload: Dict[str, object]) -> Dict[str, object]:
