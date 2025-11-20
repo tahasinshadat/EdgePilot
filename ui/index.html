@@ -102,6 +102,20 @@
                 </p>
               </div>
 
+              <div class="setting-item" id="auto-start-setting" style="display: none;">
+                <div class="setting-header">
+                  <label for="auto-start-toggle" class="setting-label">Start on Boot</label>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="auto-start-toggle" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                  </div>
+                </div>
+                <p class="setting-help">
+                  Automatically start the usage monitor when you log in to your computer.
+                </p>
+                <p id="auto-start-status" class="setting-help" style="margin-top: 0.5rem; color: var(--text-secondary);"></p>
+              </div>
+
               <div id="alert-thresholds" class="alert-thresholds hidden">
                 <h4>Alert Thresholds</h4>
 
@@ -130,6 +144,53 @@
 
               <div class="monitor-status">
                 <span id="monitor-status-text" class="status-badge">Checking status...</span>
+              </div>
+            </div>
+
+            <!-- Email Alerts Section -->
+            <div id="email-alerts-section" class="settings-section hidden">
+              <h3>Email Alerts</h3>
+              <p class="settings-description">
+                Receive email notifications in addition to desktop notifications when usage alerts are triggered.
+              </p>
+
+              <div class="setting-item">
+                <div class="setting-header">
+                  <label for="email-alerts-toggle" class="setting-label">Enable Email Alerts</label>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="email-alerts-toggle" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                  </div>
+                </div>
+                <p class="setting-help">
+                  Send email notifications when system usage exceeds thresholds.
+                </p>
+              </div>
+
+              <div id="email-config" class="email-config hidden">
+                <h4>Email Configuration</h4>
+
+                <div class="config-item">
+                  <label for="email-address">Your Email Address <span style="color: #ef4444;">*</span></label>
+                  <input type="email" id="email-address" placeholder="your@email.com" required>
+                  <p class="setting-help">Where you want to receive alerts (required)</p>
+                </div>
+
+                <h4 style="margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-secondary);">Custom Sender (Optional)</h4>
+                <p class="setting-help" style="margin-top: 0.5rem;">Leave empty to send from EdgePilot's Gmail account. Fill in to send from your own Gmail account.</p>
+
+                <div class="config-item">
+                  <label for="smtp-username">Gmail Address</label>
+                  <input type="email" id="smtp-username" placeholder="your@gmail.com">
+                </div>
+
+                <div class="config-item">
+                  <label for="smtp-password">Gmail App Password</label>
+                  <input type="password" id="smtp-password" placeholder="16-character app password">
+                  <p class="setting-help">Use a <a href="https://support.google.com/accounts/answer/185833" target="_blank" style="color: var(--accent);">Gmail App Password</a>, not your regular password.</p>
+                </div>
+
+                <button id="save-email-config-btn" class="primary-btn">Save Email Configuration</button>
               </div>
             </div>
           </div>

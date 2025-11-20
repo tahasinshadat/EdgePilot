@@ -406,11 +406,6 @@ def api_schedule(payload: ScheduleRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
 
-@app.get("/api/tasks")
-def api_tasks(action: Optional[str] = None, limit: int = 5) -> List[Dict[str, Any]]:
-    return summarize_tasks(action, limit)
-
-
 @app.get("/api/chats")
 def api_list_chats() -> List[ChatSummary]:
     sessions = chat_store.list_sessions()
@@ -513,7 +508,7 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
     total_tool_calls = 0
 
     # Tool calling loop - continue until we get a final response
-    max_iterations = 5  # Prevent infinite loops
+    max_iterations = 15  # Allow more iterations for complex multi-step tasks
     iteration = 0
     final_text = ""
 
@@ -596,9 +591,12 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
             # No tool calls, this is the final response
             final_text = llm_response.text
             break
-    
+
     if not final_text:
-        final_text = "I attempted to use tools but could not generate a final response."
+        if iteration >= max_iterations:
+            final_text = f"I reached the maximum number of tool iterations ({max_iterations}). The task may be too complex or requires manual intervention."
+        else:
+            final_text = "I attempted to use tools but could not generate a final response."
     
     latency_ms = (time.perf_counter() - start) * 1000
     assistant_message: ChatMessage = {
@@ -658,29 +656,36 @@ SETTINGS_FILE = DATA_DIR / "settings.json"
 
 def load_settings() -> Dict[str, object]:
     """Load settings from settings.json."""
+    # Load default SMTP credentials from environment variables (sender credentials)
+    # Users must provide their own email_address (recipient)
+    defaults = {
+        "usage_alerts_enabled": False,
+        "alert_thresholds": {
+            "cpu_percent": 85.0,
+            "memory_percent": 85.0,
+            "disk_percent": 90.0,
+        },
+        "check_interval_seconds": 30,
+        "email_alerts_enabled": False,
+        "email_address": "",  # User must provide recipient email
+        "smtp_server": os.getenv("DEFAULT_SMTP_SERVER", "smtp.gmail.com"),
+        "smtp_port": int(os.getenv("DEFAULT_SMTP_PORT", "587")),
+        "smtp_username": os.getenv("DEFAULT_SMTP_USERNAME", ""),
+        "smtp_password": os.getenv("DEFAULT_SMTP_PASSWORD", ""),
+        "smtp_use_tls": os.getenv("DEFAULT_SMTP_USE_TLS", "true").lower() == "true",
+    }
     if not SETTINGS_FILE.exists():
-        return {
-            "usage_alerts_enabled": False,
-            "alert_thresholds": {
-                "cpu_percent": 85.0,
-                "memory_percent": 85.0,
-                "disk_percent": 90.0,
-            },
-            "check_interval_seconds": 30,
-        }
+        return defaults
     try:
         with open(SETTINGS_FILE, "r") as f:
-            return json.load(f)
+            loaded = json.load(f)
+            # Merge with defaults to ensure new fields exist
+            for key, value in defaults.items():
+                if key not in loaded:
+                    loaded[key] = value
+            return loaded
     except Exception:
-        return {
-            "usage_alerts_enabled": False,
-            "alert_thresholds": {
-                "cpu_percent": 85.0,
-                "memory_percent": 85.0,
-                "disk_percent": 90.0,
-            },
-            "check_interval_seconds": 30,
-        }
+        return defaults
 
 
 def save_settings(settings: Dict[str, object]) -> None:
@@ -700,6 +705,13 @@ class SettingsUpdateRequest(BaseModel):
     usage_alerts_enabled: Optional[bool] = None
     alert_thresholds: Optional[Dict[str, float]] = None
     check_interval_seconds: Optional[int] = None
+    email_alerts_enabled: Optional[bool] = None
+    email_address: Optional[str] = None
+    smtp_server: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_use_tls: Optional[bool] = None
 
 
 @app.post("/api/settings")
@@ -717,6 +729,29 @@ def api_update_settings(payload: SettingsUpdateRequest) -> Dict[str, object]:
         settings["alert_thresholds"] = payload.alert_thresholds
     if payload.check_interval_seconds is not None:
         settings["check_interval_seconds"] = payload.check_interval_seconds
+    if payload.email_alerts_enabled is not None:
+        settings["email_alerts_enabled"] = payload.email_alerts_enabled
+    if payload.email_address is not None:
+        settings["email_address"] = payload.email_address
+    if payload.smtp_server is not None:
+        settings["smtp_server"] = payload.smtp_server
+    if payload.smtp_port is not None:
+        settings["smtp_port"] = payload.smtp_port
+    if payload.smtp_username is not None:
+        settings["smtp_username"] = payload.smtp_username
+    if payload.smtp_password is not None:
+        settings["smtp_password"] = payload.smtp_password
+    if payload.smtp_use_tls is not None:
+        settings["smtp_use_tls"] = payload.smtp_use_tls
+
+    # Validate: If email alerts enabled, email address must be provided
+    if settings.get("email_alerts_enabled", False):
+        email_address = settings.get("email_address", "").strip()
+        if not email_address:
+            raise HTTPException(
+                status_code=400,
+                detail="Email address is required when email alerts are enabled. Please provide your email address or disable email alerts."
+            )
 
     # Save settings
     save_settings(settings)
@@ -800,6 +835,99 @@ def api_monitor_status() -> Dict[str, object]:
         return {
             "running": False,
             "error": str(e),
+        }
+
+
+@app.get("/api/settings/auto-start/status")
+def api_auto_start_status() -> Dict[str, object]:
+    """Check if auto-start is installed."""
+    try:
+        # Import the status function from manage_startup
+        manage_startup_path = ROOT_DIR / "scripts" / "manage_startup.py"
+
+        # Use subprocess to run the status command
+        result = subprocess.run(
+            [sys.executable, str(manage_startup_path), "status"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        return {
+            "installed": result.returncode == 0,
+            "message": result.stdout.strip()
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "installed": False,
+            "error": "Status check timed out"
+        }
+    except Exception as e:
+        return {
+            "installed": False,
+            "error": str(e)
+        }
+
+
+@app.post("/api/settings/auto-start/install")
+def api_auto_start_install() -> Dict[str, object]:
+    """Install auto-start configuration."""
+    try:
+        manage_startup_path = ROOT_DIR / "scripts" / "manage_startup.py"
+
+        # Run the install command in background thread to not block
+        def install_async():
+            subprocess.run(
+                [sys.executable, str(manage_startup_path), "install"],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+
+        thread = threading.Thread(target=install_async, daemon=True)
+        thread.start()
+        thread.join(timeout=30)
+
+        # Check status after install
+        result = subprocess.run(
+            [sys.executable, str(manage_startup_path), "status"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        return {
+            "success": result.returncode == 0,
+            "message": "Auto-start installed successfully" if result.returncode == 0 else "Failed to install auto-start"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@app.post("/api/settings/auto-start/uninstall")
+def api_auto_start_uninstall() -> Dict[str, object]:
+    """Uninstall auto-start configuration."""
+    try:
+        manage_startup_path = ROOT_DIR / "scripts" / "manage_startup.py"
+
+        result = subprocess.run(
+            [sys.executable, str(manage_startup_path), "uninstall"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        return {
+            "success": result.returncode == 0,
+            "message": "Auto-start removed successfully" if result.returncode == 0 else "Failed to remove auto-start"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
         }
 
 

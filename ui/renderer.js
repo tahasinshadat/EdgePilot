@@ -8,6 +8,8 @@ const state = {
   activeChat: null,
   metricsMode: 'live',
   metricsTimer: null,
+  metricsLastSnapshot: null,
+  metricsErrorCount: 0,
   isThinking: false,
   currentMode: 'ask',
   viewMode: 'chat',
@@ -49,6 +51,16 @@ const diskThresholdInput = document.getElementById('disk-threshold');
 const checkIntervalInput = document.getElementById('check-interval');
 const saveThresholdsBtn = document.getElementById('save-thresholds-btn');
 const monitorStatusText = document.getElementById('monitor-status-text');
+const autoStartSettingEl = document.getElementById('auto-start-setting');
+const autoStartToggle = document.getElementById('auto-start-toggle');
+const autoStartStatusText = document.getElementById('auto-start-status');
+const emailAlertsSectionEl = document.getElementById('email-alerts-section');
+const emailAlertsToggle = document.getElementById('email-alerts-toggle');
+const emailConfigEl = document.getElementById('email-config');
+const emailAddressInput = document.getElementById('email-address');
+const smtpUsernameInput = document.getElementById('smtp-username');
+const smtpPasswordInput = document.getElementById('smtp-password');
+const saveEmailConfigBtn = document.getElementById('save-email-config-btn');
 
 const setStatus = (message, isError = false) => {
   statusBarEl.textContent = message || '';
@@ -575,17 +587,36 @@ const loadChats = async () => {
   updateJobsScopeControl();
 };
 
-const loadMetrics = async (quiet = false) => {
+const loadMetrics = async (quiet = false, retryCount = 0) => {
   if (state.metricsMode !== 'live') {
     return;
   }
   try {
     const metrics = await fetchJSON('/api/metrics');
     state.metricsLastSnapshot = metrics;
+    state.metricsErrorCount = 0; // Reset error count on success
     renderMetrics(metrics);
   } catch (error) {
+    // Track consecutive errors
+    state.metricsErrorCount = (state.metricsErrorCount || 0) + 1;
+
+    // Retry up to 3 times with exponential backoff
+    if (retryCount < 3) {
+      const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+      setTimeout(() => {
+        loadMetrics(true, retryCount + 1);
+      }, backoffDelay);
+      return;
+    }
+
+    // After retries fail, show error message
     if (!quiet) {
       setStatus(`Metrics unavailable: ${error.message}`, true);
+    }
+
+    // Show error state in metrics panel after multiple failures
+    if (state.metricsErrorCount >= 5) {
+      metricGridEl.innerHTML = '<div class="metric-empty" style="color: var(--error);">Unable to load metrics. Check if the backend is running.</div>';
     }
   }
 };
@@ -781,7 +812,7 @@ const loadSettings = async () => {
     const settings = await fetchJSON('/api/settings');
     state.settings = settings;
 
-    // Update UI
+    // Update usage alerts UI
     usageAlertsToggle.checked = settings.usage_alerts_enabled || false;
 
     const thresholds = settings.alert_thresholds || {};
@@ -790,15 +821,33 @@ const loadSettings = async () => {
     diskThresholdInput.value = thresholds.disk_percent || 90;
     checkIntervalInput.value = settings.check_interval_seconds || 30;
 
-    // Show/hide thresholds based on toggle
+    // Show/hide thresholds and auto-start based on toggle
     if (settings.usage_alerts_enabled) {
       alertThresholdsEl.classList.remove('hidden');
+      emailAlertsSectionEl.classList.remove('hidden');
+      autoStartSettingEl.style.display = 'block';
     } else {
       alertThresholdsEl.classList.add('hidden');
+      emailAlertsSectionEl.classList.add('hidden');
+      autoStartSettingEl.style.display = 'none';
     }
 
-    // Load monitor status
+    // Update email alerts UI
+    emailAlertsToggle.checked = settings.email_alerts_enabled || false;
+    emailAddressInput.value = settings.email_address || '';
+    smtpUsernameInput.value = settings.smtp_username || '';
+    smtpPasswordInput.value = settings.smtp_password || '';
+
+    // Show/hide email config based on toggle
+    if (settings.email_alerts_enabled) {
+      emailConfigEl.classList.remove('hidden');
+    } else {
+      emailConfigEl.classList.add('hidden');
+    }
+
+    // Load monitor and auto-start status
     await loadMonitorStatus();
+    await loadAutoStartStatus();
   } catch (error) {
     console.error('Failed to load settings:', error);
   }
@@ -822,6 +871,26 @@ const loadMonitorStatus = async () => {
   }
 };
 
+const loadAutoStartStatus = async () => {
+  try {
+    const status = await fetchJSON('/api/settings/auto-start/status');
+
+    autoStartToggle.checked = status.installed || false;
+
+    if (status.installed) {
+      autoStartStatusText.textContent = '✓ Installed - will start on boot';
+      autoStartStatusText.style.color = 'var(--accent)';
+    } else {
+      autoStartStatusText.textContent = '✗ Not installed';
+      autoStartStatusText.style.color = 'var(--text-secondary)';
+    }
+  } catch (error) {
+    console.error('Failed to load auto-start status:', error);
+    autoStartStatusText.textContent = 'Error checking status';
+    autoStartStatusText.style.color = 'var(--text-secondary)';
+  }
+};
+
 const saveSettings = async (updates) => {
   try {
     const settings = await fetchJSON('/api/settings', {
@@ -841,30 +910,87 @@ const saveSettings = async (updates) => {
 const setupSettingsEventListeners = () => {
   // Event: Toggle usage alerts
   if (usageAlertsToggle) {
-    console.log('Setting up usage alerts toggle listener');
     usageAlertsToggle.addEventListener('change', async (e) => {
-      console.log('Toggle changed:', e.target.checked);
       const enabled = e.target.checked;
 
-      // Show/hide thresholds
+      // Show/hide thresholds, email section, and auto-start
       if (enabled) {
         alertThresholdsEl.classList.remove('hidden');
+        emailAlertsSectionEl.classList.remove('hidden');
+        autoStartSettingEl.style.display = 'block';
+
+        // Auto-enable auto-start when usage alerts are enabled
+        await loadAutoStartStatus();
+        if (!autoStartToggle.checked) {
+          autoStartStatusText.textContent = 'Installing auto-start...';
+          autoStartStatusText.style.color = 'var(--text-secondary)';
+
+          try {
+            const result = await fetchJSON('/api/settings/auto-start/install', { method: 'POST' });
+            if (result.success) {
+              autoStartToggle.checked = true;
+              autoStartStatusText.textContent = '✓ Installed - will start on boot';
+              autoStartStatusText.style.color = 'var(--accent)';
+            } else {
+              autoStartStatusText.textContent = '✗ Failed to install';
+              autoStartStatusText.style.color = 'var(--text-secondary)';
+            }
+          } catch (error) {
+            autoStartStatusText.textContent = '✗ Error installing';
+            autoStartStatusText.style.color = 'var(--text-secondary)';
+          }
+        }
       } else {
         alertThresholdsEl.classList.add('hidden');
+        emailAlertsSectionEl.classList.add('hidden');
+        autoStartSettingEl.style.display = 'none';
       }
 
       // Save to backend
       await saveSettings({ usage_alerts_enabled: enabled });
     });
-  } else {
-    console.error('Usage alerts toggle element not found!');
+  }
+
+  // Event: Toggle auto-start
+  if (autoStartToggle) {
+    autoStartToggle.addEventListener('change', async (e) => {
+      const enabled = e.target.checked;
+
+      autoStartStatusText.textContent = enabled ? 'Installing...' : 'Uninstalling...';
+      autoStartStatusText.style.color = 'var(--text-secondary)';
+
+      try {
+        const endpoint = enabled ? '/api/settings/auto-start/install' : '/api/settings/auto-start/uninstall';
+        const result = await fetchJSON(endpoint, { method: 'POST' });
+
+        if (result.success) {
+          if (enabled) {
+            autoStartStatusText.textContent = '✓ Installed - will start on boot';
+            autoStartStatusText.style.color = 'var(--accent)';
+            setStatus('Auto-start installed successfully');
+          } else {
+            autoStartStatusText.textContent = '✗ Not installed';
+            autoStartStatusText.style.color = 'var(--text-secondary)';
+            setStatus('Auto-start removed successfully');
+          }
+        } else {
+          autoStartToggle.checked = !enabled; // Revert toggle
+          autoStartStatusText.textContent = enabled ? '✗ Failed to install' : '✗ Failed to uninstall';
+          autoStartStatusText.style.color = 'var(--text-secondary)';
+          setStatus(result.error || 'Failed to update auto-start', true);
+        }
+      } catch (error) {
+        autoStartToggle.checked = !enabled; // Revert toggle
+        autoStartStatusText.textContent = '✗ Error';
+        autoStartStatusText.style.color = 'var(--text-secondary)';
+        setStatus(`Error: ${error.message}`, true);
+      }
+    });
   }
 
   // Event: Save thresholds
   if (saveThresholdsBtn) {
-    console.log('Setting up save thresholds button listener');
     saveThresholdsBtn.addEventListener('click', async () => {
-      console.log('Save thresholds clicked');
       const updates = {
         alert_thresholds: {
           cpu_percent: parseFloat(cpuThresholdInput.value),
@@ -876,8 +1002,44 @@ const setupSettingsEventListeners = () => {
 
       await saveSettings(updates);
     });
-  } else {
-    console.error('Save thresholds button not found!');
+  }
+
+  // Event: Toggle email alerts
+  if (emailAlertsToggle) {
+    emailAlertsToggle.addEventListener('change', async (e) => {
+      const enabled = e.target.checked;
+
+      // Show/hide email config
+      if (enabled) {
+        emailConfigEl.classList.remove('hidden');
+      } else {
+        emailConfigEl.classList.add('hidden');
+      }
+
+      // Save to backend
+      await saveSettings({ email_alerts_enabled: enabled });
+    });
+  }
+
+  // Event: Save email configuration
+  if (saveEmailConfigBtn) {
+    saveEmailConfigBtn.addEventListener('click', async () => {
+      // Validate email address is provided if email alerts are enabled
+      const emailAddress = emailAddressInput.value.trim();
+      if (emailAlertsToggle.checked && !emailAddress) {
+        setStatus('Please enter your email address or disable email alerts', true);
+        emailAddressInput.focus();
+        return;
+      }
+
+      const updates = {
+        email_address: emailAddress,
+        smtp_username: smtpUsernameInput.value.trim(),
+        smtp_password: smtpPasswordInput.value
+      };
+
+      await saveSettings(updates);
+    });
   }
 };
 

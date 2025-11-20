@@ -1,9 +1,16 @@
 {
   "usage_alerts_enabled": true,
   "alert_thresholds": {
-    "cpu_percent": 5.0,
-    "memory_percent": 85.0,
+    "cpu_percent": 85.0,
+    "memory_percent": 90.0,
     "disk_percent": 90.0
   },
-  "check_interval_seconds": 30
+  "check_interval_seconds": 30,
+  "email_alerts_enabled": false,
+  "email_address": "tahasinshadat2028@u.northwestern.edu",
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "smtp_username": "",
+  "smtp_password": "",
+  "smtp_use_tls": true
 }

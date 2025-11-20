@@ -955,6 +955,58 @@ textarea::placeholder {
   color: #ef4444;
 }
 
+/* Email Configuration */
+.email-config {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.email-config h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.config-item {
+  margin-bottom: 1rem;
+}
+
+.config-item label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.config-item input[type="email"],
+.config-item input[type="text"],
+.config-item input[type="number"],
+.config-item input[type="password"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.config-item input[type="email"]:focus,
+.config-item input[type="text"]:focus,
+.config-item input[type="number"]:focus,
+.config-item input[type="password"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+#save-email-config-btn {
+  margin-top: 1rem;
+  width: 100%;
+}
+
 /* Utility */
 .sr-only {
   position: absolute;

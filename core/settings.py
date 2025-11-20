@@ -29,12 +29,13 @@ PROVIDER_ENV_SETTINGS = {
         "default_model": "claude-3-5-haiku-20241022",
         "base_url": "CLAUDE_BASE_URL",
     },
-    "gpt": {
-        "api_key": "OPENAI_API_KEY",
-        "model": "GPT_MODEL",
-        "default_model": "gpt-4o-mini",
-        "base_url": "GPT_BASE_URL",
-    },
+    # GPT provider not implemented yet
+    # "gpt": {
+    #     "api_key": "OPENAI_API_KEY",
+    #     "model": "GPT_MODEL",
+    #     "default_model": "gpt-4o-mini",
+    #     "base_url": "GPT_BASE_URL",
+    # },
 }
 
 
