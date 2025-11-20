@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Service label -->
+    <key>Label</key>
+    <string>com.edgepilot.monitor</string>
+
+    <!-- Program to run -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{PYTHON_PATH}}</string>
+        <string>{{SCRIPT_PATH}}</string>
+        <string>start</string>
+    </array>
+
+    <!-- Working directory -->
+    <key>WorkingDirectory</key>
+    <string>{{ROOT_DIR}}</string>
+
+    <!-- Run at load (startup) -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep alive - restart if it crashes -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <!-- Only run if settings file indicates usage alerts are enabled -->
+    <key>WatchPaths</key>
+    <array>
+        <string>{{SETTINGS_PATH}}</string>
+    </array>
+
+    <!-- Standard output and error logs -->
+    <key>StandardOutPath</key>
+    <string>{{LOG_DIR}}/usage_monitor.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>{{LOG_DIR}}/usage_monitor.error.log</string>
+
+    <!-- Don't show in Dock -->
+    <key>LowPriorityIO</key>
+    <true/>
+
+    <!-- Throttle interval (prevent too frequent restarts) -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+</dict>
+</plist>
