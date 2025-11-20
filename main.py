@@ -632,6 +632,156 @@ def api_task_detail(task_id: str) -> Dict[str, object]:
     return record
 
 
+# Settings endpoints
+SETTINGS_FILE = DATA_DIR / "settings.json"
+
+
+def load_settings() -> Dict[str, object]:
+    """Load settings from settings.json."""
+    if not SETTINGS_FILE.exists():
+        return {
+            "usage_alerts_enabled": False,
+            "alert_thresholds": {
+                "cpu_percent": 85.0,
+                "memory_percent": 85.0,
+                "disk_percent": 90.0,
+            },
+            "check_interval_seconds": 30,
+        }
+    try:
+        with open(SETTINGS_FILE, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {
+            "usage_alerts_enabled": False,
+            "alert_thresholds": {
+                "cpu_percent": 85.0,
+                "memory_percent": 85.0,
+                "disk_percent": 90.0,
+            },
+            "check_interval_seconds": 30,
+        }
+
+
+def save_settings(settings: Dict[str, object]) -> None:
+    """Save settings to settings.json."""
+    ensure_data_dir(DATA_DIR)
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(settings, f, indent=2)
+
+
+@app.get("/api/settings")
+def api_get_settings() -> Dict[str, object]:
+    """Get current settings."""
+    return load_settings()
+
+
+class SettingsUpdateRequest(BaseModel):
+    usage_alerts_enabled: Optional[bool] = None
+    alert_thresholds: Optional[Dict[str, float]] = None
+    check_interval_seconds: Optional[int] = None
+
+
+@app.post("/api/settings")
+def api_update_settings(payload: SettingsUpdateRequest) -> Dict[str, object]:
+    """Update settings and manage the usage monitor process."""
+    settings = load_settings()
+
+    # Track if usage_alerts_enabled changed
+    old_enabled = settings.get("usage_alerts_enabled", False)
+
+    # Update settings
+    if payload.usage_alerts_enabled is not None:
+        settings["usage_alerts_enabled"] = payload.usage_alerts_enabled
+    if payload.alert_thresholds is not None:
+        settings["alert_thresholds"] = payload.alert_thresholds
+    if payload.check_interval_seconds is not None:
+        settings["check_interval_seconds"] = payload.check_interval_seconds
+
+    # Save settings
+    save_settings(settings)
+
+    # Manage the usage monitor process
+    new_enabled = settings.get("usage_alerts_enabled", False)
+
+    if old_enabled != new_enabled:
+        if new_enabled:
+            # Start the monitor
+            start_usage_monitor()
+        else:
+            # Stop the monitor
+            stop_usage_monitor()
+
+    return settings
+
+
+def start_usage_monitor():
+    """Start the usage monitor process in the background."""
+    import sys
+    from pathlib import Path
+
+    monitor_script = ROOT_DIR / "tools" / "usage_monitor.py"
+
+    # Check if already running
+    from tools.usage_monitor import is_monitor_running
+    if is_monitor_running():
+        print("Usage monitor is already running")
+        return
+
+    # Start the monitor process
+    try:
+        if sys.platform == "win32":
+            # Windows: use pythonw to avoid console window
+            python_exe = sys.executable.replace("python.exe", "pythonw.exe")
+            if not Path(python_exe).exists():
+                python_exe = sys.executable
+
+            subprocess.Popen(
+                [python_exe, str(monitor_script), "start"],
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        else:
+            # Unix-like: use nohup
+            subprocess.Popen(
+                [sys.executable, str(monitor_script), "start"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                preexec_fn=os.setpgrp if hasattr(os, 'setpgrp') else None,
+            )
+
+        print("Usage monitor started")
+    except Exception as e:
+        print(f"Error starting usage monitor: {e}")
+
+
+def stop_usage_monitor():
+    """Stop the usage monitor process."""
+    try:
+        from tools.usage_monitor import stop_monitor
+        stop_monitor()
+        print("Usage monitor stopped")
+    except Exception as e:
+        print(f"Error stopping usage monitor: {e}")
+
+
+@app.get("/api/settings/monitor-status")
+def api_monitor_status() -> Dict[str, object]:
+    """Get the status of the usage monitor process."""
+    try:
+        from tools.usage_monitor import is_monitor_running
+        pid = is_monitor_running()
+        return {
+            "running": pid is not None,
+            "pid": pid,
+        }
+    except Exception as e:
+        return {
+            "running": False,
+            "error": str(e),
+        }
+
 
 def run_server(host: str = "127.0.0.1", port: int = int(os.getenv("PORT", "8000")), reload: bool = False) -> None:
     """Run the API server in the foreground."""

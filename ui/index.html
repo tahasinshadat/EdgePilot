@@ -55,6 +55,7 @@
         <div class="view-tabs" role="tablist">
           <button type="button" class="view-tab active" data-view="chat">Chat</button>
           <button type="button" class="view-tab" data-view="jobs">Jobs</button>
+          <button type="button" class="view-tab" data-view="settings">Settings</button>
         </div>
 
         <section id="messages" class="messages">
@@ -74,6 +75,63 @@
           </div>
           <div id="jobs-container" class="jobs-list">
             <div class="empty-state">No jobs yet. Schedule a task to get started.</div>
+          </div>
+        </section>
+
+        <section id="settings-panel" class="settings-panel hidden">
+          <div class="settings-container">
+            <h2 class="settings-heading">Settings</h2>
+
+            <div class="settings-section">
+              <h3>Usage Alerts</h3>
+              <p class="settings-description">
+                Get desktop notifications when your system resources exceed defined thresholds.
+                The monitor runs independently in the background.
+              </p>
+
+              <div class="setting-item">
+                <div class="setting-header">
+                  <label for="usage-alerts-toggle" class="setting-label">Enable Usage Alerts</label>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="usage-alerts-toggle" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                  </div>
+                </div>
+                <p class="setting-help">
+                  When enabled, you'll receive notifications if CPU, memory, or disk usage is high.
+                </p>
+              </div>
+
+              <div id="alert-thresholds" class="alert-thresholds hidden">
+                <h4>Alert Thresholds</h4>
+
+                <div class="threshold-item">
+                  <label for="cpu-threshold">CPU Usage (%)</label>
+                  <input type="number" id="cpu-threshold" min="50" max="100" step="5" value="85">
+                </div>
+
+                <div class="threshold-item">
+                  <label for="memory-threshold">Memory Usage (%)</label>
+                  <input type="number" id="memory-threshold" min="50" max="100" step="5" value="85">
+                </div>
+
+                <div class="threshold-item">
+                  <label for="disk-threshold">Disk Usage (%)</label>
+                  <input type="number" id="disk-threshold" min="50" max="100" step="5" value="90">
+                </div>
+
+                <div class="threshold-item">
+                  <label for="check-interval">Check Interval (seconds)</label>
+                  <input type="number" id="check-interval" min="10" max="300" step="10" value="30">
+                </div>
+
+                <button id="save-thresholds-btn" class="primary-btn">Save Thresholds</button>
+              </div>
+
+              <div class="monitor-status">
+                <span id="monitor-status-text" class="status-badge">Checking status...</span>
+              </div>
+            </div>
           </div>
         </section>
 

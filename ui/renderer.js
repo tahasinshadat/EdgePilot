@@ -14,7 +14,9 @@ const state = {
   jobs: [],
   jobsScope: 'chat',
   jobsTimer: null,
-  jobsLoading: false
+  jobsLoading: false,
+  settings: null,
+  monitorStatus: null
 };
 
 const providerSelectEl = document.getElementById('provider-select');
@@ -38,6 +40,15 @@ const jobsPanelEl = document.getElementById('jobs-panel');
 const jobsContainerEl = document.getElementById('jobs-container');
 const jobsScopeSelect = document.getElementById('jobs-scope');
 const jobsRefreshBtn = document.getElementById('jobs-refresh-btn');
+const settingsPanelEl = document.getElementById('settings-panel');
+const usageAlertsToggle = document.getElementById('usage-alerts-toggle');
+const alertThresholdsEl = document.getElementById('alert-thresholds');
+const cpuThresholdInput = document.getElementById('cpu-threshold');
+const memoryThresholdInput = document.getElementById('memory-threshold');
+const diskThresholdInput = document.getElementById('disk-threshold');
+const checkIntervalInput = document.getElementById('check-interval');
+const saveThresholdsBtn = document.getElementById('save-thresholds-btn');
+const monitorStatusText = document.getElementById('monitor-status-text');
 
 const setStatus = (message, isError = false) => {
   statusBarEl.textContent = message || '';
@@ -528,15 +539,22 @@ const setViewMode = (mode) => {
     tab.classList.toggle('active', tab.dataset.view === mode);
   });
 
+  // Hide all panels first
+  messagesEl.classList.add('hidden');
+  jobsPanelEl.classList.add('hidden');
+  settingsPanelEl.classList.add('hidden');
+
   if (mode === 'jobs') {
-    messagesEl.classList.add('hidden');
     jobsPanelEl.classList.remove('hidden');
     updateJobsScopeControl();
     loadJobs().catch(() => {});
     startJobsPolling();
+  } else if (mode === 'settings') {
+    settingsPanelEl.classList.remove('hidden');
+    loadSettings().catch(() => {});
+    stopJobsPolling();
   } else {
     messagesEl.classList.remove('hidden');
-    jobsPanelEl.classList.add('hidden');
     stopJobsPolling();
   }
 };
@@ -754,6 +772,115 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ===========================
+// Settings Management
+// ===========================
+
+const loadSettings = async () => {
+  try {
+    const settings = await fetchJSON('/api/settings');
+    state.settings = settings;
+
+    // Update UI
+    usageAlertsToggle.checked = settings.usage_alerts_enabled || false;
+
+    const thresholds = settings.alert_thresholds || {};
+    cpuThresholdInput.value = thresholds.cpu_percent || 85;
+    memoryThresholdInput.value = thresholds.memory_percent || 85;
+    diskThresholdInput.value = thresholds.disk_percent || 90;
+    checkIntervalInput.value = settings.check_interval_seconds || 30;
+
+    // Show/hide thresholds based on toggle
+    if (settings.usage_alerts_enabled) {
+      alertThresholdsEl.classList.remove('hidden');
+    } else {
+      alertThresholdsEl.classList.add('hidden');
+    }
+
+    // Load monitor status
+    await loadMonitorStatus();
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+  }
+};
+
+const loadMonitorStatus = async () => {
+  try {
+    const status = await fetchJSON('/api/settings/monitor-status');
+    state.monitorStatus = status;
+
+    if (status.running) {
+      monitorStatusText.textContent = `Monitor running (PID: ${status.pid})`;
+      monitorStatusText.className = 'status-badge running';
+    } else {
+      monitorStatusText.textContent = 'Monitor stopped';
+      monitorStatusText.className = 'status-badge stopped';
+    }
+  } catch (error) {
+    monitorStatusText.textContent = 'Error checking status';
+    monitorStatusText.className = 'status-badge error';
+  }
+};
+
+const saveSettings = async (updates) => {
+  try {
+    const settings = await fetchJSON('/api/settings', {
+      method: 'POST',
+      body: JSON.stringify(updates)
+    });
+    state.settings = settings;
+    setStatus('Settings saved');
+
+    // Reload monitor status after a delay
+    setTimeout(loadMonitorStatus, 1000);
+  } catch (error) {
+    setStatus(`Failed to save settings: ${error.message}`, true);
+  }
+};
+
+const setupSettingsEventListeners = () => {
+  // Event: Toggle usage alerts
+  if (usageAlertsToggle) {
+    console.log('Setting up usage alerts toggle listener');
+    usageAlertsToggle.addEventListener('change', async (e) => {
+      console.log('Toggle changed:', e.target.checked);
+      const enabled = e.target.checked;
+
+      // Show/hide thresholds
+      if (enabled) {
+        alertThresholdsEl.classList.remove('hidden');
+      } else {
+        alertThresholdsEl.classList.add('hidden');
+      }
+
+      // Save to backend
+      await saveSettings({ usage_alerts_enabled: enabled });
+    });
+  } else {
+    console.error('Usage alerts toggle element not found!');
+  }
+
+  // Event: Save thresholds
+  if (saveThresholdsBtn) {
+    console.log('Setting up save thresholds button listener');
+    saveThresholdsBtn.addEventListener('click', async () => {
+      console.log('Save thresholds clicked');
+      const updates = {
+        alert_thresholds: {
+          cpu_percent: parseFloat(cpuThresholdInput.value),
+          memory_percent: parseFloat(memoryThresholdInput.value),
+          disk_percent: parseFloat(diskThresholdInput.value)
+        },
+        check_interval_seconds: parseInt(checkIntervalInput.value, 10)
+      };
+
+      await saveSettings(updates);
+    });
+  } else {
+    console.error('Save thresholds button not found!');
+  }
+};
+
 const init = async () => {
   setStatus('Loading...');
   try {
@@ -775,5 +902,6 @@ const init = async () => {
 
 window.addEventListener('DOMContentLoaded', () => {
   setViewMode(state.viewMode);
+  setupSettingsEventListeners();
   init();
 });
