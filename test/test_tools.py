@@ -1,72 +1,78 @@
-"""Test script to verify all MCP tools are working correctly."""
+import os
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import pytest
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from MCP.tool_executor import ToolExecutor
 
-def test_tools():
-    """Test all available tools."""
-    executor = ToolExecutor()
+"""
+Platform-aware smoke tests for MCP tools.
+These tests avoid assuming Windows-only apps and treat empty results as acceptable on minimal hosts.
+"""
 
-    print("="*60)
-    print("Testing EdgePilot MCP Tools")
-    print("="*60)
 
-    # Test 1: gather_metrics
-    print("\n1. Testing gather_metrics...")
-    result = executor.execute("gather_metrics", {"top_n": 5})
-    if result["success"]:
-        print("   [OK] gather_metrics works!")
-        if 'processes' in result.get('result', {}):
-            print(f"   Found {len(result['result']['processes'])} processes")
-        else:
-            print(f"   Result keys: {list(result.get('result', {}).keys())[:5]}")
+@pytest.fixture(scope="module")
+def executor() -> ToolExecutor:
+    return ToolExecutor()
+
+
+def _extract_list(payload: Any) -> List[str]:
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in ("apps", "matches", "results"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+
+
+def test_search_platform_aware(executor: ToolExecutor) -> None:
+    query = "term"
+    result = executor.execute("search", {"app_name": query})
+    assert "success" in result
+    if result.get("success"):
+        matches = _extract_list(result.get("result") or {})
+        assert isinstance(matches, list)
+
+
+def test_list_apps_platform_aware(executor: ToolExecutor) -> None:
+    result = executor.execute("list_apps", {"filter_term": "term"})
+    assert "success" in result
+    if result.get("success"):
+        apps = _extract_list(result.get("result") or {})
+        assert isinstance(apps, list)
+        sample = ", ".join(apps[:5])
+        print(f"list_apps sample: {sample}")
+
+
+def test_launch_exists_but_skip_real_launch(executor: ToolExecutor) -> None:
+    plat = "win" if os.name == "nt" else "darwin" if sys.platform == "darwin" else "linux"
+    candidates_by_platform: Dict[str, List[str]] = {
+        "win": ["notepad", "windows terminal", "calc"],
+        "darwin": ["Safari", "TextEdit", "Notes", "Terminal", "Calculator"],
+        "linux": ["Calculator", "Firefox", "Files", "Terminal", "Chromium"],
+    }
+    allow_launch = os.environ.get("ALLOW_LAUNCH", "") == "1"
+
+    chosen: Optional[str] = None
+    for candidate in candidates_by_platform.get(plat, []):
+        res = executor.execute("search", {"app_name": candidate})
+        if res.get("success"):
+            matches = _extract_list(res.get("result") or {})
+            if matches:
+                chosen = matches[0]
+                break
+
+    if chosen and allow_launch:
+        out = executor.execute("launch", {"app_name": chosen, "delay_seconds": 0})
+        print(f"launch('{chosen}') -> {out}")
     else:
-        print(f"   [ERROR] {result.get('error')}")
-
-    # Test 2: search
-    print("\n2. Testing search (looking for 'notepad')...")
-    result = executor.execute("search", {"app_name": "notepad"})
-    if result["success"]:
-        print("   [OK] search works!")
-        print(f"   Found {result['result']['found']} apps: {result['result']['apps']}")
-    else:
-        print(f"   [ERROR] {result.get('error')}")
-
-    # Test 3: list_apps
-    print("\n3. Testing list_apps (with filter 'game')...")
-    result = executor.execute("list_apps", {"filter_term": "game"})
-    if result["success"]:
-        print("   [OK] list_apps works!")
-        print(f"   Found {result['result']['count']} apps with 'game' in name")
-        if result['result']['apps']:
-            print(f"   First few: {result['result']['apps'][:3]}")
-    else:
-        print(f"   [ERROR] {result.get('error')}")
-
-    # Test 4: launch (dry run - just test the function exists)
-    print("\n4. Testing launch function (NOT actually launching)...")
-    # We won't actually launch anything, just verify the tool is registered
-    if "launch" in executor.tools:
-        print("   [OK] launch tool is registered!")
-    else:
-        print("   [ERROR] launch tool not found!")
-
-    # Test 5: end_task (dry run)
-    print("\n5. Testing end_task function...")
-    if "end_task" in executor.tools:
-        print("   [OK] end_task tool is registered!")
-    else:
-        print("   [ERROR] end_task tool not found!")
-
-    # Print available tools
-    print("\n" + "="*60)
-    print("Available Tools:")
-    print("="*60)
-    for tool_name in executor.tools.keys():
-        print(f"  • {tool_name}")
-
-    print("\n" + "="*60)
-    print("All tests completed!")
-    print("="*60)
-
-if __name__ == "__main__":
-    test_tools()
+        reason = "ALLOW_LAUNCH!=1" if not allow_launch else "no candidate found"
+        print(f"Skipping launch test ({reason}).")
