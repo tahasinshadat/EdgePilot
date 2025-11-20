@@ -1,6 +1,6 @@
 # EdgePilot - AI Copilot Console
 
-EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language.
+EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language. pdNZvqeG9NMcmASt
 
 ## Highlights
 - **🤖 MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
@@ -12,7 +12,19 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 - **💾 Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
 - **⚡ Lightweight** - Clean codebase focused on core functionality
 
-## Quick Start
+## Installation
+
+**🚀 New! Automated Installer Available**
+
+For the easiest installation experience, use our cross-platform installer:
+- **Windows**: Download `EdgePilot-Installer.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
+- **macOS**: Download `EdgePilot-Installer.app` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
+
+The installer will guide you through setup, configure your API keys, install dependencies, and create a desktop shortcut automatically.
+
+**📖 Full Installation Guide**: See [INSTALL.md](INSTALL.md) for detailed instructions and manual installation.
+
+## Quick Start (Manual Installation)
 
 ### 1. Setup & Installation
 ```bash
@@ -43,6 +55,105 @@ python test_tools.py
 # Test launcher directly
 python tools/launcher.py
 ```
+
+## Usage Alerts
+
+EdgePilot includes a powerful usage monitoring system that sends desktop notifications and email alerts when your system resources exceed defined thresholds.
+
+### Features
+- **Desktop Notifications** - Cross-platform notifications (Windows, macOS, Linux) with custom icon
+- **Email Alerts** - Optional email notifications with configurable SMTP settings
+- **Independent Operation** - Runs as a standalone background process
+- **Configurable Thresholds** - Customize CPU, memory, and disk usage thresholds
+- **Automatic Startup** - Can be configured to start automatically on system boot
+
+### Quick Setup
+
+1. **Enable Usage Alerts in Settings:**
+   - Run EdgePilot: `python main.py`
+   - Open Settings tab
+   - Toggle "Enable Usage Alerts" ON
+   - **Auto-start is automatically enabled** - monitor will start on boot
+   - Adjust thresholds (default: CPU 85%, Memory 85%, Disk 90%)
+   - Set check interval (default: 30 seconds)
+
+2. **(Optional) Configure Email Alerts:**
+   - Toggle "Enable Email Alerts" ON
+   - Enter your email address (where you want to receive alerts)
+   - Leave Gmail credentials empty to use EdgePilot's default sender
+   - Or fill in your own Gmail credentials to send from your account
+
+3. **(Optional) Disable Auto-Start:**
+   - Toggle "Start on Boot" OFF in Settings
+   - Or use command line: `python scripts/manage_startup.py uninstall`
+
+### How Auto-Start Works
+
+**Windows:**
+- Installs a VBScript in your Startup folder
+- Checks if usage alerts are enabled in settings
+- Automatically starts the monitor on login
+- Location: `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\EdgePilot_Monitor.vbs`
+
+**macOS:**
+- Installs a Launch Agent (`.plist` file)
+- Uses `launchd` to run monitor at login
+- Automatically manages start/stop based on settings
+- Location: `~/Library/LaunchAgents/com.edgepilot.monitor.plist`
+
+**Linux:**
+- Desktop notifications work via `libnotify` (notify-send)
+- Auto-start requires manual configuration (systemd user service)
+- See: `scripts/manage_startup.py` for reference implementation
+
+### Email Configuration
+
+**Using Your Own Email Account (Recommended):**
+```
+Your Email Address: john@example.com  ✅ Required
+SMTP Server: smtp.gmail.com
+SMTP Port: 587
+SMTP Username: john@example.com
+SMTP Password: your-app-password
+TLS: Enabled
+```
+For Gmail, you **must** use an [App Password](https://support.google.com/accounts/answer/185833), not your regular password.
+
+**Using EdgePilot's Default Sender (Simplest):**
+```
+Your Email Address: john@example.com  ✅ Required
+SMTP Server: (leave empty)
+SMTP Username: (leave empty)
+SMTP Password: (leave empty)
+```
+Emails will be sent from EdgePilot's account to your email.
+
+### Manual Control
+
+You can also control the monitor manually:
+```bash
+# Start monitor manually
+python tools/usage_monitor.py start
+
+# Stop monitor
+python tools/usage_monitor.py stop
+
+# Check status
+python tools/usage_monitor.py status
+```
+
+### Notifications
+
+**Desktop Notifications:**
+- Appear in the bottom-right (Windows) or top-right (macOS)
+- Show EdgePilot logo
+- Stay on screen for 30 seconds
+- Include current usage percentage and threshold
+
+**Email Alerts:**
+- Same content as desktop notifications
+- Sent only if email alerts are enabled
+- 5-minute cooldown between same alert types (prevents spam)
 
 ## Command-Line Interface (CLI)
 The CLI lets you ask questions, schedule jobs, and inspect the queue without opening the UI.
