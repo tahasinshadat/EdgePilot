@@ -1042,6 +1042,21 @@ def handle_scheduler_shortcut(
     executor: Callable[[str, Dict[str, Any]], Dict[str, Any]],
     chat_id: Optional[str] = None,
 ) -> Optional[Tuple[str, int]]:
+    def _split_args(arg_text: str) -> List[str]:
+        try:
+            return shlex.split(arg_text)
+        except ValueError:
+            return arg_text.split()
+
+    def _extract_args(text: str, *, stop_at_colon: bool = False) -> Tuple[str, List[str]]:
+        pattern = r"with\s+(?:input|args?)\s+([^:]+)" if stop_at_colon else r"with\s+(?:input|args?)\s+(.+)"
+        match = re.search(pattern, text, re.IGNORECASE)
+        if not match:
+            return text.strip(), []
+        arg_str = match.group(1).strip()
+        cleaned = text[: match.start()].strip()
+        return cleaned, _split_args(arg_str)
+
     """
     Parse natural language scheduler commands and dispatch matching tool calls.
 
@@ -1075,8 +1090,13 @@ def handle_scheduler_shortcut(
     script_delay = re.search(r"run\s+\w*\s*script.*?in\s+(\d+)\s*seconds?:\s*(.+)", body, re.IGNORECASE)
     if script_delay:
         delay = int(script_delay.group(1))
-        path = script_delay.group(2).strip().strip("`\"")
+        path_raw = script_delay.group(2).strip().strip("`\"")
+        _, leading_args = _extract_args(body, stop_at_colon=True)
+        path, trailing_args = _extract_args(path_raw)
+        args = leading_args + trailing_args
         payload = {"path": path, "delay_seconds": delay}
+        if args:
+            payload["args"] = args
         if chat_id:
             payload["chat_id"] = chat_id
         result = executor("run_python", payload)
@@ -1091,8 +1111,13 @@ def handle_scheduler_shortcut(
     # Immediate script execution
     script_now = re.search(r"run\s+\w*\s*script.*?:\s*(.+)", body, re.IGNORECASE)
     if script_now:
-        path = script_now.group(1).strip().strip("`\"")
+        path_raw = script_now.group(1).strip().strip("`\"")
+        _, leading_args = _extract_args(body, stop_at_colon=True)
+        path, trailing_args = _extract_args(path_raw)
+        args = leading_args + trailing_args
         payload = {"path": path}
+        if args:
+            payload["args"] = args
         if chat_id:
             payload["chat_id"] = chat_id
         result = executor("run_python", payload)
