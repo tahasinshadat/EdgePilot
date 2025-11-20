@@ -7,12 +7,12 @@ from typing import Dict, Type
 from .base import BaseLLM, ProviderConfig, LLMResponse  # noqa: F401
 from .gemini import GeminiProvider  # noqa: F401
 from .claude import ClaudeProvider  # noqa: F401
-from .gpt import GPTProvider  # noqa: F401
+# from .gpt import GPTProvider  # noqa: F401  # Not implemented yet
 
 _PROVIDERS: Dict[str, Type[BaseLLM]] = {
     "gemini": GeminiProvider,
     "claude": ClaudeProvider,
-    "gpt": GPTProvider,
+    # "gpt": GPTProvider,  # Not implemented yet
 }
 
 

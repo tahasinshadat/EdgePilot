@@ -224,10 +224,30 @@ class ToolExecutor:
         )
         return result
 
+    def _build_task_response(self, records, action, limit=1, target=None):
+        """Helper to build consistent task status responses."""
+        if limit > 1:
+            return {
+                "status": "ok" if records else "not_found",
+                "action": action,
+                "records": records,
+                "limit": limit,
+                **({"target": target} if target else {})
+            }
+        if records:
+            return records[0] if isinstance(records, list) else records
+        return {
+            "status": "not_found",
+            "action": action,
+            **({"target": target} if target else {})
+        }
+
     def _execute_get_task_status(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        # Check if task_id or run_id is provided
         task_id = args.get("task_id") or args.get("run_id")
         identifier = args.get("identifier")
-        # Allow passing the run/task id via identifier for backwards compatibility
+
+        # Allow passing task_id via identifier for backwards compatibility
         if not task_id and isinstance(identifier, str):
             normalized_identifier = identifier.strip()
             if ":" in normalized_identifier:
@@ -235,86 +255,41 @@ class ToolExecutor:
                 if prefix in {"run_python", "run_shell", "open_application"}:
                     task_id = normalized_identifier
 
+        # If we have a task_id, look it up directly
         if task_id:
             record = get_task_record(task_id)
-            if record:
-                return record
-            return {
-                "status": "not_found",
-                "task_id": task_id,
-            }
+            return record if record else {"status": "not_found", "task_id": task_id}
 
+        # Infer action from parameters
         action = args.get("action")
         path = args.get("path")
         command = args.get("command")
 
         if not action:
-            if path:
-                action = "run_python"
-            elif command:
-                action = "run_shell"
-            elif identifier:
-                action = "open_application"
+            action = "run_python" if path else "run_shell" if command else "open_application" if identifier else None
 
         if action and action not in {"run_python", "run_shell", "open_application"}:
             raise ValueError("action must be 'run_python', 'run_shell', or 'open_application'")
 
         limit = int(args.get("limit") or 1)
 
+        # Special handling for open_application with metadata lookup
         if action == "open_application" and identifier:
             meta_records = list_tasks_by_metadata_record(action, "app_name", identifier, limit=limit)
-            if limit > 1:
-                return {
-                    "status": "ok" if meta_records else "not_found",
-                    "action": action,
-                    "records": meta_records,
-                    "limit": limit,
-                }
-            if meta_records:
-                return meta_records[0]
+            return self._build_task_response(meta_records, action, limit)
 
+        # General target-based lookup
         target = identifier or path or command
         if isinstance(target, str):
-            target = target.strip()
-            if not target:
-                target = None
+            target = target.strip() or None
 
         if target:
-            if limit > 1:
-                records = list_task_records(action, target, limit=limit)
-                return {
-                    "status": "ok" if records else "not_found",
-                    "action": action,
-                    "target": target,
-                    "records": records,
-                    "limit": limit,
-                }
+            records = list_task_records(action, target, limit=limit) if limit > 1 else get_latest_task_record(action, target)
+            return self._build_task_response(records, action, limit, target)
 
-            record = get_latest_task_record(action, target)
-            if record:
-                return record
-            return {
-                "status": "not_found",
-                "action": action,
-                "target": target,
-            }
-
-        if limit > 1:
-            records = list_recent_task_records(action, limit=limit)
-            return {
-                "status": "ok" if records else "not_found",
-                "action": action,
-                "records": records,
-                "limit": limit,
-            }
-
-        record = get_latest_task_any_record(action)
-        if record:
-            return record
-        return {
-            "status": "not_found",
-            "action": action,
-        }
+        # Fallback to recent tasks
+        records = list_recent_task_records(action, limit=limit) if limit > 1 else get_latest_task_any_record(action)
+        return self._build_task_response(records, action, limit)
 
 
 
