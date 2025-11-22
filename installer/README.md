@@ -31,7 +31,7 @@ cd installer
 build_windows.bat
 ```
 
-This creates `dist/EdgePilot-Installer.exe` that can be distributed to users.
+This creates `dist/Windows/EdgePilot-Installer-Windows.exe` that can be distributed to users.
 
 ### macOS
 
@@ -41,15 +41,15 @@ chmod +x build_macos.sh
 ./build_macos.sh
 ```
 
-This creates `dist/EdgePilot Installer.app` that can be distributed to users.
+This creates `dist/MacOS/EdgePilot-Installer-MacOS.app` that can be distributed to users.
 
 ## Using the Installer
 
 ### For End Users
 
 1. **Download** the installer:
-   - Windows: `EdgePilot-Installer.exe`
-   - macOS: `EdgePilot Installer.app`
+   - Windows: `EdgePilot-Installer-Windows.exe`
+   - macOS: `EdgePilot-Installer-MacOS.app`
 
 2. **Run** the installer by double-clicking it
 

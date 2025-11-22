@@ -3,6 +3,10 @@ build/
 dist/
 *.spec
 
+# OS-specific build directories
+Windows/
+MacOS/
+
 # Python cache
 __pycache__/
 *.pyc

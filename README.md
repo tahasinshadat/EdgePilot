@@ -1,20 +1,20 @@
 # EdgePilot - AI Copilot Console
 
-EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language. pdNZvqeG9NMcmASt
+EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language. 
 
 ## Highlights
-- **🤖 MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
-- **📊 Real-time Metrics** - CPU, memory, disk, network monitoring with process-level details and executable paths
-- **🚀 Smart App Launcher** - Launch applications by name with delay support using Windows Start Menu search
-- **🎯 Smart Tool Calling** - LLM automatically decides when to gather metrics, launch apps, or end processes
-- **🖥️ Desktop UI** - Electron-based chat interface with dark theme
-- **🔌 Provider Abstraction** - Pluggable system supporting Gemini (with tools), Claude, and GPT
-- **💾 Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
-- **⚡ Lightweight** - Clean codebase focused on core functionality
+- **MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
+- **Real-time Metrics** - CPU, memory, disk, network monitoring with process-level details and executable paths
+- **Smart App Launcher** - Launch applications by name with delay support using Windows Start Menu search
+- **Smart Tool Calling** - LLM automatically decides when to gather metrics, launch apps, or end processes
+- **Desktop UI** - Electron-based chat interface with dark theme
+- **Provider Abstraction** - Pluggable system supporting Gemini (with tools), Claude, and GPT
+- **Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
+- **Lightweight** - Clean codebase focused on core functionality
 
 ## Installation
 
-**🚀 New! Automated Installer Available**
+**New! Automated Installer Available**
 
 For the easiest installation experience, use our cross-platform installer:
 - **Windows**: Download `EdgePilot-Installer.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
@@ -22,7 +22,7 @@ For the easiest installation experience, use our cross-platform installer:
 
 The installer will guide you through setup, configure your API keys, install dependencies, and create a desktop shortcut automatically.
 
-**📖 Full Installation Guide**: See [INSTALL.md](INSTALL.md) for detailed instructions and manual installation.
+**Full Installation Guide**: See [INSTALL.md](INSTALL.md) for detailed instructions and manual installation.
 
 ## Quick Start (Manual Installation)
 
@@ -110,7 +110,7 @@ EdgePilot includes a powerful usage monitoring system that sends desktop notific
 
 **Using Your Own Email Account (Recommended):**
 ```
-Your Email Address: john@example.com  ✅ Required
+Your Email Address: john@example.com  Required
 SMTP Server: smtp.gmail.com
 SMTP Port: 587
 SMTP Username: john@example.com
@@ -121,7 +121,7 @@ For Gmail, you **must** use an [App Password](https://support.google.com/account
 
 **Using EdgePilot's Default Sender (Simplest):**
 ```
-Your Email Address: john@example.com  ✅ Required
+Your Email Address: john@example.com  Required
 SMTP Server: (leave empty)
 SMTP Username: (leave empty)
 SMTP Password: (leave empty)
@@ -427,6 +427,3 @@ The LLM can use simple app names like "chrome", "minecraft", or "notepad" withou
 - **`README.md`** (this file) - Quick start and overview
 - **`MCP/README.md`** - Complete MCP integration guide
 - **`tools/launcher.py`** - Application launcher implementation with detailed documentation
-
-## License
-MIT License - See LICENSE file for details

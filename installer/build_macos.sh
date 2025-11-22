@@ -9,28 +9,29 @@ pip install -r requirements.txt
 # Build executable
 pyinstaller --onefile \
     --windowed \
-    --name "EdgePilot-Installer" \
+    --name "EdgePilot-Installer-MacOS" \
     --icon="../assets/logo.icns" \
     --add-data "../assets/logo.icns:assets" \
+    --distpath "dist/MacOS" \
     install.py
 
 echo ""
-echo "Build complete! Installer is in dist/EdgePilot-Installer"
+echo "Build complete! Installer is in dist/MacOS/EdgePilot-Installer-MacOS"
 echo ""
 
 # Make the installer executable
-chmod +x dist/EdgePilot-Installer
+chmod +x dist/MacOS/EdgePilot-Installer-MacOS
 
 # Optionally create a .app bundle
 echo "Creating .app bundle..."
-mkdir -p "dist/EdgePilot Installer.app/Contents/MacOS"
-mkdir -p "dist/EdgePilot Installer.app/Contents/Resources"
+mkdir -p "dist/MacOS/EdgePilot-Installer-MacOS.app/Contents/MacOS"
+mkdir -p "dist/MacOS/EdgePilot-Installer-MacOS.app/Contents/Resources"
 
 # Move executable
-mv dist/EdgePilot-Installer "dist/EdgePilot Installer.app/Contents/MacOS/"
+mv dist/MacOS/EdgePilot-Installer-MacOS "dist/MacOS/EdgePilot-Installer-MacOS.app/Contents/MacOS/"
 
 # Create Info.plist
-cat > "dist/EdgePilot Installer.app/Contents/Info.plist" << 'EOF'
+cat > "dist/MacOS/EdgePilot-Installer-MacOS.app/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -44,7 +45,7 @@ cat > "dist/EdgePilot Installer.app/Contents/Info.plist" << 'EOF'
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleExecutable</key>
-    <string>EdgePilot-Installer</string>
+    <string>EdgePilot-Installer-MacOS</string>
     <key>CFBundleIconFile</key>
     <string>logo</string>
     <key>LSMinimumSystemVersion</key>
@@ -57,9 +58,9 @@ EOF
 
 # Copy icon
 if [ -f "../assets/logo.icns" ]; then
-    cp "../assets/logo.icns" "dist/EdgePilot Installer.app/Contents/Resources/logo.icns"
+    cp "../assets/logo.icns" "dist/MacOS/EdgePilot-Installer-MacOS.app/Contents/Resources/logo.icns"
 fi
 
 echo ""
-echo "App bundle created at: dist/EdgePilot Installer.app"
+echo "App bundle created at: dist/MacOS/EdgePilot-Installer-MacOS.app"
 echo "You can now distribute this .app bundle to users!"

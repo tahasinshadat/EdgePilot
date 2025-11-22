@@ -14,9 +14,9 @@ __pycache__/
 .claude
 
 # Ignore environment variables and secrets
-# .env
-# env/.env
-# *.env
+.env
+env/.env
+*.env
 
 # Ignore Chat History
 data/chat_history.json

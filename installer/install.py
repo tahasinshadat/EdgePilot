@@ -40,20 +40,44 @@ class EdgePilotInstaller:
         self.claude_key = ""
         self.create_shortcut = True
 
+        # Check if EdgePilot is already installed
+        self.is_installed = self.check_installation()
+        self.mode = "uninstall" if self.is_installed else "install"
+
         # Create GUI
         self.create_gui()
+
+    def check_installation(self) -> bool:
+        """Check if EdgePilot is already installed."""
+        # Check if installation directory exists and has key files
+        if not self.default_install_dir.exists():
+            return False
+
+        # Verify it's a valid EdgePilot installation by checking for key files
+        key_files = [
+            self.default_install_dir / "main.py",
+            self.default_install_dir / "requirements.txt",
+            self.default_install_dir / "ui" / "main.js"
+        ]
+
+        return all(f.exists() for f in key_files)
 
     def create_gui(self):
         """Create the installer GUI."""
         self.root = tk.Tk()
-        self.root.title("EdgePilot Installer")
-        self.root.geometry("600x500")
+        title = "EdgePilot Uninstaller" if self.mode == "uninstall" else "EdgePilot Installer"
+        self.root.title(title)
+        self.root.geometry("600x650" if self.mode == "install" else "600x350")
         self.root.resizable(False, False)
 
         # Header
+        header_text = "EdgePilot AI Copilot Console"
+        if self.mode == "uninstall":
+            header_text += "\n(Uninstaller)"
+
         header = tk.Label(
             self.root,
-            text="EdgePilot AI Copilot Console",
+            text=header_text,
             font=("Arial", 18, "bold"),
             pady=20
         )
@@ -63,56 +87,79 @@ class EdgePilotInstaller:
         main_frame = ttk.Frame(self.root, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Install location
-        location_frame = ttk.LabelFrame(main_frame, text="Install Location", padding="10")
-        location_frame.pack(fill=tk.X, pady=10)
+        if self.mode == "install":
+            # Install location
+            location_frame = ttk.LabelFrame(main_frame, text="Install Location", padding="10")
+            location_frame.pack(fill=tk.X, pady=10)
 
-        self.install_path_var = tk.StringVar(value=str(self.default_install_dir))
-        install_entry = ttk.Entry(location_frame, textvariable=self.install_path_var, width=50)
-        install_entry.pack(side=tk.LEFT, padx=(0, 5))
+            self.install_path_var = tk.StringVar(value=str(self.default_install_dir))
+            install_entry = ttk.Entry(location_frame, textvariable=self.install_path_var, width=50)
+            install_entry.pack(side=tk.LEFT, padx=(0, 5))
 
-        browse_btn = ttk.Button(location_frame, text="Browse", command=self.browse_install_location)
-        browse_btn.pack(side=tk.LEFT)
+            browse_btn = ttk.Button(location_frame, text="Browse", command=self.browse_install_location)
+            browse_btn.pack(side=tk.LEFT)
 
-        # API Keys frame
-        api_frame = ttk.LabelFrame(main_frame, text="API Keys Configuration", padding="10")
-        api_frame.pack(fill=tk.X, pady=10)
+            # API Keys frame
+            api_frame = ttk.LabelFrame(main_frame, text="API Keys Configuration", padding="10")
+            api_frame.pack(fill=tk.X, pady=10)
 
-        # Gemini API Key (Required)
-        ttk.Label(api_frame, text="Gemini API Key (Required):").pack(anchor=tk.W, pady=(0, 5))
-        self.gemini_entry = ttk.Entry(api_frame, width=60, show="*")
-        self.gemini_entry.pack(fill=tk.X, pady=(0, 10))
+            # Gemini API Key (Required)
+            ttk.Label(api_frame, text="Gemini API Key (Required):").pack(anchor=tk.W, pady=(0, 5))
+            self.gemini_entry = ttk.Entry(api_frame, width=60, show="*")
+            self.gemini_entry.pack(fill=tk.X, pady=(0, 10))
 
-        # Claude API Key (Optional)
-        ttk.Label(api_frame, text="Claude API Key (Optional):").pack(anchor=tk.W, pady=(0, 5))
-        self.claude_entry = ttk.Entry(api_frame, width=60, show="*")
-        self.claude_entry.pack(fill=tk.X)
+            # Claude API Key (Optional)
+            ttk.Label(api_frame, text="Claude API Key (Optional):").pack(anchor=tk.W, pady=(0, 5))
+            self.claude_entry = ttk.Entry(api_frame, width=60, show="*")
+            self.claude_entry.pack(fill=tk.X)
 
-        # Options frame
-        options_frame = ttk.LabelFrame(main_frame, text="Options", padding="10")
-        options_frame.pack(fill=tk.X, pady=10)
+            # Options frame
+            options_frame = ttk.LabelFrame(main_frame, text="Options", padding="10")
+            options_frame.pack(fill=tk.X, pady=10)
 
-        self.shortcut_var = tk.BooleanVar(value=True)
-        shortcut_check = ttk.Checkbutton(
-            options_frame,
-            text="Create Desktop Shortcut",
-            variable=self.shortcut_var
-        )
-        shortcut_check.pack(anchor=tk.W)
+            self.shortcut_var = tk.BooleanVar(value=True)
+            shortcut_check = ttk.Checkbutton(
+                options_frame,
+                text="Create Desktop Shortcut",
+                variable=self.shortcut_var
+            )
+            shortcut_check.pack(anchor=tk.W)
+        else:
+            # Uninstall mode - show installation info
+            info_frame = ttk.LabelFrame(main_frame, text="Installation Found", padding="10")
+            info_frame.pack(fill=tk.X, pady=10)
+
+            info_text = f"EdgePilot is currently installed at:\n{self.default_install_dir}\n\n"
+            info_text += "The following will be removed:\n"
+            info_text += "• Installation directory and all files\n"
+            info_text += "• Desktop shortcuts\n"
+            info_text += "• Configuration and data files"
+
+            info_label = tk.Label(
+                info_frame,
+                text=info_text,
+                justify=tk.LEFT,
+                wraplength=520
+            )
+            info_label.pack(anchor=tk.W, pady=10)
 
         # Progress
-        self.progress_var = tk.StringVar(value="Ready to install")
+        initial_text = "Ready to uninstall" if self.mode == "uninstall" else "Ready to install"
+        self.progress_var = tk.StringVar(value=initial_text)
         progress_label = ttk.Label(main_frame, textvariable=self.progress_var)
         progress_label.pack(pady=(10, 5))
 
         self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
         self.progress.pack(fill=tk.X, pady=(0, 10))
 
-        # Install button
+        # Install/Uninstall button
+        button_text = "Uninstall EdgePilot" if self.mode == "uninstall" else "Install EdgePilot"
+        button_command = self.start_uninstallation if self.mode == "uninstall" else self.start_installation
+
         self.install_btn = ttk.Button(
             main_frame,
-            text="Install EdgePilot",
-            command=self.start_installation,
+            text=button_text,
+            command=button_command,
             style="Accent.TButton"
         )
         self.install_btn.pack(pady=10)
@@ -162,10 +209,10 @@ class EdgePilotInstaller:
 
     def run_installation(self):
         """Run the installation process."""
+        installation_started = False
         try:
             # Step 1: Check for required software
             self.update_progress("Checking for required software...")
-            has_git = self.check_git()
             has_node = self.check_node()
 
             if not has_node:
@@ -175,12 +222,11 @@ class EdgePilotInstaller:
                     "and run the installer again."
                 )
 
-            # Step 2: Download/Clone repository
+            # Step 2: Download repository as zip
+            # Note: Always use zip download to avoid git authentication issues
             self.update_progress("Downloading EdgePilot...")
-            if has_git:
-                self.clone_repository()
-            else:
-                self.download_repository()
+            installation_started = True  # Mark that we've started creating files
+            self.download_repository()
 
             # Step 3: Configure .env
             self.update_progress("Configuring environment...")
@@ -211,7 +257,8 @@ class EdgePilotInstaller:
                 "Success",
                 f"EdgePilot has been installed successfully!\n\n"
                 f"Installation location: {self.install_dir}\n\n"
-                f"{'A desktop shortcut has been created.' if self.create_shortcut else ''}"
+                f"{'A desktop shortcut has been created.' if self.create_shortcut else ''}\n\n"
+                f"Run this installer again to uninstall EdgePilot."
             ))
 
             self.root.after(500, self.root.quit)
@@ -219,8 +266,96 @@ class EdgePilotInstaller:
         except Exception as e:
             self.progress.stop()
             self.update_progress(f"Error: {str(e)}")
-            self.root.after(100, lambda: messagebox.showerror("Installation Failed", str(e)))
+
+            # Cleanup partial installation
+            if installation_started and self.install_dir and self.install_dir.exists():
+                self.update_progress("Cleaning up partial installation...")
+                try:
+                    shutil.rmtree(self.install_dir)
+                    self.update_progress("Cleanup complete.")
+                except Exception as cleanup_error:
+                    print(f"Cleanup failed: {cleanup_error}")
+
+            self.root.after(100, lambda: messagebox.showerror(
+                "Installation Failed",
+                f"{str(e)}\n\n{'Partial installation has been cleaned up.' if installation_started else ''}"
+            ))
             self.install_btn.config(state="normal")
+
+    def start_uninstallation(self):
+        """Start the uninstallation process."""
+        # Confirm uninstallation
+        response = messagebox.askyesno(
+            "Confirm Uninstall",
+            "Are you sure you want to uninstall EdgePilot?\n\n"
+            "This will remove all files, settings, and shortcuts.\n"
+            "This action cannot be undone."
+        )
+
+        if not response:
+            return
+
+        # Disable button
+        self.install_btn.config(state="disabled")
+        self.progress.start()
+
+        # Run uninstallation in thread
+        import threading
+        thread = threading.Thread(target=self.run_uninstallation)
+        thread.daemon = True
+        thread.start()
+
+    def run_uninstallation(self):
+        """Run the uninstallation process."""
+        try:
+            self.install_dir = self.default_install_dir
+
+            # Step 1: Remove desktop shortcuts
+            self.update_progress("Removing desktop shortcuts...")
+            self.remove_shortcuts()
+
+            # Step 2: Remove installation directory
+            self.update_progress("Removing installation files...")
+            if self.install_dir.exists():
+                shutil.rmtree(self.install_dir)
+
+            # Done!
+            self.progress.stop()
+            self.update_progress("Uninstallation complete!")
+
+            self.root.after(100, lambda: messagebox.showinfo(
+                "Success",
+                "EdgePilot has been uninstalled successfully!\n\n"
+                "All files, settings, and shortcuts have been removed."
+            ))
+
+            self.root.after(500, self.root.quit)
+
+        except Exception as e:
+            self.progress.stop()
+            self.update_progress(f"Error: {str(e)}")
+            self.root.after(100, lambda: messagebox.showerror("Uninstallation Failed", str(e)))
+            self.install_btn.config(state="normal")
+
+    def remove_shortcuts(self):
+        """Remove desktop shortcuts."""
+        if self.system == "Windows":
+            desktop = Path.home() / "Desktop"
+            # Remove batch file
+            batch_file = desktop / "EdgePilot.bat"
+            if batch_file.exists():
+                batch_file.unlink()
+            # Remove .lnk shortcut
+            lnk_file = desktop / "EdgePilot.lnk"
+            if lnk_file.exists():
+                lnk_file.unlink()
+
+        elif self.system == "Darwin":
+            # Remove macOS .app bundle
+            applications_dir = Path.home() / "Applications"
+            app_dir = applications_dir / "EdgePilot.app"
+            if app_dir.exists():
+                shutil.rmtree(app_dir)
 
     def check_git(self) -> bool:
         """Check if git is installed."""
@@ -238,11 +373,13 @@ class EdgePilotInstaller:
     def check_node(self) -> bool:
         """Check if Node.js/npm is installed."""
         try:
+            # On Windows, npm is a .cmd file and needs shell=True
             subprocess.run(
                 ["npm", "--version"],
                 check=True,
                 capture_output=True,
-                timeout=5
+                timeout=5,
+                shell=(self.system == "Windows")
             )
             return True
         except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
@@ -258,11 +395,16 @@ class EdgePilotInstaller:
         self.install_dir.parent.mkdir(parents=True, exist_ok=True)
 
         # Clone repository
-        subprocess.run(
-            ["git", "clone", self.repo_url, str(self.install_dir)],
-            check=True,
-            capture_output=True
-        )
+        try:
+            subprocess.run(
+                ["git", "clone", self.repo_url, str(self.install_dir)],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+        except subprocess.CalledProcessError as e:
+            error_msg = e.stderr if e.stderr else str(e)
+            raise Exception(f"Git clone failed: {error_msg}")
 
     def download_repository(self):
         """Download repository as zip (fallback when git not available)."""
@@ -364,7 +506,8 @@ DEFAULT_SMTP_USE_TLS=true
             ["npm", "install"],
             check=True,
             capture_output=True,
-            cwd=str(ui_dir)
+            cwd=str(ui_dir),
+            shell=(self.system == "Windows")
         )
 
     def create_desktop_shortcut(self):
