@@ -475,12 +475,18 @@ DEFAULT_SMTP_USE_TLS=true
 
     def _install_python_deps(self):
         """Install Python dependencies."""
+        # Find the system Python executable (not installer.exe when running from PyInstaller)
+        python_exe = shutil.which("python")
+        if not python_exe:
+            raise Exception("Python executable not found in system PATH.\n\nPlease ensure Python is installed and added to PATH.")
+
         try:
             subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
+                [python_exe, "-m", "pip", "install", "-r", "requirements.txt"],
                 check=True,
                 capture_output=True,
                 cwd=str(self.install_dir),
+                shell=(platform.system() == "Windows"),  # Use shell on Windows for proper environment
                 timeout=300  # 5 minute timeout
             )
         except subprocess.TimeoutExpired:
@@ -626,7 +632,9 @@ oLink.Description = "EdgePilot AI Copilot Console"
 
     def run(self):
         """Run the installer."""
-        self.root.mainloop()
+        # Safety check: If root doesn't exist (installation in progress), don't run
+        if hasattr(self, 'root'):
+            self.root.mainloop()
 
 
 # === Uninstaller GUI ===
@@ -635,6 +643,11 @@ class UninstallerGUI:
     """Simple uninstaller GUI and workflow."""
 
     def __init__(self):
+        # Safety check: If installation is in progress, don't create a new GUI
+        if is_installation_in_progress():
+            print("Installation in progress - not creating uninstaller window")
+            return
+
         self.root = tk.Tk()
         self.root.title("EdgePilot Uninstaller")
         self.root.geometry("600x500")  # Increased height to show all content
@@ -802,7 +815,9 @@ class UninstallerGUI:
 
     def run(self):
         """Run the uninstaller."""
-        self.root.mainloop()
+        # Safety check: If root doesn't exist (installation in progress), don't run
+        if hasattr(self, 'root'):
+            self.root.mainloop()
 
 
 # === Main Entry Point ===
@@ -819,15 +834,7 @@ def main():
     try:
         # Check if installation is currently in progress
         if is_installation_in_progress():
-            # Show message and exit - don't open another window
-            temp_root = tk.Tk()
-            temp_root.withdraw()
-            messagebox.showinfo(
-                "Installation in Progress",
-                "EdgePilot installation is already in progress.\n\n"
-                "Please wait for it to complete."
-            )
-            temp_root.destroy()
+            # Silently exit - don't show any messages or windows
             sys.exit(0)
 
         # Check if EdgePilot is installed
