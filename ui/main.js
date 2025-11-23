@@ -8,6 +8,7 @@ const createWindow = () => {
     minWidth: 960,
     minHeight: 640,
     title: 'EdgePilot Console',
+    icon: path.join(__dirname, '..', 'assets', 'logo.ico'), // Set EdgePilot icon
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

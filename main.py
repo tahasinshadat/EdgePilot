@@ -41,6 +41,14 @@ from core.settings import (
     provider_config,
 )
 
+'''
+what is the command to make the installer for Mac?
+
+pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows installer/install.py
+
+is for windows 
+'''
+
 ROOT_DIR = Path(__file__).parent
 DATA_DIR = ROOT_DIR / "data"
 CHAT_FILE = DATA_DIR / "chat_history.json"
