@@ -17,8 +17,8 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 **New! Automated Installer Available**
 
 For the easiest installation experience, use our cross-platform installer:
-- **Windows**: Download `EdgePilot-Installer.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
-- **macOS**: Download `EdgePilot-Installer.app` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
+- **Windows**: Download `EdgePilot-Installer-Windows-v1.0.0.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
+- **macOS**: Coming Soon
 
 The installer will guide you through setup, configure your API keys, install dependencies, and create a desktop shortcut automatically.
 
