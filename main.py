@@ -23,9 +23,8 @@ from pydantic import BaseModel, Field
 
 from providers import available_providers, get_provider
 from providers.base import ChatMessage, ProviderConfig
-from tools.metrics import ensure_data_dir, gather_metrics
-from tools.scheduler import handle_scheduler_shortcut
-from tools import list_all_tasks, get_task as scheduler_get_task
+from tools.metrics import gather_metrics
+from tools.scheduler import _REGISTRY
 from MCP import (
     execute_tool,
     format_tools_for_gemini,
@@ -55,6 +54,12 @@ CHAT_FILE = DATA_DIR / "chat_history.json"
 USAGE_FILE = DATA_DIR / "usage_metrics.json"
 TOOL_HISTORY_FILE = DATA_DIR / "tool_call_history.json"
 FRONTEND_DIR = ROOT_DIR / "frontend"
+
+
+def ensure_data_dir(path: Path) -> None:
+    """Create directory if it does not exist."""
+    path.mkdir(parents=True, exist_ok=True)
+
 
 
 cli = typer.Typer(add_completion=False, help="EdgePilot backend CLI.")
@@ -488,29 +493,6 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
     # Store all messages to be saved (user + assistant messages)
     messages_to_save = [user_message]
 
-    direct_result = handle_scheduler_shortcut(payload.prompt.strip(), execute_tool, chat_id=chat_id)
-    if direct_result:
-        reply_text, tool_calls_used = direct_result
-        assistant_message: ChatMessage = {
-            "role": "assistant",
-            "content": reply_text,
-            "created_at": time.time(),
-        }
-        messages_to_save.append(assistant_message)
-        updated_session = chat_store.append_messages(
-            chat_id,
-            messages_to_save,
-            0,
-            tool_calls_delta=tool_calls_used,
-        )
-        detail = _to_detail(updated_session)
-        return SendMessageResponse(
-            reply=reply_text,
-            tokens_used=detail.tokens_used,
-            prompt_tokens=0,
-            response_tokens=0,
-            chat=detail,
-        )
     total_prompt_tokens = 0
     total_response_tokens = 0
     total_tool_calls = 0
@@ -554,7 +536,7 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
             for tool_call in llm_response.tool_calls:
                 tool_start = time.perf_counter()
                 arguments = dict(tool_call.arguments or {})
-                if tool_call.name in {"run_python", "run_shell", "launch"}:
+                if tool_call.name in {"run_python_script", "run_shell_commands", "launch"}:
                     arguments.setdefault("chat_id", chat_id)
                 result = execute_tool(tool_call.name, arguments)
                 tool_latency = (time.perf_counter() - tool_start) * 1000
@@ -646,16 +628,16 @@ def api_list_tasks(
     status: Optional[str] = Query(None),
     chat_id: Optional[str] = Query(None),
 ) -> Dict[str, object]:
-    tasks = list_all_tasks(limit=limit, action=action, status=status, chat_id=chat_id)
+    tasks = _REGISTRY.list_all()
+    if action:
+        tasks = [rec for rec in tasks if rec.get("action") == action]
+    if status:
+        tasks = [rec for rec in tasks if str(rec.get("status", "")).lower() == status.lower()]
+    if chat_id:
+        tasks = [rec for rec in tasks if rec.get("metadata", {}).get("chat_id") == chat_id]
+    tasks.sort(key=lambda rec: rec.get("created_at", 0), reverse=True)
+    tasks = tasks[:limit] if limit > 0 else tasks
     return {"tasks": tasks, "count": len(tasks)}
-
-
-@app.get("/api/tasks/{task_id}")
-def api_task_detail(task_id: str) -> Dict[str, object]:
-    record = scheduler_get_task(task_id)
-    if not record:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return record
 
 
 # Settings endpoints
@@ -1166,3 +1148,6 @@ if __name__ == "__main__":
         cli()
     else:
         launch_desktop_app()
+def ensure_data_dir(path: Path) -> None:
+    """Create directory if it does not exist."""
+    path.mkdir(parents=True, exist_ok=True)

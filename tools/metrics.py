@@ -1,4 +1,11 @@
-"""System and Prometheus-backed metric helpers for EdgePilot."""
+"""System and Prometheus-backed metric helpers for EdgePilot.
+
+Provides four primary helpers:
+- gather_metrics: local snapshot via psutil
+- report_edge_status: short fact summary (prefers Prometheus, falls back to local)
+- evaluate_capacity: check if a workload can run now
+- suggest_capacity_window: suggest when to run based on current/off-peak
+"""
 
 from __future__ import annotations
 
@@ -10,7 +17,7 @@ import socket
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional
 
 import httpx
 import psutil
@@ -19,8 +26,10 @@ PROM_URL = os.getenv("PROM_URL")
 PROM_TIMEOUT = float(os.getenv("PROM_TIMEOUT_SEC", "15"))
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
-RING_PATH = DATA_DIR / "ring.edgepilot.json"
-BLUEPRINT_DIR = DATA_DIR
+
+# ============================================================================
+# Prometheus helpers
+# ============================================================================
 
 
 class PrometheusUnavailable(RuntimeError):
@@ -65,13 +74,9 @@ class PrometheusClient:
             raise PrometheusUnavailable(f"Prometheus returned non-success status: {data}")
         return data["data"]["result"]
 
-    def avg_over_time(self, base_query: str, window: str, resolution: str = "1m") -> float:
+    def avg_over_time(self, base_query: str, window: str) -> float:
         query = f"avg_over_time(({base_query})[{window}:])"
         return _avg_vector(self.query(query))
-
-    def topk_over_time(self, base_query: str, window: str, k: int, resolution: str = "1m") -> List[Dict[str, Any]]:
-        query = f"topk({k}, avg_over_time(({base_query})[{window}:{resolution}]))"
-        return self.query(query)
 
     def fetch_scalar_map(self, query: str, *, label: str = "instance") -> Dict[str, float]:
         result = self.query(query)
@@ -92,59 +97,6 @@ class PrometheusClient:
 
 PROM = PrometheusClient(PROM_URL)
 
-_JSON_CACHE: Dict[Path, Tuple[float, Any]] = {}
-
-
-def _load_json_config(path: Path) -> Any:
-    if not path.exists():
-        raise FileNotFoundError(path)
-    mtime = path.stat().st_mtime
-    cached = _JSON_CACHE.get(path)
-    if cached and cached[0] == mtime:
-        return cached[1]
-    with path.open("r", encoding="utf-8") as fh:
-        data = json.load(fh)
-    _JSON_CACHE[path] = (mtime, data)
-    return data
-
-
-def _load_ring() -> Dict[str, Any]:
-    return _load_json_config(RING_PATH)
-
-
-def _blueprint_path(name: str) -> Path:
-    filename = f"blueprint.{name}.json"
-    return BLUEPRINT_DIR / filename
-
-
-def _load_blueprint(report: str) -> Dict[str, Any]:
-    path = _blueprint_path(report)
-    return _load_json_config(path)
-
-
-def _find_entity(ring: Dict[str, Any], entity_name: str) -> Dict[str, Any]:
-    for entity in ring.get("entities", []):
-        if entity.get("name") == entity_name:
-            return entity
-    raise KeyError(f"Entity '{entity_name}' not defined in ring.")
-
-
-def _find_attribute(entity: Dict[str, Any], attribute_name: str) -> Dict[str, Any]:
-    for attribute in entity.get("attributes", []):
-        if attribute.get("name") == attribute_name:
-            return attribute
-    raise KeyError(f"Attribute '{entity.get('name')}.{attribute_name}' not defined in ring.")
-
-
-def _maybe_apply_datasource(client: PrometheusClient, ring: Optional[Dict[str, Any]]) -> None:
-    if client.base_url:
-        return
-    if not ring:
-        return
-    datasource = ring.get("datasource") or {}
-    if datasource.get("type") == "prometheus" and datasource.get("base_url"):
-        client.base_url = datasource["base_url"]
-
 
 def _avg_vector(result: Iterable[Dict[str, Any]]) -> float:
     values: List[float] = []
@@ -159,17 +111,17 @@ def _avg_vector(result: Iterable[Dict[str, Any]]) -> float:
     return (sum(values) / len(values)) if values else float("nan")
 
 
-def _pretty_container_name(metric: Dict[str, Any]) -> str:
-    identifier = metric.get("id") or metric.get("container") or "unknown"
-    return identifier.split("/")[-1][:32]
+def _is_finite_value(value: Any) -> bool:
+    try:
+        val = float(value[1] if isinstance(value, (list, tuple)) else value)
+    except (TypeError, ValueError):
+        return False
+    return math.isfinite(val)
 
 
-def _offpeak_local_iso() -> str:
-    now = datetime.now().astimezone()
-    candidate = now.replace(hour=1, minute=0, second=0, microsecond=0)
-    if now.hour >= 1:
-        candidate += timedelta(days=1)
-    return candidate.isoformat()
+# ============================================================================
+# Local metrics helpers
+# ============================================================================
 
 
 def _battery_info() -> Dict[str, float | bool | None]:
@@ -261,116 +213,69 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
     return metrics
 
 
+# ============================================================================
+# Public APIs
+# ============================================================================
+
+
 def report_edge_status(window: str = "1h", top_k: int = 5, *, client: PrometheusClient | None = None) -> Dict[str, Any]:
-    """Return the edge status facts using Prometheus if available."""
+    """Return edge status facts using Prometheus if available, otherwise local snapshot."""
     client = client or PROM
-    source = "prometheus"
     facts: List[str] = []
-    ring: Optional[Dict[str, Any]] = None
-    blueprint: Optional[Dict[str, Any]] = None
-    try:
-        ring = _load_ring()
-        blueprint = _load_blueprint("edge_status")
-    except (FileNotFoundError, json.JSONDecodeError, KeyError):
-        ring = None
-        blueprint = None
+    source = "prometheus"
 
-    _maybe_apply_datasource(client, ring)
-
-    prom_facts: List[str] = []
-    if client.available and ring and blueprint:
+    if client.available:
         try:
-            for plan in blueprint.get("plans", []):
-                template = plan.get("template") or ""
-                if template.startswith("LOCAL"):
+            cpu_busy = client.fetch_scalar_map(
+                '100 - (100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))))'
+            )
+            # macOS node_exporter doesn't expose MemAvailable; fall back to free_bytes
+            mem_free = client.fetch_scalar_map("node_memory_MemAvailable_bytes")
+            if not mem_free:
+                mem_free = client.fetch_scalar_map("node_memory_free_bytes")
+            mem_total = client.fetch_scalar_map("node_memory_total_bytes")
+            disk_free = client.fetch_scalar_map(
+                'max by (instance) (node_filesystem_free_bytes{fstype!~"tmpfs|overlay"})'
+            )
+            # Include top processes only if a process exporter is present
+            top_procs = client.query('topk({k}, rate(process_cpu_seconds_total[5m]))'.format(k=top_k))
+            instances = sorted(set(cpu_busy) | set(mem_free) | set(disk_free))
+            for inst in instances[:top_k]:
+                cpu = cpu_busy.get(inst)
+                mem = mem_free.get(inst)
+                mem_t = mem_total.get(inst)
+                disk = disk_free.get(inst)
+                parts = []
+                if cpu is not None:
+                    parts.append(f"CPU {cpu:.1f}%")
+                if mem is not None:
+                    parts.append(f"MemFree {int(mem)} bytes")
+                if mem_t is not None:
+                    parts.append(f"MemTotal {int(mem_t)} bytes")
+                if disk is not None:
+                    parts.append(f"DiskFree {int(disk)} bytes")
+                if parts:
+                    facts.append(f"{inst}: " + ", ".join(parts))
+            # Append a simple top-k process snapshot if available
+            for row in top_procs[:top_k]:
+                metric = row.get("metric", {})
+                proc = metric.get("process") or metric.get("name") or metric.get("cmdline") or "proc"
+                inst_label = metric.get("instance") or ""
+                try:
+                    cpu_pct = float(row["value"][1]) * 100
+                except (KeyError, TypeError, ValueError):
                     continue
-                entity = _find_entity(ring, plan["entity"])
-                attribute = _find_attribute(entity, plan["attribute"])
-                base_query = attribute.get("promql")
-                if not base_query:
-                    raise KeyError(f"Attribute {plan['entity']}.{plan['attribute']} missing promql.")
-
-                if template == "TREND":
-                    value = client.avg_over_time(base_query, window)
-                    if math.isfinite(value):
-                        prom_facts.append(plan["statement"].format(range=window, value=value))
-                elif template == "RANKING":
-                    k_value = int(plan.get("k") or top_k)
-                    rows = client.topk_over_time(base_query, window, k_value)
-                    items = [
-                        f"{_pretty_container_name(row.get('metric', {}))}={float(row['value'][1]):.3f}"
-                        for row in rows
-                        if _is_finite_value(row.get("value"))
-                    ]
-                    prom_facts.append(plan["statement"].format(k=k_value, items=", ".join(items) or "none"))
-                elif template == "THRESHOLD":
-                    operator = plan.get("operator")
-                    value = plan.get("value")
-                    if operator is None or value is None:
-                        raise KeyError("THRESHOLD plan must define 'operator' and 'value'.")
-                    query = f"{base_query} {operator} {value}"
-                    rows = client.query(query)
-                    if not rows:
-                        prom_facts.append(plan["statement"].format(items="none"))
-                    else:
-                        labels = []
-                        for row in rows:
-                            metric = row.get("metric", {})
-                            label = "/".join(
-                                filter(
-                                    None,
-                                    [
-                                        metric.get("instance"),
-                                        metric.get("mountpoint"),
-                                        metric.get("device"),
-                                    ],
-                                )
-                            )
-                            labels.append(label or "unknown")
-                        prom_facts.append(plan["statement"].format(items=", ".join(labels)))
-                else:
-                    raise ValueError(f"Unknown plan template '{template}'")
-        except (PrometheusUnavailable, KeyError, ValueError):
-            prom_facts = []
-            source = "local"
-        else:
-            if prom_facts:
-                facts.extend(prom_facts)
-                source = "prometheus"
-            else:
-                source = "local"
-    else:
-        source = "local"
+                if math.isfinite(cpu_pct):
+                    label = f"{proc} ({cpu_pct:.1f}% CPU)"
+                    if inst_label:
+                        label = f"{inst_label}: {label}"
+                    facts.append(label)
+        except PrometheusUnavailable:
+            facts = []
 
     if not facts:
-        process_limit = max(top_k, _max_process_limit(ring)) or top_k
-        snapshot = gather_metrics(top_n=process_limit)
-        local_facts = _facts_from_local(snapshot, ring, blueprint, window=window, top_k=top_k)
-        if local_facts:
-            facts.extend(local_facts)
-        else:
-            cpu = snapshot["cpu"]["percent"]
-            mem_available = snapshot["memory"]["available"] / (1024**3)
-            disk_percent = snapshot["filesystem"]["percent"]
-            top_processes = ", ".join(
-                f"{proc['name']}({proc['cpu_percent']:.1f}% CPU)" for proc in snapshot["top_processes"][:top_k]
-            )
-            facts.extend(
-                [
-                    f"Instant CPU usage is {cpu:.1f}% across {snapshot['cpu']['cores_logical']} logical cores.",
-                    f"Approximately {mem_available:.1f} GiB memory remains available.",
-                    f"Root filesystem utilization is {disk_percent:.1f}%.",
-                    f"Top {top_k} processes by CPU right now: {top_processes or 'none'}",
-                ]
-            )
-    else:
-        # Supplement Prometheus facts with local snapshots (e.g., top processes)
-        process_limit = max(top_k, _max_process_limit(ring)) or top_k
-        snapshot = gather_metrics(top_n=process_limit)
-        local_facts = _facts_from_local(snapshot, ring, blueprint, window=window, top_k=top_k)
-        for fact in local_facts:
-            if fact not in facts:
-                facts.append(fact)
+        return {"status": "no_data", "window": window, "top_k": top_k, "facts": [], "source": "none"}
+
     return {"status": "ok", "window": window, "top_k": top_k, "facts": facts, "source": source}
 
 
@@ -384,18 +289,11 @@ def evaluate_capacity(
     """Determine whether the workload can run now."""
     client = client or PROM
     results: List[Dict[str, Any]] = []
-    source = "prometheus"
+    source = "prometheus" if client.available else "local"
 
     need_cpu = float(requirements.get("cpu_pct", 0) or 0)
     need_mem = float(requirements.get("mem_bytes", 0) or 0)
     need_disk = float(requirements.get("disk_free_bytes", 0) or 0)
-
-    if not client.available:
-        try:
-            ring = _load_ring()
-        except (FileNotFoundError, json.JSONDecodeError, KeyError):
-            ring = None
-        _maybe_apply_datasource(client, ring)
 
     if client.available:
         try:
@@ -441,10 +339,8 @@ def evaluate_capacity(
                     }
                 )
         except PrometheusUnavailable:
-            source = "local"
             results = []
-    else:
-        source = "local"
+            source = "local"
 
     if not results:
         snapshot = gather_metrics()
@@ -481,6 +377,7 @@ def evaluate_capacity(
                 },
             }
         )
+        source = "local"
     return {"status": "ok", "results": results, "source": source}
 
 
@@ -494,24 +391,16 @@ def suggest_capacity_window(
 ) -> Dict[str, Any]:
     """Suggest execution windows based on recent utilization."""
     client = client or PROM
-    source = "prometheus"
+    source = "prometheus" if client.available else "local"
     need_cpu = float(requirements.get("cpu_pct", 0) or 0)
     need_mem = float(requirements.get("mem_bytes", 0) or 0)
     need_disk = float(requirements.get("disk_free_bytes", 0) or 0)
     results: List[Dict[str, Any]] = []
 
-    if not client.available:
-        try:
-            ring = _load_ring()
-        except (FileNotFoundError, json.JSONDecodeError, KeyError):
-            ring = None
-        _maybe_apply_datasource(client, ring)
-
     if client.available:
         try:
             cpu_busy = client.fetch_scalar_map(
-                'quantile_over_time(0.95, (100 * (1 - avg by (instance) '
-                '(rate(node_cpu_seconds_total{mode="idle"}[5m]))))[1h:1m])'
+                'quantile_over_time(0.95, (100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))))[1h:1m])'
             )
             mem_p05 = client.fetch_scalar_map('quantile_over_time(0.05, node_memory_MemAvailable_bytes[1h])')
             disk_p05 = client.fetch_scalar_map(
@@ -541,10 +430,8 @@ def suggest_capacity_window(
                 )
                 results.append({"instance": instance or host or "unknown", "windows": windows})
         except PrometheusUnavailable:
-            source = "local"
             results = []
-    else:
-        source = "local"
+            source = "local"
 
     if not results:
         snapshot = gather_metrics()
@@ -563,133 +450,12 @@ def suggest_capacity_window(
             }
         )
         results.append({"instance": hostname, "windows": windows})
+        source = "local"
     return {"status": "ok", "results": results, "source": source, "horizon_hours": horizon_hours}
-
-
-def _is_finite_value(value: Any) -> bool:
-    try:
-        val = float(value[1] if isinstance(value, (list, tuple)) else value)
-    except (TypeError, ValueError):
-        return False
-    return math.isfinite(val)
-
-
-def _extract_field(payload: Dict[str, Any], path: List[str]) -> Any:
-    value: Any = payload
-    for key in path:
-        if isinstance(value, dict):
-            value = value.get(key)
-        else:
-            return None
-    return value
-
-
-def _apply_transform(value: Any, transform: Optional[str]) -> Any:
-    if value is None or transform is None:
-        return value
-    if transform == "bytes_to_gib":
-        return float(value) / (1024**3)
-    return value
-
-
-def _format_process_list(processes: List[Dict[str, Any]], *, sort_key: str, limit: int, display: str | None) -> str:
-    if not isinstance(processes, list):
-        return "none"
-    safe_limit = max(1, limit)
-    items = sorted(processes, key=lambda proc: float(proc.get(sort_key) or 0.0), reverse=True)[:safe_limit]
-    formatted: List[str] = []
-    for proc in items:
-        name = proc.get("name") or "unknown"
-        if display == "memory":
-            rss = float(proc.get("rss_bytes") or 0.0)
-            if rss >= 1024**3:
-                formatted.append(f"{name} ({rss / (1024**3):.2f} GiB RSS)")
-            elif rss >= 1024**2:
-                formatted.append(f"{name} ({rss / (1024**2):.1f} MiB RSS)")
-            else:
-                formatted.append(f"{name} ({rss / 1024:.1f} KiB RSS)")
-        elif display == "cpu":
-            formatted.append(f"{name} ({float(proc.get('cpu_percent') or 0.0):.1f}% CPU)")
-        else:
-            formatted.append(name)
-    return ", ".join(formatted) if formatted else "none"
-
-
-def _max_process_limit(ring: Optional[Dict[str, Any]]) -> int:
-    if not ring:
-        return 0
-    max_limit = 0
-    for entity in ring.get("entities", []):
-        for attribute in entity.get("attributes", []):
-            fields = attribute.get("fields") or {}
-            if isinstance(fields, dict) and any(path == ["top_processes"] for path in fields.values()):
-                try:
-                    limit = int(attribute.get("limit", 0))
-                except (TypeError, ValueError):
-                    limit = 0
-                max_limit = max(max_limit, limit)
-    return max_limit
-
-
-def _facts_from_local(
-    metrics: Dict[str, Any],
-    ring: Optional[Dict[str, Any]],
-    blueprint: Optional[Dict[str, Any]],
-    *,
-    window: str,
-    top_k: int,
-) -> List[str]:
-    if not ring or not blueprint:
-        return []
-    facts: List[str] = []
-    for plan in blueprint.get("plans", []):
-        try:
-            entity = _find_entity(ring, plan["entity"])
-            attribute = _find_attribute(entity, plan["attribute"])
-        except KeyError:
-            continue
-
-        fields_spec = attribute.get("fields")
-        if not isinstance(fields_spec, dict):
-            continue
-        transforms = attribute.get("transforms") or {}
-        values: Dict[str, Any] = {}
-        for field, path in fields_spec.items():
-            if not isinstance(path, list):
-                continue
-            raw = _extract_field(metrics, path)
-            values[field] = _apply_transform(raw, transforms.get(field))
-
-        template = plan.get("template")
-        if template == "LOCAL_VALUE":
-            if any(v is None for v in values.values()):
-                continue
-            try:
-                facts.append(plan["statement"].format(range=window, **values))
-            except KeyError:
-                continue
-        elif template == "LOCAL_TOP":
-            processes = values.get("processes")
-            if not isinstance(processes, list):
-                continue
-            sort_key = attribute.get("sort_key") or "cpu_percent"
-            limit = int(attribute.get("limit", top_k) or top_k)
-            display = attribute.get("format")
-            formatted = _format_process_list(processes, sort_key=sort_key, limit=limit, display=display)
-            try:
-                facts.append(plan["statement"].format(items=formatted, range=window))
-            except KeyError:
-                continue
-    return facts
-
-
-def ensure_data_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":
     import argparse
-    import json as _json
 
     parser = argparse.ArgumentParser(description="EdgePilot metrics snapshot")
     parser.add_argument("--top-n", type=int, default=10, help="Number of processes to include")
@@ -698,4 +464,4 @@ if __name__ == "__main__":
 
     data = gather_metrics(top_n=args.top_n)
     indent = 2 if args.pretty else None
-    print(_json.dumps(data, indent=indent))
+    print(json.dumps(data, indent=indent))

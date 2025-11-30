@@ -167,7 +167,7 @@ python -m edgepilot_cli ask "Can I run a heavy build right now?"
 python -m edgepilot_cli ask "List my last few jobs" --format json
 
 # Queue new work
-python -m edgepilot_cli schedule --action run_shell --command "echo hello" --delay 5
+python -m edgepilot_cli schedule --action run_shell_commands --command "echo hello" --delay 5
 python -m edgepilot_cli schedule --action launch --command "Calculator"
 
 # Inspect the scheduler
@@ -194,7 +194,7 @@ Run the backend (`python -m main serve --host 127.0.0.1`) and interact with the 
   ```bash
   curl -X POST http://127.0.0.1:8000/api/schedule \
     -H "Content-Type: application/json" \
-    -d '{"action":"run_shell","command":"echo from API","delay_seconds":0}'
+    -d '{"action":"run_shell_commands","command":"echo from API","delay_seconds":0}'
   ```
 - `GET /api/tasks` — list recent scheduled tasks or filter by action.
 

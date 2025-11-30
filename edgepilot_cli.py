@@ -79,7 +79,7 @@ def _schedule(
 
 @cli.command("schedule")
 def schedule_command(
-    action: str = typer.Option(..., "--action", "-a", help="Action to run: run_shell, run_python, or launch."),
+    action: str = typer.Option(..., "--action", "-a", help="Action to run: run_shell_commands, run_python_script, or launch (run_shell/run_python also accepted for compatibility)."),
     command: Optional[str] = typer.Option(None, "--command", help="Shell command or application name."),
     script_path: Optional[Path] = typer.Option(None, "--script", "-s", help="Python script to execute."),
     args: Optional[List[str]] = typer.Option(None, "--arg", help="Arguments for the Python script.", show_default=False),
@@ -97,7 +97,7 @@ def _status(action: Optional[str], limit: int) -> List[Dict[str, Any]]:
 
 @cli.command("status")
 def status_command(
-    action: Optional[str] = typer.Option(None, "--action", "-a", help="Filter by action (run_shell, run_python, launch)."),
+    action: Optional[str] = typer.Option(None, "--action", "-a", help="Filter by action (run_shell_commands/run_python_script/launch)."),
     limit: int = typer.Option(5, "--limit", "-l", help="Maximum number of tasks to show."),
 ) -> None:
     """Show recent scheduled tasks."""
@@ -124,7 +124,7 @@ def _handle_repl_line(line: str) -> bool:
         return True
     if stripped.startswith("schedule"):
         typer.echo("Interactive scheduling wizard. Press Enter to skip optional prompts.")
-        action = typer.prompt("Action (run_shell/run_python/launch)", default="run_shell")
+        action = typer.prompt("Action (run_shell_commands/run_python_script/launch)", default="run_shell_commands")
         delay = typer.prompt("Delay seconds", default="0")
         command = typer.prompt("Command or application name", default="")
         script = typer.prompt("Python script path (optional)", default="")

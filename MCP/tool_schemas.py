@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 TOOL_SCHEMAS: List[Dict[str, Any]] = [
     {
         "name": "gather_metrics",
-        "description": "Collect comprehensive system metrics including CPU, memory, disk, network, battery, and process information. Use this to understand the current system state, identify resource bottlenecks, or monitor running applications.",
+        "description": "Collect a current snapshot of system metrics (CPU, memory, disk, network, battery, processes). Use ONLY for 'right now' status; do not use for multi-hour summaries.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -27,7 +27,7 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
     },
     {
         "name": "report_edge_status",
-        "description": "Summarize host utilization over a recent window using Prometheus when available, otherwise fall back to local psutil data.",
+        "description": "Summarize host utilization over a past window using Prometheus. Returns no_data when Prometheus history is unavailable.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -147,8 +147,8 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
         },
     },
     {
-        "name": "run_shell",
-        "description": "Execute a shell command on the local machine and return stdout/stderr. Use with caution for admin tasks or quick diagnostics.",
+        "name": "run_shell_commands",
+        "description": "Execute a shell command on the local machine. This tool records the job so the user can view it in the Jobs tab; do not attempt to fetch or summarize the output afterward.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -182,8 +182,8 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
         }
     },
     {
-        "name": "run_python",
-        "description": "Execute a Python script using the scheduler runtime. Provide the script path and optional arguments.",
+        "name": "run_python_script",
+        "description": "Execute a Python script using the scheduler runtime. Provide the script path and optional arguments. The user will view results in the Jobs tab; do not follow up with extra commands to read stdout/stderr.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -223,47 +223,6 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             },
             "required": ["path"]
         }
-    },
-    {
-        "name": "get_task_status",
-        "description": "Retrieve the latest status or output for a previously scheduled action (e.g., delayed Python script or shell command). Use this to answer follow-up questions such as 'what was the output?'.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "task_id": {
-                    "type": "string",
-                    "description": "Unique task identifier returned when the action was scheduled.",
-                },
-                "run_id": {
-                    "type": "string",
-                    "description": "Alias for task_id. EdgePilot always sets run_id = task_id in responses.",
-                },
-                "action": {
-                    "type": "string",
-                    "enum": ["run_python", "run_shell", "open_application"],
-                    "description": "Type of action to look up. If omitted, defaults to 'run_python' when a path is provided or 'run_shell' when a command is provided.",
-                },
-                "path": {
-                    "type": "string",
-                    "description": "Path to the Python script whose status or output you want. Used for run_python actions.",
-                },
-                "command": {
-                    "type": "string",
-                    "description": "Shell command string to check. Used for run_shell actions.",
-                },
-                "identifier": {
-                    "type": "string",
-                    "description": "Generic identifier when neither path nor command apply.",
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "Optional number of historical records to return (most recent first). Defaults to 1.",
-                    "minimum": 1,
-                    "default": 1,
-                },
-            },
-            "required": [],
-        },
     },
     {
         "name": "end_task",

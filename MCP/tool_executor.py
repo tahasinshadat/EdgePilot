@@ -11,17 +11,11 @@ from tools import (
     gather_metrics,
     launch,
     list_apps,
-    list_recent_tasks as list_recent_task_records,
-    list_tasks as list_task_records,
-    list_tasks_by_metadata as list_tasks_by_metadata_record,
     report_edge_status,
-    run_python as launcher_run_python,
-    run_shell as launcher_run_shell,
+    run_python_script as launcher_run_python,
+    run_shell_commands as launcher_run_shell,
     search,
     suggest_capacity_window,
-    get_task as get_task_record,
-    get_latest_task as get_latest_task_record,
-    get_latest_task_any as get_latest_task_any_record,
 )
 
 
@@ -39,9 +33,11 @@ class ToolExecutor:
             "search": self._execute_search,
             "list_apps": self._execute_list_apps,
             "end_task": self._execute_end_task,
+            "run_shell_commands": self._execute_run_shell,
+            "run_python_script": self._execute_run_python,
+            # Backwards compatibility
             "run_shell": self._execute_run_shell,
             "run_python": self._execute_run_python,
-            "get_task_status": self._execute_get_task_status,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -127,7 +123,6 @@ class ToolExecutor:
 
         # Use launcher.py's launch function
         success = launch(app_name, delay_seconds, chat_id=chat_id)
-        task_record = get_latest_task_any_record("open_application")
 
         if success:
             if delay_seconds > 0:
@@ -141,8 +136,6 @@ class ToolExecutor:
                 "app_name": app_name,
                 "delay_seconds": delay_seconds,
             }
-            if task_record:
-                payload["task"] = task_record
             return payload
         else:
             return {
@@ -194,7 +187,19 @@ class ToolExecutor:
             raise ValueError("command parameter is required")
         cwd = args.get("cwd")
         chat_id = args.get("chat_id")
-        result = launcher_run_shell(
+
+        # Prevent the model from trying to "cat" scheduler temp outputs; direct to Jobs tab instead.
+        blocked_output_peek = (
+            "/tmp/run_python_script_" in command and "output" in command
+        )
+        if blocked_output_peek:
+            return {
+                "status": "blocked",
+                "message": "Job output is available in the Jobs tab. No need to read temp files.",
+                "command": command,
+            }
+
+        raw = launcher_run_shell(
             command,
             cwd=cwd,
             delay_seconds=args.get("delay_seconds"),
@@ -202,7 +207,15 @@ class ToolExecutor:
             delay=args.get("delay"),
             chat_id=chat_id,
         )
-        return result
+        return {
+            "status": raw.get("status"),
+            "task_id": raw.get("task_id") or raw.get("run_id"),
+            "run_id": raw.get("run_id") or raw.get("task_id"),
+            "action": "run_shell_commands",
+            "command": raw.get("command"),
+            "delay_seconds": raw.get("delay_seconds"),
+            "message": "Shell command recorded. Check the Jobs tab for progress and output.",
+        }
 
     def _execute_run_python(self, args: Dict[str, Any]) -> Dict[str, Any]:
         path = args.get("path")
@@ -213,7 +226,7 @@ class ToolExecutor:
             raise ValueError("args must be a list when provided")
         cwd = args.get("cwd")
         chat_id = args.get("chat_id")
-        result = launcher_run_python(
+        raw = launcher_run_python(
             path,
             args=script_args,
             cwd=cwd,
@@ -222,74 +235,15 @@ class ToolExecutor:
             delay=args.get("delay"),
             chat_id=chat_id,
         )
-        return result
-
-    def _build_task_response(self, records, action, limit=1, target=None):
-        """Helper to build consistent task status responses."""
-        if limit > 1:
-            return {
-                "status": "ok" if records else "not_found",
-                "action": action,
-                "records": records,
-                "limit": limit,
-                **({"target": target} if target else {})
-            }
-        if records:
-            return records[0] if isinstance(records, list) else records
         return {
-            "status": "not_found",
-            "action": action,
-            **({"target": target} if target else {})
+            "status": raw.get("status"),
+            "task_id": raw.get("task_id") or raw.get("run_id"),
+            "run_id": raw.get("run_id") or raw.get("task_id"),
+            "action": "run_python_script",
+            "path": raw.get("path"),
+            "delay_seconds": raw.get("delay_seconds"),
+            "message": "Python job recorded. Check the Jobs tab for progress and output.",
         }
-
-    def _execute_get_task_status(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        # Check if task_id or run_id is provided
-        task_id = args.get("task_id") or args.get("run_id")
-        identifier = args.get("identifier")
-
-        # Allow passing task_id via identifier for backwards compatibility
-        if not task_id and isinstance(identifier, str):
-            normalized_identifier = identifier.strip()
-            if ":" in normalized_identifier:
-                prefix = normalized_identifier.split(":", 1)[0]
-                if prefix in {"run_python", "run_shell", "open_application"}:
-                    task_id = normalized_identifier
-
-        # If we have a task_id, look it up directly
-        if task_id:
-            record = get_task_record(task_id)
-            return record if record else {"status": "not_found", "task_id": task_id}
-
-        # Infer action from parameters
-        action = args.get("action")
-        path = args.get("path")
-        command = args.get("command")
-
-        if not action:
-            action = "run_python" if path else "run_shell" if command else "open_application" if identifier else None
-
-        if action and action not in {"run_python", "run_shell", "open_application"}:
-            raise ValueError("action must be 'run_python', 'run_shell', or 'open_application'")
-
-        limit = int(args.get("limit") or 1)
-
-        # Special handling for open_application with metadata lookup
-        if action == "open_application" and identifier:
-            meta_records = list_tasks_by_metadata_record(action, "app_name", identifier, limit=limit)
-            return self._build_task_response(meta_records, action, limit)
-
-        # General target-based lookup
-        target = identifier or path or command
-        if isinstance(target, str):
-            target = target.strip() or None
-
-        if target:
-            records = list_task_records(action, target, limit=limit) if limit > 1 else get_latest_task_record(action, target)
-            return self._build_task_response(records, action, limit, target)
-
-        # Fallback to recent tasks
-        records = list_recent_task_records(action, limit=limit) if limit > 1 else get_latest_task_any_record(action)
-        return self._build_task_response(records, action, limit)
 
 
 

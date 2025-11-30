@@ -26,7 +26,7 @@ def test_cli_ask_offline_answer():
 def test_cli_schedule_and_status_commands():
     schedule = runner.invoke(
         edgepilot_cli,
-        ["schedule", "--action", "run_shell", "--command", "echo EdgePilot CLI test"],
+        ["schedule", "--action", "run_shell_commands", "--command", "echo EdgePilot CLI test"],
     )
     assert schedule.exit_code == 0
     status = runner.invoke(edgepilot_cli, ["status"])
@@ -41,7 +41,7 @@ def test_api_ask_and_schedule_endpoints():
     assert "answer" in ask_payload
     schedule_response = client.post(
         "/api/schedule",
-        json={"action": "run_shell", "command": "echo EdgePilot API test", "delay_seconds": 0},
+        json={"action": "run_shell_commands", "command": "echo EdgePilot API test", "delay_seconds": 0},
     )
     assert schedule_response.status_code == 200
     tasks_response = client.get("/api/tasks")

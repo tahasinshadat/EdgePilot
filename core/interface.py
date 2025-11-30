@@ -15,14 +15,14 @@ from providers.base import ChatMessage
 from tools.metrics import gather_metrics
 from tools.scheduler import (
     launch,
-    list_recent_tasks,
-    run_python,
-    run_shell,
+    run_python_script,
+    run_shell_commands,
+    _REGISTRY,
 )
 
 
 def _recent_tasks(limit: int = 5) -> List[Dict[str, Any]]:
-    return list_recent_tasks(action=None, limit=limit)
+    return _REGISTRY.list_recent(action=None, limit=limit)
 
 
 def _metrics_context(metrics: Dict[str, Any], tasks: List[Dict[str, Any]], extra_context: Optional[Dict[str, Any]]) -> str:
@@ -136,20 +136,20 @@ def schedule_operation(action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     action_normalized = action.lower()
     delay = int(payload.get("delay_seconds", 0) or 0)
 
-    if action_normalized == "run_shell":
+    if action_normalized in {"run_shell", "run_shell_commands"}:
         command = payload.get("command")
         if not command:
-            raise ValueError("command is required for run_shell")
+            raise ValueError("command is required for run_shell_commands")
         cwd = payload.get("cwd")
-        return run_shell(command, cwd=cwd, delay_seconds=delay)
+        return run_shell_commands(command, cwd=cwd, delay_seconds=delay)
 
-    if action_normalized == "run_python":
+    if action_normalized in {"run_python", "run_python_script"}:
         script = payload.get("script_path")
         if not script:
-            raise ValueError("script_path is required for run_python")
+            raise ValueError("script_path is required for run_python_script")
         args = payload.get("args") or []
         cwd = payload.get("cwd")
-        return run_python(script, args=args, cwd=cwd, delay_seconds=delay)
+        return run_python_script(script, args=args, cwd=cwd, delay_seconds=delay)
 
     if action_normalized == "launch":
         application = payload.get("application") or payload.get("app_name") or payload.get("command")
@@ -162,7 +162,7 @@ def schedule_operation(action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def summarize_tasks(action: Optional[str] = None, limit: int = 5) -> List[Dict[str, Any]]:
-    records = list_recent_tasks(action, limit)
+    records = _REGISTRY.list_recent(action, limit)
     summary = []
     for record in records:
         summary.append(
