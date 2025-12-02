@@ -4,7 +4,7 @@ EdgePilot Installer - Simplified version
 Cross-platform installer/uninstaller for EdgePilot AI Copilot Console
 
 Run Build:
-pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows installer/install.py
+pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows-v1.0.1 installer/install.py
 """
 
 import os
