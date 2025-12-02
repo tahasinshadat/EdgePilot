@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-EdgePilot Installer - Simplified version
+EdgePilot Installer - macOS version
 Cross-platform installer/uninstaller for EdgePilot AI Copilot Console
 
 Run Build:
-pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows installer/install.py
+pyinstaller --onefile --windowed --icon=assets/logo.icns --name=EdgePilot-Installer-macOS-v1.0.1 installer/install_macos.py
 """
 
 import os
@@ -27,8 +27,8 @@ import threading
 REPO_ZIP_URL = "https://github.com/tahasinshadat/EdgePilot/archive/refs/heads/main.zip"
 DOWNLOAD_TIMEOUT = 300  # 5 minutes
 
-# Default installation directory (Windows only)
-DEFAULT_INSTALL_DIR = Path.home() / "EdgePilot"
+# Default installation directory (macOS)
+DEFAULT_INSTALL_DIR = Path.home() / "Applications" / "EdgePilot"
 
 
 # === Helper Functions ===
@@ -85,7 +85,7 @@ def check_single_instance():
     try:
         # Try to create an exclusive lock file
         if lock_file.exists():
-            # Check if it's stale (older than 2 minutes instead of 5)
+            # Check if it's stale (older than 2 minutes)
             import time
             if time.time() - lock_file.stat().st_mtime > 120:
                 # Stale lock, remove it
@@ -94,24 +94,10 @@ def check_single_instance():
                 # Check if the process is actually running
                 try:
                     pid = int(lock_file.read_text().strip())
-                    # On Windows, check if process exists
-                    if platform.system() == "Windows":
-                        result = subprocess.run(
-                            ["tasklist", "/FI", f"PID eq {pid}"],
-                            capture_output=True,
-                            text=True,
-                            timeout=2
-                        )
-                        # If PID not found in tasklist, lock is stale
-                        if f"{pid}" not in result.stdout:
-                            lock_file.unlink()
-                        else:
-                            return False
-                    else:
-                        # On Unix, check if process exists
-                        os.kill(pid, 0)
-                        return False
-                except (ValueError, ProcessLookupError, subprocess.TimeoutExpired):
+                    # On Unix, check if process exists
+                    os.kill(pid, 0)
+                    return False
+                except (ValueError, ProcessLookupError):
                     # Invalid PID or process doesn't exist, remove stale lock
                     lock_file.unlink()
 
@@ -137,6 +123,20 @@ def release_lock():
         pass
 
 
+def check_python():
+    """Check if Python 3 is installed."""
+    try:
+        result = subprocess.run(
+            ["python3", "--version"],
+            check=True,
+            capture_output=True,
+            timeout=5
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
 def check_node():
     """Check if Node.js/npm is installed."""
     try:
@@ -144,8 +144,7 @@ def check_node():
             ["npm", "--version"],
             check=True,
             capture_output=True,
-            timeout=5,
-            shell=(platform.system() == "Windows")
+            timeout=5
         )
         return True
     except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
@@ -166,35 +165,14 @@ def check_writable(directory):
 
 
 def get_desktop_path():
-    """Get the actual desktop path, handling OneDrive integration."""
-    # Try OneDrive Desktop first (most common on Windows 10/11)
-    onedrive_desktop = Path.home() / "OneDrive" / "Desktop"
-    if onedrive_desktop.exists():
-        return onedrive_desktop
+    """Get the desktop path for macOS."""
+    desktop = Path.home() / "Desktop"
+    if desktop.exists():
+        return desktop
 
-    # Try regular Desktop
-    regular_desktop = Path.home() / "Desktop"
-    if regular_desktop.exists():
-        return regular_desktop
-
-    # On Windows, try to get from registry
-    if platform.system() == "Windows":
-        try:
-            import winreg
-            key = winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER,
-                r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
-            )
-            desktop_path, _ = winreg.QueryValueEx(key, "Desktop")
-            winreg.CloseKey(key)
-            # Expand environment variables
-            desktop_path = os.path.expandvars(desktop_path)
-            return Path(desktop_path)
-        except Exception:
-            pass
-
-    # Fallback to regular Desktop (will be created if needed)
-    return regular_desktop
+    # Fallback - create it if needed
+    desktop.mkdir(parents=True, exist_ok=True)
+    return desktop
 
 
 # === Installer GUI ===
@@ -322,6 +300,11 @@ class InstallerGUI:
     def _run_install(self):
         """Run the installation process."""
         try:
+            # Check Python 3
+            self._update_progress("Checking for Python 3...")
+            if not check_python():
+                raise Exception("Python 3 not found!\n\nInstall Python 3 from https://www.python.org/ and try again.")
+
             # Check Node.js
             self._update_progress("Checking for Node.js...")
             if not check_node():
@@ -475,94 +458,73 @@ DEFAULT_SMTP_USE_TLS=true
 
     def _install_python_deps(self):
         """Install Python dependencies."""
-        # Find the system Python executable (not installer.exe when running from PyInstaller)
-        python_exe = shutil.which("python")
-        if not python_exe:
-            raise Exception("Python executable not found in system PATH.\n\nPlease ensure Python is installed and added to PATH.")
-
         try:
-            subprocess.run(
-                [python_exe, "-m", "pip", "install", "-r", "requirements.txt"],
-                check=True,
-                capture_output=True,
+            result = subprocess.run(
+                ["python3", "-m", "pip", "install", "-r", "requirements.txt"],
                 cwd=str(self.install_dir),
-                shell=(platform.system() == "Windows"),  # Use shell on Windows for proper environment
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
             )
+
+            # Check if command failed
+            if result.returncode != 0:
+                error_msg = result.stderr.decode('utf-8', errors='ignore')
+                raise subprocess.CalledProcessError(result.returncode, result.args, stderr=error_msg)
+
         except subprocess.TimeoutExpired:
             raise Exception("Python dependency installation timed out.\n\nPlease check your internet connection and try again.")
         except subprocess.CalledProcessError as e:
-            error_msg = e.stderr.decode() if e.stderr else str(e)
+            error_msg = e.stderr if isinstance(e.stderr, str) else (e.stderr.decode() if e.stderr else str(e))
             raise Exception(f"Python dependency installation failed:\n{error_msg}")
 
     def _install_node_deps(self):
         """Install Node.js dependencies."""
         try:
-            subprocess.run(
+            result = subprocess.run(
                 ["npm", "install"],
-                check=True,
-                capture_output=True,
                 cwd=str(self.install_dir / "ui"),
-                shell=(platform.system() == "Windows"),
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
             )
+
+            # Check if command failed
+            if result.returncode != 0:
+                error_msg = result.stderr.decode('utf-8', errors='ignore')
+                raise subprocess.CalledProcessError(result.returncode, result.args, stderr=error_msg)
+
         except subprocess.TimeoutExpired:
             raise Exception("Node.js dependency installation timed out.\n\nPlease check your internet connection and try again.")
         except subprocess.CalledProcessError as e:
-            error_msg = e.stderr.decode() if e.stderr else str(e)
+            error_msg = e.stderr if isinstance(e.stderr, str) else (e.stderr.decode() if e.stderr else str(e))
             raise Exception(f"Node.js dependency installation failed:\n{error_msg}")
 
     def _create_shortcut(self):
-        """Create desktop shortcut with custom icon (Windows only)."""
+        """Create desktop shortcut (macOS - using shell script)."""
         desktop = get_desktop_path()
-        shortcut_path = desktop / "EdgePilot.lnk"
 
-        # Create a VBS launcher in the install directory that runs python without console
-        vbs_launcher_path = self.install_dir / "launch_edgepilot.vbs"
-        vbs_launcher_content = f'''Set objShell = CreateObject("WScript.Shell")
-objShell.CurrentDirectory = "{self.install_dir}"
-objShell.Run "python main.py", 0, False
-Set objShell = Nothing
+        # Create a shell script launcher in the install directory
+        launcher_path = self.install_dir / "launch_edgepilot.command"
+        launcher_content = f'''#!/bin/bash
+cd "{self.install_dir}"
+python3 main.py
 '''
-        vbs_launcher_path.write_text(vbs_launcher_content)
+        launcher_path.write_text(launcher_content)
 
-        # Path to icon (use logo.ico from assets folder)
-        icon_path = self.install_dir / "assets" / "logo.ico"
+        # Make the launcher executable
+        os.chmod(launcher_path, 0o755)
 
-        # If logo.ico doesn't exist, try logo.png
-        if not icon_path.exists():
-            icon_path = self.install_dir / "assets" / "logo.png"
-
-        # Create a temporary VBS script to create the shortcut
-        temp_vbs = Path(tempfile.gettempdir()) / "create_edgepilot_shortcut.vbs"
-
-        vbs_content = f'''Set oWS = WScript.CreateObject("WScript.Shell")
-Set oLink = oWS.CreateShortcut("{shortcut_path}")
-oLink.TargetPath = "{vbs_launcher_path}"
-oLink.WorkingDirectory = "{self.install_dir}"
-oLink.Description = "EdgePilot AI Copilot Console"
-'''
-
-        # Add icon if it exists
-        if icon_path.exists():
-            vbs_content += f'oLink.IconLocation = "{icon_path}"\n'
-
-        vbs_content += 'oLink.Save\n'
-
-        # Write and execute the VBS script
-        temp_vbs.write_text(vbs_content)
-
+        # Create a symlink on the desktop
+        desktop_link = desktop / "EdgePilot.command"
         try:
-            subprocess.run(
-                ["cscript", "//nologo", str(temp_vbs)],
-                check=True,
-                capture_output=True,
-                timeout=10
-            )
-        finally:
-            # Clean up the temporary VBS script
-            if temp_vbs.exists():
-                temp_vbs.unlink()
+            if desktop_link.exists():
+                desktop_link.unlink()
+            desktop_link.symlink_to(launcher_path)
+        except Exception as e:
+            # If symlink fails, just copy the file
+            shutil.copy(launcher_path, desktop_link)
+            os.chmod(desktop_link, 0o755)
 
     def _show_success(self):
         """Show success dialog with launch option."""
@@ -608,16 +570,16 @@ oLink.Description = "EdgePilot AI Copilot Console"
             return
 
         try:
-            # Use the VBS launcher to run python without console window
-            vbs_launcher = self.install_dir / "launch_edgepilot.vbs"
-
-            # Launch EdgePilot using VBS (no console window)
+            # Launch EdgePilot using python3
             subprocess.Popen(
-                ["wscript", str(vbs_launcher)],
-                cwd=str(self.install_dir)
+                ["python3", "main.py"],
+                cwd=str(self.install_dir),
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
             )
 
-            # Close installer immediately to prevent re-opening
+            # Close installer immediately
             self.root.quit()
             if dialog:
                 dialog.destroy()
@@ -650,7 +612,7 @@ class UninstallerGUI:
 
         self.root = tk.Tk()
         self.root.title("EdgePilot Uninstaller")
-        self.root.geometry("600x500")  # Increased height to show all content
+        self.root.geometry("600x500")
         self.root.resizable(False, False)
 
         self.install_dir = DEFAULT_INSTALL_DIR
@@ -671,7 +633,7 @@ class UninstallerGUI:
         main_frame = ttk.Frame(self.root, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Installation Path - Make it prominent
+        # Installation Path
         path_frame = ttk.LabelFrame(main_frame, text="Installation Location", padding="15")
         path_frame.pack(fill=tk.X, pady=(10, 20))
 
@@ -711,11 +673,11 @@ class UninstallerGUI:
         self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
         self.progress.pack(fill=tk.X, pady=(0, 20))
 
-        # Buttons - Make them more prominent
+        # Buttons
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(pady=10)
 
-        # Uninstall Button - larger and more prominent
+        # Uninstall Button
         self.uninstall_btn = ttk.Button(
             button_frame,
             text="Uninstall EdgePilot",
@@ -795,23 +757,13 @@ class UninstallerGUI:
             self.uninstall_btn.config(state="normal")
 
     def _remove_shortcuts(self):
-        """Remove desktop shortcuts (Windows only)."""
+        """Remove desktop shortcuts (macOS)."""
         desktop = get_desktop_path()
 
-        # Remove .lnk shortcut
-        lnk_file = desktop / "EdgePilot.lnk"
-        if lnk_file.exists():
-            lnk_file.unlink()
-
-        # Remove old VBS launcher (if exists from previous version)
-        vbs_file = desktop / "EdgePilot.vbs"
-        if vbs_file.exists():
-            vbs_file.unlink()
-
-        # Remove old batch file (if exists from previous version)
-        batch_file = desktop / "EdgePilot.bat"
-        if batch_file.exists():
-            batch_file.unlink()
+        # Remove .command shortcut
+        command_file = desktop / "EdgePilot.command"
+        if command_file.exists():
+            command_file.unlink()
 
     def run(self):
         """Run the uninstaller."""
@@ -824,11 +776,11 @@ class UninstallerGUI:
 
 def main():
     """Main entry point - decide install vs uninstall mode."""
-    # Check platform - Windows only
+    # Check platform - macOS only
     system = platform.system()
-    if system != "Windows":
+    if system != "Darwin":
         print(f"Unsupported platform: {system}")
-        print("EdgePilot installer currently supports Windows only.")
+        print("This installer is for macOS only. Use install.py for Windows.")
         sys.exit(1)
 
     try:
