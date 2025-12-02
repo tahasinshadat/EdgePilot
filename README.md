@@ -12,15 +12,30 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 - **Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
 - **Lightweight** - Clean codebase focused on core functionality
 
+## Architecture
+
+EdgePilot uses a modular architecture with clear separation between the UI, backend API, and system tools:
+
+![EdgePilot Architecture](assets/architecture.png)
+
+**Key Components:**
+- **Electron UI** - Desktop interface built with HTML/CSS/JS, communicates with backend via REST API
+- **FastAPI Backend** - Handles chat management, provider abstraction, and tool execution
+- **Provider Layer** - Pluggable LLM adapters (Gemini with tools, Claude, GPT)
+- **MCP Integration** - Tool schemas and execution engine for system operations
+- **System Tools** - Metrics gathering, app launcher, process management, usage monitoring
+- **Scheduler** - Task queue for delayed execution and background jobs
+- **Data Layer** - JSON-based persistence for chats, metrics, and tool history
+
 ## Installation
 
-**New! Automated Installer Available**
+**New! Automated Installers Available**
 
-For the easiest installation experience, use our cross-platform installer:
-- **Windows**: Download `EdgePilot-Installer-Windows-v1.0.0.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
-- **macOS**: Coming Soon
+For the easiest installation experience, use our cross-platform installers:
+- **Windows**: Download `EdgePilot-Installer-Windows-v1.0.1.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
+- **macOS**: Download `EdgePilot-Installer-macOS-v1.0.1.app` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases) (COMING SOON)
 
-The installer will guide you through setup, configure your API keys, install dependencies, and create a desktop shortcut automatically.
+The installers will guide you through setup, configure your API keys, install dependencies, and create a desktop shortcut automatically.
 
 **Full Installation Guide**: See [INSTALL.md](INSTALL.md) for detailed instructions and manual installation.
 
