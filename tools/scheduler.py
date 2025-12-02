@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from tools.scheduler_components import (
+    BaseScheduler,
     CommandResult,
     TaskExecutionError,
     TaskRegistry,
@@ -28,7 +29,7 @@ _REGISTRY = TaskRegistry()
 # Scheduler factory
 # ============================================================================
 
-def _get_scheduler() -> "BaseScheduler":
+def _get_scheduler() -> BaseScheduler:
     system = platform.system()
     if system == "Darwin":
         return MacScheduler()
