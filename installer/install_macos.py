@@ -137,14 +137,37 @@ def check_python():
         return False
 
 
+def resolve_npm():
+    """
+    Locate npm and build an environment with common install paths.
+    Handles GUI launches where PATH is stripped (e.g., PyInstaller app).
+    """
+    env = os.environ.copy()
+    current_paths = [p for p in env.get("PATH", "").split(os.pathsep) if p]
+    fallback_paths = ["/opt/homebrew/bin", "/usr/local/bin"]
+
+    for path in fallback_paths:
+        if path not in current_paths:
+            current_paths.append(path)
+
+    env["PATH"] = os.pathsep.join(current_paths)
+    npm_path = shutil.which("npm", path=env["PATH"])
+    return npm_path, env
+
+
 def check_node():
     """Check if Node.js/npm is installed."""
     try:
+        npm_path, npm_env = resolve_npm()
+        if not npm_path:
+            return False
+
         subprocess.run(
-            ["npm", "--version"],
+            [npm_path, "--version"],
             check=True,
             capture_output=True,
-            timeout=5
+            timeout=5,
+            env=npm_env
         )
         return True
     except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
@@ -481,12 +504,20 @@ DEFAULT_SMTP_USE_TLS=true
     def _install_node_deps(self):
         """Install Node.js dependencies."""
         try:
+            npm_path, npm_env = resolve_npm()
+            if not npm_path:
+                raise Exception(
+                    "Node.js/npm not found!\n\nEnsure npm is installed and in PATH "
+                    "(e.g., /opt/homebrew/bin or /usr/local/bin)."
+                )
+
             result = subprocess.run(
-                ["npm", "install"],
+                [npm_path, "install"],
                 cwd=str(self.install_dir / "ui"),
                 timeout=300,  # 5 minute timeout
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
+                env=npm_env
             )
 
             # Check if command failed
