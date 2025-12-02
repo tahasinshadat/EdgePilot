@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-EdgePilot Installer - Simplified version
-Cross-platform installer/uninstaller for EdgePilot AI Copilot Console
+EdgePilot Installer - Windows version
+Installer/uninstaller for EdgePilot AI Copilot Console
 
 Run Build:
-pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows-v1.0.1 installer/install.py
+pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows-v1.0.1 installer/install_windows.py
 """
 
 import os
