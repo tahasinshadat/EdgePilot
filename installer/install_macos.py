@@ -218,6 +218,7 @@ class InstallerGUI:
         self.gemini_key = ""
         self.claude_key = ""
         self.create_shortcut = True
+        self.add_to_path = True
         self.installation_started = False  # Track if we've created files
 
         self._build_gui()
@@ -263,6 +264,9 @@ class InstallerGUI:
         self.shortcut_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(options_frame, text="Create Desktop Shortcut", variable=self.shortcut_var).pack(anchor=tk.W)
 
+        self.add_to_path_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(options_frame, text="Add to PATH (enables 'edgepilot' command in terminal)", variable=self.add_to_path_var).pack(anchor=tk.W)
+
         # Progress
         self.progress_var = tk.StringVar(value="Ready to install")
         ttk.Label(main_frame, textvariable=self.progress_var).pack(pady=(10, 5))
@@ -297,6 +301,7 @@ class InstallerGUI:
 
         self.claude_key = self.claude_entry.get().strip()
         self.create_shortcut = self.shortcut_var.get()
+        self.add_to_path = self.add_to_path_var.get()
         self.install_dir = Path(self.install_path_var.get())
 
         # Check if directory is writable
@@ -354,6 +359,11 @@ class InstallerGUI:
             if self.create_shortcut:
                 self._update_progress("Creating desktop shortcut...")
                 self._create_shortcut()
+
+            # Add to PATH
+            if self.add_to_path:
+                self._update_progress("Adding EdgePilot to PATH...")
+                self._add_to_path()
 
             # Success!
             mark_installation_finished()  # Clear the lock
@@ -556,6 +566,57 @@ python3 main.py
             # If symlink fails, just copy the file
             shutil.copy(launcher_path, desktop_link)
             os.chmod(desktop_link, 0o755)
+
+    def _add_to_path(self):
+        """Add EdgePilot to PATH (macOS)."""
+        # Create a bin directory in the installation
+        bin_dir = self.install_dir / "bin"
+        bin_dir.mkdir(exist_ok=True)
+
+        # Create edgepilot script
+        script_file = bin_dir / "edgepilot"
+        script_content = f'''#!/bin/bash
+cd "{self.install_dir}"
+python3 -m edgepilot_cli "$@"
+'''
+        script_file.write_text(script_content)
+        os.chmod(script_file, 0o755)
+
+        # Add to shell profiles
+        shell_configs = [
+            Path.home() / ".zshrc",
+            Path.home() / ".bash_profile",
+            Path.home() / ".bashrc"
+        ]
+
+        path_export = f'\n# EdgePilot CLI\nexport PATH="{bin_dir}:$PATH"\n'
+
+        for config_file in shell_configs:
+            try:
+                # Check if file exists and if our path is already there
+                if config_file.exists():
+                    content = config_file.read_text()
+                    if str(bin_dir) in content:
+                        continue  # Already added
+
+                # Append to file
+                with open(config_file, 'a') as f:
+                    f.write(path_export)
+            except Exception as e:
+                print(f"Warning: Could not update {config_file}: {e}")
+                # Not critical, so continue
+
+        # Try to create symlink in /usr/local/bin if writable
+        try:
+            usr_local_bin = Path("/usr/local/bin")
+            if usr_local_bin.exists() and os.access(usr_local_bin, os.W_OK):
+                symlink_path = usr_local_bin / "edgepilot"
+                if symlink_path.exists():
+                    symlink_path.unlink()
+                symlink_path.symlink_to(script_file)
+        except Exception as e:
+            # Not critical if this fails - shell profile will work
+            print(f"Info: Could not create symlink in /usr/local/bin (will use shell profile instead): {e}")
 
     def _show_success(self):
         """Show success dialog with launch option."""
@@ -764,6 +825,10 @@ class UninstallerGUI:
             self._update_progress("Removing desktop shortcuts...")
             self._remove_shortcuts()
 
+            # Remove from PATH
+            self._update_progress("Removing from PATH...")
+            self._remove_from_path()
+
             # Remove installation
             self._update_progress("Removing installation files...")
             if self.install_dir.exists():
@@ -795,6 +860,64 @@ class UninstallerGUI:
         command_file = desktop / "EdgePilot.command"
         if command_file.exists():
             command_file.unlink()
+
+    def _remove_from_path(self):
+        """Remove EdgePilot from PATH (macOS)."""
+        try:
+            bin_dir = self.install_dir / "bin"
+            bin_dir_str = str(bin_dir)
+
+            # Remove from shell profiles
+            shell_configs = [
+                Path.home() / ".zshrc",
+                Path.home() / ".bash_profile",
+                Path.home() / ".bashrc"
+            ]
+
+            for config_file in shell_configs:
+                try:
+                    if not config_file.exists():
+                        continue
+
+                    # Read file content
+                    content = config_file.read_text()
+
+                    # Remove our PATH export lines
+                    lines = content.split('\n')
+                    new_lines = []
+                    skip_next = False
+
+                    for line in lines:
+                        # Skip our comment and export lines
+                        if '# EdgePilot CLI' in line:
+                            skip_next = True
+                            continue
+                        if skip_next and bin_dir_str in line:
+                            skip_next = False
+                            continue
+                        new_lines.append(line)
+
+                    # Write back if changed
+                    new_content = '\n'.join(new_lines)
+                    if new_content != content:
+                        config_file.write_text(new_content)
+
+                except Exception as e:
+                    print(f"Warning: Could not update {config_file}: {e}")
+
+            # Remove symlink from /usr/local/bin if it exists
+            try:
+                symlink_path = Path("/usr/local/bin") / "edgepilot"
+                if symlink_path.exists() and symlink_path.is_symlink():
+                    # Check if it points to our installation
+                    if str(bin_dir) in str(symlink_path.readlink()):
+                        symlink_path.unlink()
+            except Exception as e:
+                print(f"Info: Could not remove symlink from /usr/local/bin: {e}")
+
+        except Exception as e:
+            print(f"Warning: Could not remove from PATH: {e}")
+            # Not critical, so don't fail uninstallation
 
     def run(self):
         """Run the uninstaller."""

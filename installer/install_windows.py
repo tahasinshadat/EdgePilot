@@ -217,6 +217,7 @@ class InstallerGUI:
         self.gemini_key = ""
         self.claude_key = ""
         self.create_shortcut = True
+        self.add_to_path = True
         self.installation_started = False  # Track if we've created files
 
         self._build_gui()
@@ -262,6 +263,9 @@ class InstallerGUI:
         self.shortcut_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(options_frame, text="Create Desktop Shortcut", variable=self.shortcut_var).pack(anchor=tk.W)
 
+        self.add_to_path_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(options_frame, text="Add to PATH (enables 'edgepilot' command in terminal)", variable=self.add_to_path_var).pack(anchor=tk.W)
+
         # Progress
         self.progress_var = tk.StringVar(value="Ready to install")
         ttk.Label(main_frame, textvariable=self.progress_var).pack(pady=(10, 5))
@@ -296,6 +300,7 @@ class InstallerGUI:
 
         self.claude_key = self.claude_entry.get().strip()
         self.create_shortcut = self.shortcut_var.get()
+        self.add_to_path = self.add_to_path_var.get()
         self.install_dir = Path(self.install_path_var.get())
 
         # Check if directory is writable
@@ -348,6 +353,11 @@ class InstallerGUI:
             if self.create_shortcut:
                 self._update_progress("Creating desktop shortcut...")
                 self._create_shortcut()
+
+            # Add to PATH
+            if self.add_to_path:
+                self._update_progress("Adding EdgePilot to PATH...")
+                self._add_to_path()
 
             # Success!
             mark_installation_finished()  # Clear the lock
@@ -564,6 +574,72 @@ oLink.Description = "EdgePilot AI Copilot Console"
             if temp_vbs.exists():
                 temp_vbs.unlink()
 
+    def _add_to_path(self):
+        """Add EdgePilot to PATH (Windows)."""
+        # Create a Scripts directory in the installation
+        scripts_dir = self.install_dir / "Scripts"
+        scripts_dir.mkdir(exist_ok=True)
+
+        # Create edgepilot.bat file
+        bat_file = scripts_dir / "edgepilot.bat"
+        bat_content = f'''@echo off
+cd /d "{self.install_dir}"
+python -m edgepilot_cli %*
+'''
+        bat_file.write_text(bat_content)
+
+        # Add Scripts directory to user PATH using registry
+        try:
+            import winreg
+
+            # Open the user environment variables key
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Environment",
+                0,
+                winreg.KEY_READ | winreg.KEY_WRITE
+            )
+
+            try:
+                # Get current PATH value
+                current_path, _ = winreg.QueryValueEx(key, "Path")
+            except FileNotFoundError:
+                # Path doesn't exist, create it
+                current_path = ""
+
+            # Check if our Scripts dir is already in PATH
+            scripts_dir_str = str(scripts_dir)
+            if scripts_dir_str.lower() not in current_path.lower():
+                # Add to PATH
+                if current_path and not current_path.endswith(";"):
+                    current_path += ";"
+                new_path = current_path + scripts_dir_str
+
+                # Set the new PATH value
+                winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_path)
+
+            winreg.CloseKey(key)
+
+            # Notify system of environment change
+            import ctypes
+            HWND_BROADCAST = 0xFFFF
+            WM_SETTINGCHANGE = 0x001A
+            SMTO_ABORTIFHUNG = 0x0002  # Return if receiving thread is hung
+            # Use SendMessageTimeoutW to avoid hanging
+            ctypes.windll.user32.SendMessageTimeoutW(
+                HWND_BROADCAST,
+                WM_SETTINGCHANGE,
+                0,
+                "Environment",
+                SMTO_ABORTIFHUNG,
+                5000,  # 5 second timeout
+                None   # No result pointer needed
+            )
+
+        except Exception as e:
+            print(f"Warning: Could not add to PATH: {e}")
+            # Not critical, so don't fail installation
+
     def _show_success(self):
         """Show success dialog with launch option."""
         dialog = tk.Toplevel(self.root)
@@ -771,6 +847,10 @@ class UninstallerGUI:
             self._update_progress("Removing desktop shortcuts...")
             self._remove_shortcuts()
 
+            # Remove from PATH
+            self._update_progress("Removing from PATH...")
+            self._remove_from_path()
+
             # Remove installation
             self._update_progress("Removing installation files...")
             if self.install_dir.exists():
@@ -812,6 +892,61 @@ class UninstallerGUI:
         batch_file = desktop / "EdgePilot.bat"
         if batch_file.exists():
             batch_file.unlink()
+
+    def _remove_from_path(self):
+        """Remove EdgePilot from PATH (Windows)."""
+        try:
+            import winreg
+
+            scripts_dir = self.install_dir / "Scripts"
+            scripts_dir_str = str(scripts_dir)
+
+            # Open the user environment variables key
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Environment",
+                0,
+                winreg.KEY_READ | winreg.KEY_WRITE
+            )
+
+            try:
+                # Get current PATH value
+                current_path, _ = winreg.QueryValueEx(key, "Path")
+
+                # Remove our Scripts dir from PATH (exact match only)
+                path_entries = current_path.split(";")
+                new_entries = [entry for entry in path_entries if entry.strip() and entry.strip().lower() != scripts_dir_str.lower()]
+                new_path = ";".join(new_entries)
+
+                # Set the new PATH value
+                if new_path != current_path:
+                    winreg.SetValueEx(key, "Path", 0, winreg.REG_EXPAND_SZ, new_path)
+
+                    # Notify system of environment change
+                    import ctypes
+                    HWND_BROADCAST = 0xFFFF
+                    WM_SETTINGCHANGE = 0x001A
+                    SMTO_ABORTIFHUNG = 0x0002  # Return if receiving thread is hung
+                    # Use SendMessageTimeoutW to avoid hanging
+                    ctypes.windll.user32.SendMessageTimeoutW(
+                        HWND_BROADCAST,
+                        WM_SETTINGCHANGE,
+                        0,
+                        "Environment",
+                        SMTO_ABORTIFHUNG,
+                        5000,  # 5 second timeout
+                        None   # No result pointer needed
+                    )
+
+            except FileNotFoundError:
+                # Path doesn't exist, nothing to remove
+                pass
+
+            winreg.CloseKey(key)
+
+        except Exception as e:
+            print(f"Warning: Could not remove from PATH: {e}")
+            # Not critical, so don't fail uninstallation
 
     def run(self):
         """Run the uninstaller."""
