@@ -31,3 +31,4 @@ data/usage_monitor.pid
 build/
 dist/
 *.spec
+.DS_Store
