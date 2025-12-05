@@ -1,6 +1,6 @@
 # EdgePilot - AI Copilot Console
 
-EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language. 
+EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini and other providers to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language. 
 
 ## Highlights
 - **MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
@@ -27,9 +27,11 @@ EdgePilot uses a modular architecture with clear separation between the UI, back
 - **Scheduler** - Task queue for delayed execution and background jobs
 - **Data Layer** - JSON-based persistence for chats, metrics, and tool history
 
-## Installation
+## Demo
 
-**New! Automated Installers Available**
+https://github.com/tahasinshadat/EdgePilot/assets/EdgePilot_Final_Demo.mp4
+
+## Installation
 
 For the easiest installation experience, use our cross-platform installers:
 - **Windows**: Download `EdgePilot-Installer-Windows-v1.0.1.exe` from [Releases](https://github.com/tahasinshadat/EdgePilot/releases)
