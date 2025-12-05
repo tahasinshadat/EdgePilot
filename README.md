@@ -29,7 +29,7 @@ EdgePilot uses a modular architecture with clear separation between the UI, back
 
 ## Demo
 
-https://github.com/tahasinshadat/EdgePilot/assets/EdgePilot_Final_Demo.mp4
+https://github.com/tahasinshadat/EdgePilot/assets/EdgePilot_Demo_Compressed.mp4
 
 ## Installation
 
