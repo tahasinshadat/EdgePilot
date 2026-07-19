@@ -25,7 +25,7 @@ class GeminiProvider(BaseLLM):
         return {
             "name": "Gemini",
             "id": "gemini",
-            "model": "gemini-2.0-flash",
+            "model": "gemini-3.1-flash-lite",
             "supports_tools": True,  # Changed to True
         }
 
@@ -55,20 +55,41 @@ class GeminiProvider(BaseLLM):
         
         # Add tools if enabled
         if self.tools_enabled and self.tool_schemas:
-            # Convert tool schemas to Gemini function calling format
-            tools = []
-            for schema in self.tool_schemas:
-                function_declaration = {
-                    "name": schema["name"],
-                    "description": schema["description"],
-                    "parameters": schema["parameters"],
-                }
-                tools.append({"functionDeclarations": [function_declaration]})
-            
-            payload["tools"] = tools
+            function_declarations = []
 
-        response = requests.post(endpoint, headers=headers, json=payload, timeout=self.config.timeout_sec)
-        response.raise_for_status()
+            for schema in self.tool_schemas:
+                function_declarations.append(
+                    {
+                        "name": schema["name"],
+                        "description": schema.get("description", ""),
+                        "parameters": schema.get(
+                            "parameters",
+                            {
+                                "type": "OBJECT",
+                                "properties": {},
+                            },
+                        ),
+                    }
+                )
+
+            payload["tools"] = [
+                {
+                    "functionDeclarations": function_declarations,
+                }
+            ]
+
+        response = requests.post(
+            endpoint,
+            headers=headers,
+            json=payload,
+            timeout=self.config.timeout_sec,
+        )
+
+        if not response.ok:
+            raise RuntimeError(
+                f"Gemini API error {response.status_code}: {response.text}"
+            )
+
         data = response.json()
         
         # Parse response

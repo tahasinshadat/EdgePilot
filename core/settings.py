@@ -36,7 +36,7 @@ PROVIDER_ENV_SETTINGS = {
     "gemini": {
         "api_key": "GEMINI_API_KEY",
         "model": "GEMINI_MODEL",
-        "default_model": "gemini-2.0-flash",
+        "default_model": "gemini-3.1-flash-lite",
         "base_url": "GEMINI_BASE_URL",
     },
     "claude": {

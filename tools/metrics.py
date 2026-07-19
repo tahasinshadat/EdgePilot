@@ -8,6 +8,8 @@ Provides four primary helpers:
 """
 
 from __future__ import annotations
+from .providers import LocalMetricsProvider, MetricsProvider
+from datetime import datetime, timedelta
 
 import json
 import math
@@ -96,6 +98,7 @@ class PrometheusClient:
 
 
 PROM = PrometheusClient(PROM_URL)
+LOCAL = LocalMetricsProvider()
 
 
 def _avg_vector(result: Iterable[Dict[str, Any]]) -> float:
@@ -285,9 +288,12 @@ def evaluate_capacity(
     duration: str = "45m",
     host: Optional[str] = None,
     client: PrometheusClient | None = None,
+    local_provider: MetricsProvider | None = None,
 ) -> Dict[str, Any]:
     """Determine whether the workload can run now."""
     client = client or PROM
+    local_provider = local_provider or LOCAL
+
     results: List[Dict[str, Any]] = []
     source = "prometheus" if client.available else "local"
 
@@ -298,28 +304,57 @@ def evaluate_capacity(
     if client.available:
         try:
             cpu_headroom = client.fetch_scalar_map(
-                '100 - (100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))))'
+                '100 - (100 * (1 - avg by (instance) '
+                '(rate(node_cpu_seconds_total{mode="idle"}[5m]))))'
             )
-            mem_free = client.fetch_scalar_map("node_memory_MemAvailable_bytes")
+            mem_free = client.fetch_scalar_map(
+                "node_memory_MemAvailable_bytes"
+            )
             disk_free = client.fetch_scalar_map(
-                'max by (instance) (node_filesystem_free_bytes{fstype!~"tmpfs|overlay"})'
+                'max by (instance) '
+                '(node_filesystem_free_bytes{fstype!~"tmpfs|overlay"})'
             )
-            instances = [host] if host else sorted(set(cpu_headroom) | set(mem_free) | set(disk_free))
+
+            instances = (
+                [host]
+                if host
+                else sorted(
+                    set(cpu_headroom)
+                    | set(mem_free)
+                    | set(disk_free)
+                )
+            )
+
             for instance in instances:
                 reasons: List[str] = []
+
                 cpu_now = cpu_headroom.get(instance, 0.0)
                 mem_now = mem_free.get(instance, 0.0)
                 disk_now = disk_free.get(instance, 0.0)
+
                 can_run = True
+
                 if cpu_now < need_cpu:
                     can_run = False
-                    reasons.append(f"CPU headroom {cpu_now:.1f}% < need {need_cpu:.1f}%")
+                    reasons.append(
+                        f"CPU headroom {cpu_now:.1f}% "
+                        f"< need {need_cpu:.1f}%"
+                    )
+
                 if mem_now < need_mem:
                     can_run = False
-                    reasons.append(f"Mem free {int(mem_now)} < need {int(need_mem)}")
+                    reasons.append(
+                        f"Mem free {int(mem_now)} "
+                        f"< need {int(need_mem)}"
+                    )
+
                 if disk_now < need_disk:
                     can_run = False
-                    reasons.append(f"Disk free {int(disk_now)} < need {int(need_disk)}")
+                    reasons.append(
+                        f"Disk free {int(disk_now)} "
+                        f"< need {int(need_disk)}"
+                    )
+
                 results.append(
                     {
                         "instance": instance or host or "unknown",
@@ -338,27 +373,46 @@ def evaluate_capacity(
                         },
                     }
                 )
+
         except PrometheusUnavailable:
             results = []
             source = "local"
 
     if not results:
-        snapshot = gather_metrics()
+        snapshot = local_provider.gather_metrics()
         hostname = host or socket.gethostname()
-        cpu_headroom = max(0.0, 100.0 - snapshot["cpu"]["percent"])
+
+        cpu_headroom = max(
+            0.0,
+            100.0 - snapshot["cpu"]["percent"],
+        )
         mem_available = snapshot["memory"]["available"]
         disk_free = snapshot["filesystem"]["free"]
+
         reasons: List[str] = []
         can_run = True
+
         if cpu_headroom < need_cpu:
             can_run = False
-            reasons.append(f"CPU headroom {cpu_headroom:.1f}% < need {need_cpu:.1f}%")
+            reasons.append(
+                f"CPU headroom {cpu_headroom:.1f}% "
+                f"< need {need_cpu:.1f}%"
+            )
+
         if mem_available < need_mem:
             can_run = False
-            reasons.append(f"Mem free {int(mem_available)} < need {int(need_mem)}")
+            reasons.append(
+                f"Mem free {int(mem_available)} "
+                f"< need {int(need_mem)}"
+            )
+
         if disk_free < need_disk:
             can_run = False
-            reasons.append(f"Disk free {int(disk_free)} < need {int(need_disk)}")
+            reasons.append(
+                f"Disk free {int(disk_free)} "
+                f"< need {int(need_disk)}"
+            )
+
         results.append(
             {
                 "instance": hostname,
@@ -377,9 +431,24 @@ def evaluate_capacity(
                 },
             }
         )
-        source = "local"
-    return {"status": "ok", "results": results, "source": source}
 
+        source = "local"
+
+    return {
+        "status": "ok",
+        "results": results,
+        "source": source,
+    }
+
+def _offpeak_local_iso() -> str:
+    """Return the next local off-peak time (1:00 AM)."""
+    now = datetime.now()
+    offpeak = now.replace(hour=1, minute=0, second=0, microsecond=0)
+
+    if offpeak <= now:
+        offpeak += timedelta(days=1)
+
+    return offpeak.isoformat()
 
 def suggest_capacity_window(
     requirements: Dict[str, float],
@@ -388,32 +457,75 @@ def suggest_capacity_window(
     horizon_hours: int = 24,
     host: Optional[str] = None,
     client: PrometheusClient | None = None,
+    local_provider: MetricsProvider | None = None,
 ) -> Dict[str, Any]:
     """Suggest execution windows based on recent utilization."""
     client = client or PROM
+    local_provider = local_provider or LOCAL
+
     source = "prometheus" if client.available else "local"
+
     need_cpu = float(requirements.get("cpu_pct", 0) or 0)
     need_mem = float(requirements.get("mem_bytes", 0) or 0)
-    need_disk = float(requirements.get("disk_free_bytes", 0) or 0)
+    need_disk = float(
+        requirements.get("disk_free_bytes", 0) or 0
+    )
+
     results: List[Dict[str, Any]] = []
 
     if client.available:
         try:
             cpu_busy = client.fetch_scalar_map(
-                'quantile_over_time(0.95, (100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))))[1h:1m])'
+                "quantile_over_time("
+                "0.95, "
+                "(100 * (1 - avg by (instance) "
+                '(rate(node_cpu_seconds_total{mode="idle"}[5m]))))'
+                "[1h:1m]"
+                ")"
             )
-            mem_p05 = client.fetch_scalar_map('quantile_over_time(0.05, node_memory_MemAvailable_bytes[1h])')
+
+            mem_p05 = client.fetch_scalar_map(
+                "quantile_over_time("
+                "0.05, "
+                "node_memory_MemAvailable_bytes[1h]"
+                ")"
+            )
+
             disk_p05 = client.fetch_scalar_map(
-                'quantile_over_time(0.05, node_filesystem_free_bytes{fstype!~"tmpfs|overlay"}[1h])'
+                "quantile_over_time("
+                "0.05, "
+                'node_filesystem_free_bytes{fstype!~"tmpfs|overlay"}'
+                "[1h]"
+                ")"
             )
-            cpu_headroom = {name: max(0.0, 100.0 - value) for name, value in cpu_busy.items()}
-            instances = [host] if host else sorted(set(cpu_headroom) | set(mem_p05) | set(disk_p05))
+
+            cpu_headroom = {
+                name: max(0.0, 100.0 - value)
+                for name, value in cpu_busy.items()
+            }
+
+            instances = (
+                [host]
+                if host
+                else sorted(
+                    set(cpu_headroom)
+                    | set(mem_p05)
+                    | set(disk_p05)
+                )
+            )
+
             for instance in instances:
-                windows = []
+                windows: List[Dict[str, Any]] = []
+
                 cpu_now = cpu_headroom.get(instance, 0.0)
                 mem_now = mem_p05.get(instance, 0.0)
                 disk_now = disk_p05.get(instance, 0.0)
-                if cpu_now >= need_cpu and mem_now >= need_mem and disk_now >= need_disk:
+
+                if (
+                    cpu_now >= need_cpu
+                    and mem_now >= need_mem
+                    and disk_now >= need_disk
+                ):
                     windows.append(
                         {
                             "start": "now",
@@ -421,37 +533,82 @@ def suggest_capacity_window(
                             "reason": "p95 headroom sufficient",
                         }
                     )
+
                 windows.append(
                     {
                         "start": _offpeak_local_iso(),
                         "duration": duration,
-                        "reason": "typical off-peak (1–4am local)",
+                        "reason": (
+                            "typical off-peak "
+                            "(1–4am local)"
+                        ),
                     }
                 )
-                results.append({"instance": instance or host or "unknown", "windows": windows})
+
+                results.append(
+                    {
+                        "instance": (
+                            instance or host or "unknown"
+                        ),
+                        "windows": windows,
+                    }
+                )
+
         except PrometheusUnavailable:
             results = []
             source = "local"
 
     if not results:
-        snapshot = gather_metrics()
+        snapshot = local_provider.gather_metrics()
         hostname = host or socket.gethostname()
-        cpu_headroom = max(0.0, 100.0 - snapshot["cpu"]["percent"])
+
+        cpu_headroom = max(
+            0.0,
+            100.0 - snapshot["cpu"]["percent"],
+        )
         mem_available = snapshot["memory"]["available"]
         disk_free = snapshot["filesystem"]["free"]
-        windows = []
-        if cpu_headroom >= need_cpu and mem_available >= need_mem and disk_free >= need_disk:
-            windows.append({"start": "now", "duration": duration, "reason": "current headroom sufficient"})
+
+        windows: List[Dict[str, Any]] = []
+
+        if (
+            cpu_headroom >= need_cpu
+            and mem_available >= need_mem
+            and disk_free >= need_disk
+        ):
+            windows.append(
+                {
+                    "start": "now",
+                    "duration": duration,
+                    "reason": "current headroom sufficient",
+                }
+            )
+
         windows.append(
             {
-                "start": (_offpeak_local_iso()),
+                "start": _offpeak_local_iso(),
                 "duration": duration,
-                "reason": "local fallback off-peak estimate",
+                "reason": (
+                    "local fallback off-peak estimate"
+                ),
             }
         )
-        results.append({"instance": hostname, "windows": windows})
+
+        results.append(
+            {
+                "instance": hostname,
+                "windows": windows,
+            }
+        )
+
         source = "local"
-    return {"status": "ok", "results": results, "source": source, "horizon_hours": horizon_hours}
+
+    return {
+        "status": "ok",
+        "results": results,
+        "source": source,
+        "horizon_hours": horizon_hours,
+    }
 
 
 if __name__ == "__main__":

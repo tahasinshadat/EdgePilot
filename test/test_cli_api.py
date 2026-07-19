@@ -46,4 +46,13 @@ def test_api_ask_and_schedule_endpoints():
     assert schedule_response.status_code == 200
     tasks_response = client.get("/api/tasks")
     assert tasks_response.status_code == 200
-    assert isinstance(tasks_response.json(), list)
+
+    tasks_payload = tasks_response.json()
+
+    assert isinstance(tasks_payload, dict)
+    assert "tasks" in tasks_payload
+    assert "count" in tasks_payload
+    assert isinstance(tasks_payload["tasks"], list)
+    assert tasks_payload["count"] == len(tasks_payload["tasks"])
+
+
