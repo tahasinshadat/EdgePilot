@@ -261,6 +261,9 @@ const renderMessages = () => {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/^\s*[\*-]\s+/gm, '• ')
       .replace(/\n/g, '<br />');
     messagesEl.appendChild(bubble);
   });
@@ -682,22 +685,81 @@ const sendMessage = async (prompt) => {
   setStatus('Sending...');
 
   try {
-    const response = await fetchJSON(`/api/chats/${state.activeChat.id}/messages`, {
+    const response = await fetch(`${BACKEND_URL}/api/chats/${state.activeChat.id}/messages/stream`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: finalPrompt,
         provider: state.providerId
       })
     });
 
+    if (!response.ok) {
+      throw new Error(`Stream failed: ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    let finalLatencyMs = null;
+    let wasCached = false;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const blocks = buffer.split('\n\n');
+      buffer = blocks.pop(); // keep incomplete chunk
+
+      for (const block of blocks) {
+        if (!block.trim()) continue;
+
+        let eventType = 'message';
+        let eventData = '';
+
+        for (const line of block.split('\n')) {
+          if (line.startsWith('event: ')) {
+            eventType = line.slice(7);
+          } else if (line.startsWith('data: ')) {
+            eventData = line.slice(6);
+          }
+        }
+
+        let payload = {};
+        try {
+          payload = JSON.parse(eventData);
+        } catch (e) {
+          payload = eventData;
+        }
+
+        if (eventType === 'status') {
+          setStatus(payload.text);
+        } else if (eventType === 'tool') {
+          setStatus(`Ran tool: ${payload.name}`);
+        } else if (eventType === 'cache_hit') {
+          wasCached = true;
+          setStatus('Semantic cache found (instant response)');
+        } else if (eventType === 'done') {
+          finalLatencyMs = payload.latency_ms;
+        } else if (eventType === 'error') {
+          throw new Error(payload.detail || 'Streaming error');
+        }
+      }
+    }
+
+    // Stream finished successfully, fetch the updated chat state
+    const updatedChat = await fetchJSON(`/api/chats/${state.activeChat.id}`);
+
     hideThinking();
 
-    state.activeChat = response.chat;
-    const idx = state.chats.findIndex((chat) => chat.id === response.chat.id);
+    state.activeChat = updatedChat;
+    const idx = state.chats.findIndex((chat) => chat.id === updatedChat.id);
     if (idx !== -1) {
-      state.chats[idx] = response.chat;
+      state.chats[idx] = updatedChat;
     }
-    chatTitleEl.textContent = response.chat.title;
+    chatTitleEl.textContent = updatedChat.title;
     renderChats();
     renderMessages();
 
@@ -709,7 +771,14 @@ const sendMessage = async (prompt) => {
       loadJobs(true).catch(() => {});
     }
 
-    setStatus('Ready');
+    let readyMsg = 'Ready';
+    if (finalLatencyMs !== null && finalLatencyMs !== undefined) {
+      const sec = (finalLatencyMs / 1000).toFixed(2);
+      readyMsg = `Ready (took ${sec}s${wasCached ? ' - Cache Found' : ''})`;
+    } else if (wasCached) {
+      readyMsg = 'Ready (Cache Found)';
+    }
+    setStatus(readyMsg);
   } catch (error) {
     hideThinking();
     // Remove the user message we added optimistically

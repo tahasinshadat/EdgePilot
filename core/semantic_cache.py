@@ -28,6 +28,11 @@ _STATE_CHANGING_TOOLS: Set[str] = frozenset({
     "scale_workload",       # future Kubernetes action
     "restart_workload",     # future Kubernetes action
     "cordon_node",          # future Kubernetes action
+    # Observability tools (responses should not be cached)
+    "gather_metrics",
+    "report_edge_status",
+    "evaluate_capacity",
+    "suggest_capacity_window",
 })
 
 
