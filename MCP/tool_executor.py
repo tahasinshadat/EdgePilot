@@ -1,9 +1,16 @@
-"""Tool executor for MCP function calling."""
+"""Tool executor for MCP function calling.
+
+Provides both synchronous and asynchronous execution paths.
+The async path (execute_async / execute_batch) allows multiple independent
+tool calls to run concurrently using asyncio.gather(), cutting total
+latency when the LLM emits several tool calls in a single turn.
+"""
 
 from __future__ import annotations
 
+import asyncio
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from tools import (
     end_task,
@@ -17,6 +24,7 @@ from tools import (
     search,
     suggest_capacity_window,
 )
+from tools.kubernetes_actions import scale_workload, restart_workload, cordon_node
 
 
 class ToolExecutor:
@@ -38,22 +46,17 @@ class ToolExecutor:
             # Backwards compatibility
             "run_shell": self._execute_run_shell,
             "run_python": self._execute_run_python,
+            "scale_workload": self._execute_scale_workload,
+            "restart_workload": self._execute_restart_workload,
+            "cordon_node": self._execute_cordon_node,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute a tool call with the given arguments.
+        Execute a tool call synchronously.
 
-        Parameters
-        ----------
-        tool_name:
-            Name of the tool to execute.
-        arguments:
-            Dictionary of arguments to pass to the tool.
-
-        Returns
-        -------
-        Dictionary with the tool execution result and any error information.
+        This is the original blocking path, kept for backward compatibility
+        with the CLI and existing REST endpoints.
         """
         if tool_name not in self.tools:
             return {
@@ -78,6 +81,45 @@ class ToolExecutor:
                 "error": str(error),
                 "error_type": type(error).__name__,
             }
+
+    # ------------------------------------------------------------------ #
+    # Async execution paths                                               #
+    # ------------------------------------------------------------------ #
+
+    async def execute_async(
+        self, tool_name: str, arguments: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Run a single tool asynchronously in a thread-pool.
+
+        Tool functions are synchronous (psutil, subprocess, etc.), so we
+        delegate them to the default executor to avoid blocking the event
+        loop while still benefiting from concurrency.
+        """
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None, self.execute, tool_name, arguments
+        )
+
+    async def execute_batch(
+        self,
+        calls: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Run multiple independent tool calls concurrently.
+
+        Parameters
+        ----------
+        calls:
+            A list of dicts, each containing 'name' and 'arguments'.
+
+        Returns
+        -------
+        A list of result dicts in the same order as the input calls.
+        """
+        tasks = [
+            self.execute_async(call["name"], call.get("arguments", {}))
+            for call in calls
+        ]
+        return await asyncio.gather(*tasks)
 
     def _execute_gather_metrics(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Execute gather_metrics tool."""
@@ -111,6 +153,27 @@ class ToolExecutor:
             horizon_hours=horizon_hours,
             host=host,
         )
+
+    def _execute_scale_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        namespace = args.get("namespace", "default")
+        deployment_name = args.get("deployment_name")
+        replicas = args.get("replicas")
+        if not deployment_name or replicas is None:
+            raise ValueError("deployment_name and replicas are required")
+        return scale_workload(namespace, deployment_name, int(replicas))
+
+    def _execute_restart_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        namespace = args.get("namespace", "default")
+        deployment_name = args.get("deployment_name")
+        if not deployment_name:
+            raise ValueError("deployment_name is required")
+        return restart_workload(namespace, deployment_name)
+
+    def _execute_cordon_node(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        node_name = args.get("node_name")
+        if not node_name:
+            raise ValueError("node_name is required")
+        return cordon_node(node_name)
 
     def _execute_launch(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Execute launch tool to start an application."""
@@ -300,5 +363,19 @@ _executor = ToolExecutor()
 
 
 def execute_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
-    """Execute a tool using the global executor."""
+    """Execute a tool synchronously using the global executor."""
     return _executor.execute(tool_name, arguments)
+
+
+async def execute_tool_async(
+    tool_name: str, arguments: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Execute a tool asynchronously using the global executor."""
+    return await _executor.execute_async(tool_name, arguments)
+
+
+async def execute_tools_batch(
+    calls: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Execute multiple tools concurrently using the global executor."""
+    return await _executor.execute_batch(calls)

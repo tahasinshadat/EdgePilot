@@ -6,7 +6,7 @@ import json
 import os
 import platform
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from MCP import execute_tool
 from core.settings import DEFAULT_PROVIDER, SYSTEM_PROMPT, provider_config
@@ -159,26 +159,3 @@ def schedule_operation(action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         return {"status": "scheduled", "action": "launch", "application": application, "delay_seconds": delay}
 
     raise ValueError(f"Unsupported action '{action}'")
-
-
-def summarize_tasks(action: Optional[str] = None, limit: int = 5) -> List[Dict[str, Any]]:
-    records = _REGISTRY.list_recent(action, limit)
-    summary = []
-    for record in records:
-        summary.append(
-            {
-                "task_id": record.get("task_id"),
-                "action": record.get("action"),
-                "target": record.get("target"),
-                "status": record.get("status"),
-                "scheduled_for": record.get("scheduled_for"),
-                "started_at": record.get("started_at"),
-                "finished_at": record.get("finished_at"),
-            }
-        )
-    return summary
-
-
-def os_profile() -> str:
-    """Return a short OS summary for CLI banners."""
-    return f"{platform.system()} {platform.release()} ({platform.machine()})"

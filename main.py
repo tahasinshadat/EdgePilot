@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import socket
@@ -20,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.responses import StreamingResponse
 
 from providers import available_providers, get_provider
 from providers.base import ChatMessage, ProviderConfig
@@ -27,11 +29,14 @@ from tools.metrics import gather_metrics
 from tools.scheduler import _REGISTRY
 from MCP import (
     execute_tool,
+    execute_tool_async,
+    execute_tools_batch,
     format_tools_for_gemini,
     format_tools_for_claude,
     get_all_tool_schemas,
 )
-from core.interface import ask_question, schedule_operation, summarize_tasks
+from core.interface import ask_question, schedule_operation
+from core.semantic_cache import SemanticCache
 from core.settings import (
     DEFAULT_PROVIDER,
     PROVIDER_ENV_SETTINGS,
@@ -39,14 +44,6 @@ from core.settings import (
     load_env,
     provider_config,
 )
-
-'''
-what is the command to make the installer for Mac?
-
-pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows installer/install.py
-
-is for windows 
-'''
 
 ROOT_DIR = Path(__file__).parent
 DATA_DIR = ROOT_DIR / "data"
@@ -328,7 +325,17 @@ chat_store = ChatStore(CHAT_FILE)
 usage_logger = UsageLogger(USAGE_FILE)
 tool_call_logger = ToolCallLogger(TOOL_HISTORY_FILE)
 
-app = FastAPI(title="EdgePilot Backend", version="0.3.0")
+app = FastAPI(title="EdgePilot Backend", version="0.4.0")
+
+# Store futures for tools requiring human-in-the-loop approval
+PENDING_APPROVALS: Dict[str, asyncio.Future] = {}
+DANGEROUS_TOOLS = {"scale_workload", "restart_workload", "cordon_node"}
+
+# ── Semantic Cache ──────────────────────────────────────────────────────
+# Initialized lazily: the embedding model is only loaded on the first
+# cache lookup, so startup time is unaffected.
+semantic_cache = SemanticCache()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -619,6 +626,328 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
         response_tokens=total_response_tokens,
         chat=detail,
     )
+
+
+# ====================================================================== #
+# SSE Streaming Endpoint                                                  #
+# ====================================================================== #
+
+
+async def _sse_message_generator(
+    chat_id: str,
+    prompt: str,
+    provider_name: str,
+):
+    """Async generator that yields SSE events as the LLM thinks & calls tools.
+
+    Event types sent to the client:
+      - status   : human-readable progress updates ("Calling gather_metrics…")
+      - cache_hit: the cached response was used (no LLM round-trip)
+      - tool     : individual tool execution result
+      - message  : the final assistant response text
+      - done     : signals the stream is complete
+      - error    : something went wrong
+    """
+    def _event(event_type: str, data: Any) -> str:
+        """Format a single SSE frame."""
+        payload = json.dumps(data) if not isinstance(data, str) else data
+        return f"event: {event_type}\ndata: {payload}\n\n"
+
+    # ── Check semantic cache first ──────────────────────────────────────
+    cached = semantic_cache.lookup(prompt)
+    if cached is not None:
+        yield _event("cache_hit", {"response": cached})
+
+        # Still persist the exchange in chat history
+        user_msg: ChatMessage = {
+            "role": "user",
+            "content": prompt,
+            "created_at": time.time(),
+        }
+        assistant_msg: ChatMessage = {
+            "role": "assistant",
+            "content": cached,
+            "created_at": time.time(),
+        }
+        try:
+            chat_store.append_messages(chat_id, [user_msg, assistant_msg], 0)
+        except KeyError:
+            yield _event("error", {"detail": "Chat not found"})
+            return
+
+        yield _event("message", {"text": cached})
+        yield _event("done", {})
+        return
+
+    # ── Normal LLM path ────────────────────────────────────────────────
+    yield _event("status", {"text": "Preparing request…"})
+
+    try:
+        config = provider_config(provider_name)
+        provider = get_provider(provider_name, config)
+    except Exception as exc:
+        yield _event("error", {"detail": str(exc)})
+        return
+
+    try:
+        session = chat_store.get_session(chat_id)
+    except KeyError:
+        yield _event("error", {"detail": "Chat not found"})
+        return
+
+    # Enable tools
+    if hasattr(provider, "enable_tools"):
+        provider_id = ""
+        try:
+            provider_id = (type(provider).describe() or {}).get("id", "")
+        except Exception:
+            pass
+        if provider_id == "claude":
+            tool_schemas = format_tools_for_claude()
+        elif provider_id == "gemini":
+            tool_schemas = format_tools_for_gemini()
+        else:
+            tool_schemas = get_all_tool_schemas()
+        provider.enable_tools(tool_schemas)
+
+    user_message: ChatMessage = {
+        "role": "user",
+        "content": prompt,
+        "created_at": time.time(),
+    }
+    model_messages: List[ChatMessage] = [
+        {"role": "system", "content": SYSTEM_PROMPT}
+    ]
+    model_messages.extend(session.get("messages", []))
+    model_messages.append(user_message)
+
+    messages_to_save = [user_message]
+    total_prompt_tokens = 0
+    total_response_tokens = 0
+    total_tool_calls = 0
+    all_tool_names: List[str] = []
+
+    max_iterations = 15
+    iteration = 0
+    final_text = ""
+    start = time.perf_counter()
+
+    while iteration < max_iterations:
+        iteration += 1
+        yield _event("status", {"text": f"Thinking… (step {iteration})"})
+
+        try:
+            # Run the (synchronous) LLM call in a thread so we don't block
+            loop = asyncio.get_running_loop()
+            llm_response = await loop.run_in_executor(
+                None, provider.generate, model_messages
+            )
+            total_prompt_tokens += llm_response.prompt_tokens
+            total_response_tokens += llm_response.response_tokens
+        except Exception as exc:
+            yield _event("error", {"detail": f"Provider error: {exc}"})
+            return
+
+        if llm_response.has_tool_calls:
+            tool_names = [tc.name for tc in llm_response.tool_calls]
+            all_tool_names.extend(tool_names)
+            total_tool_calls += len(tool_names)
+
+            yield _event("status", {
+                "text": f"Executing tools: {', '.join(tool_names)}",
+            })
+
+            # Check for Human-in-the-Loop approval for dangerous tools
+            dangerous_calls = [tc for tc in llm_response.tool_calls if tc.name in DANGEROUS_TOOLS]
+            approved = True
+            
+            if dangerous_calls:
+                approval_id = str(uuid.uuid4())
+                future = asyncio.get_running_loop().create_future()
+                PENDING_APPROVALS[approval_id] = future
+                
+                yield _event("approval_required", {
+                    "approval_id": approval_id,
+                    "tools": [{"name": tc.name, "arguments": dict(tc.arguments or {})} for tc in dangerous_calls]
+                })
+                
+                yield _event("status", {"text": "Waiting for your approval..."})
+                
+                try:
+                    # Wait up to 5 minutes for approval
+                    approved = await asyncio.wait_for(future, timeout=300.0)
+                except asyncio.TimeoutError:
+                    approved = False
+                finally:
+                    PENDING_APPROVALS.pop(approval_id, None)
+
+            if not approved:
+                # User denied execution or timed out
+                tool_results = [{"success": False, "tool": tc.name, "error": "User denied execution of dangerous tool."} for tc in llm_response.tool_calls]
+                yield _event("status", {"text": "Execution denied by user."})
+            else:
+                # Run all tool calls concurrently via the async batch helper
+                calls = [
+                    {"name": tc.name, "arguments": {
+                        **dict(tc.arguments or {}),
+                        **(  # Inject chat_id for job-tracking tools
+                            {"chat_id": chat_id}
+                            if tc.name in {
+                                "run_python_script",
+                                "run_shell_commands",
+                                "launch",
+                            }
+                            else {}
+                        ),
+                    }}
+                    for tc in llm_response.tool_calls
+                ]
+                tool_results = await execute_tools_batch(calls)
+
+            # Stream each tool result back to the UI
+            for tc, result in zip(llm_response.tool_calls, tool_results):
+                yield _event("tool", {
+                    "name": tc.name,
+                    "success": result.get("success", False),
+                })
+
+                # Log tool calls
+                tool_call_logger.log(
+                    provider=provider_name,
+                    model=config.model,
+                    tool_name=tc.name,
+                    arguments=tc.arguments,
+                    result=result,
+                    success=result.get("success", False),
+                    latency_ms=0,  # batch timing not per-tool
+                    chat_id=chat_id,
+                )
+
+            # Build context for the next LLM turn
+            tool_call_summary = f"[Called tools: {', '.join(tool_names)}]"
+            if llm_response.text:
+                tool_call_summary = llm_response.text + " " + tool_call_summary
+
+            tool_results_text = "\n\nTool Results:\n"
+            for result in tool_results:
+                if result["success"]:
+                    tool_results_text += (
+                        f"- {result['tool']}: "
+                        f"{json.dumps(result['result'], indent=2)}\n"
+                    )
+                else:
+                    tool_results_text += (
+                        f"- {result['tool']} ERROR: {result['error']}\n"
+                    )
+
+            model_messages.append(
+                {"role": "assistant", "content": tool_call_summary}
+            )
+            model_messages.append(
+                {"role": "user", "content": tool_results_text}
+            )
+        else:
+            final_text = llm_response.text
+            break
+
+    if not final_text:
+        if iteration >= max_iterations:
+            final_text = (
+                f"I reached the maximum number of tool iterations "
+                f"({max_iterations}). The task may require manual help."
+            )
+        else:
+            final_text = (
+                "I attempted to use tools but could not generate "
+                "a final response."
+            )
+
+    # ── Persist & cache ────────────────────────────────────────────────
+    assistant_message: ChatMessage = {
+        "role": "assistant",
+        "content": final_text,
+        "created_at": time.time(),
+    }
+    messages_to_save.append(assistant_message)
+
+    latency_ms = (time.perf_counter() - start) * 1000
+    chat_store.append_messages(
+        chat_id,
+        messages_to_save,
+        total_prompt_tokens + total_response_tokens,
+        tool_calls_delta=total_tool_calls,
+    )
+    usage_logger.log(
+        provider=provider_name,
+        model=config.model,
+        prompt_tokens=total_prompt_tokens,
+        response_tokens=total_response_tokens,
+        latency_ms=latency_ms,
+        ok=True,
+    )
+
+    # Store in semantic cache (skipped automatically for state-changing tools)
+    semantic_cache.store(prompt, final_text, tool_names=all_tool_names)
+
+    yield _event("message", {"text": final_text})
+    yield _event("done", {
+        "tokens": {
+            "prompt": total_prompt_tokens,
+            "response": total_response_tokens,
+        },
+        "tool_calls": total_tool_calls,
+        "latency_ms": round(latency_ms, 1),
+    })
+
+
+@app.post("/api/chats/{chat_id}/messages/stream")
+async def api_send_message_stream(
+    chat_id: str,
+    payload: SendMessageRequest,
+):
+    """SSE streaming variant of the message endpoint.
+
+    The client receives a stream of Server-Sent Events providing
+    real-time status updates, tool results, and the final response.
+    """
+    provider_name = (payload.provider or DEFAULT_PROVIDER).lower()
+    return StreamingResponse(
+        _sse_message_generator(chat_id, payload.prompt.strip(), provider_name),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        },
+    )
+
+
+# ── Semantic Cache Management Endpoints ─────────────────────────────────
+
+@app.post("/api/chats/{chat_id}/approve_tool")
+async def api_approve_tool(chat_id: str, payload: dict):
+    """Endpoint for the UI to approve or deny a pending tool call."""
+    approval_id = payload.get("approval_id")
+    approved = payload.get("approved", False)
+    
+    if not approval_id or approval_id not in PENDING_APPROVALS:
+        raise HTTPException(status_code=404, detail="Approval request not found or expired")
+        
+    PENDING_APPROVALS[approval_id].set_result(approved)
+    return {"status": "ok"}
+
+
+
+@app.get("/api/cache/stats")
+def api_cache_stats() -> Dict[str, Any]:
+    """Return diagnostic information about the semantic cache."""
+    return semantic_cache.stats()
+
+
+@app.post("/api/cache/clear")
+def api_cache_clear() -> Dict[str, str]:
+    """Flush the semantic query cache."""
+    semantic_cache.clear()
+    return {"status": "cleared"}
 
 
 @app.get("/api/tasks")
@@ -1148,6 +1477,3 @@ if __name__ == "__main__":
         cli()
     else:
         launch_desktop_app()
-def ensure_data_dir(path: Path) -> None:
-    """Create directory if it does not exist."""
-    path.mkdir(parents=True, exist_ok=True)

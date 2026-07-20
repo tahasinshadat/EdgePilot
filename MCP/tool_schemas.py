@@ -243,6 +243,62 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             "required": ["identifier"],
         },
     },
+    {
+        "name": "scale_workload",
+        "description": "Scales a Kubernetes deployment up or down. Requires human approval.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "The Kubernetes namespace.",
+                    "default": "default"
+                },
+                "deployment_name": {
+                    "type": "string",
+                    "description": "The name of the deployment to scale."
+                },
+                "replicas": {
+                    "type": "number",
+                    "description": "The target number of replicas."
+                }
+            },
+            "required": ["deployment_name", "replicas"]
+        }
+    },
+    {
+        "name": "restart_workload",
+        "description": "Performs a rolling restart of a Kubernetes deployment. Requires human approval.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "The Kubernetes namespace.",
+                    "default": "default"
+                },
+                "deployment_name": {
+                    "type": "string",
+                    "description": "The name of the deployment to restart."
+                }
+            },
+            "required": ["deployment_name"]
+        }
+    },
+    {
+        "name": "cordon_node",
+        "description": "Marks a Kubernetes node as unschedulable. Requires human approval.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "node_name": {
+                    "type": "string",
+                    "description": "The name of the node to cordon."
+                }
+            },
+            "required": ["node_name"]
+        }
+    }
 ]
 
 
