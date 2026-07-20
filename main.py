@@ -35,7 +35,7 @@ from MCP import (
     format_tools_for_claude,
     get_all_tool_schemas,
 )
-from core.interface import ask_question, schedule_operation, summarize_tasks
+from core.interface import ask_question, schedule_operation
 from core.semantic_cache import SemanticCache
 from core.settings import (
     DEFAULT_PROVIDER,
@@ -326,6 +326,10 @@ usage_logger = UsageLogger(USAGE_FILE)
 tool_call_logger = ToolCallLogger(TOOL_HISTORY_FILE)
 
 app = FastAPI(title="EdgePilot Backend", version="0.4.0")
+
+# Store futures for tools requiring human-in-the-loop approval
+PENDING_APPROVALS: Dict[str, asyncio.Future] = {}
+DANGEROUS_TOOLS = {"scale_workload", "restart_workload", "cordon_node"}
 
 # ── Semantic Cache ──────────────────────────────────────────────────────
 # Initialized lazily: the embedding model is only loaded on the first
@@ -753,23 +757,52 @@ async def _sse_message_generator(
                 "text": f"Executing tools: {', '.join(tool_names)}",
             })
 
-            # Run all tool calls concurrently via the async batch helper
-            calls = [
-                {"name": tc.name, "arguments": {
-                    **dict(tc.arguments or {}),
-                    **(  # Inject chat_id for job-tracking tools
-                        {"chat_id": chat_id}
-                        if tc.name in {
-                            "run_python_script",
-                            "run_shell_commands",
-                            "launch",
-                        }
-                        else {}
-                    ),
-                }}
-                for tc in llm_response.tool_calls
-            ]
-            tool_results = await execute_tools_batch(calls)
+            # Check for Human-in-the-Loop approval for dangerous tools
+            dangerous_calls = [tc for tc in llm_response.tool_calls if tc.name in DANGEROUS_TOOLS]
+            approved = True
+            
+            if dangerous_calls:
+                approval_id = str(uuid.uuid4())
+                future = asyncio.get_running_loop().create_future()
+                PENDING_APPROVALS[approval_id] = future
+                
+                yield _event("approval_required", {
+                    "approval_id": approval_id,
+                    "tools": [{"name": tc.name, "arguments": dict(tc.arguments or {})} for tc in dangerous_calls]
+                })
+                
+                yield _event("status", {"text": "Waiting for your approval..."})
+                
+                try:
+                    # Wait up to 5 minutes for approval
+                    approved = await asyncio.wait_for(future, timeout=300.0)
+                except asyncio.TimeoutError:
+                    approved = False
+                finally:
+                    PENDING_APPROVALS.pop(approval_id, None)
+
+            if not approved:
+                # User denied execution or timed out
+                tool_results = [{"success": False, "tool": tc.name, "error": "User denied execution of dangerous tool."} for tc in llm_response.tool_calls]
+                yield _event("status", {"text": "Execution denied by user."})
+            else:
+                # Run all tool calls concurrently via the async batch helper
+                calls = [
+                    {"name": tc.name, "arguments": {
+                        **dict(tc.arguments or {}),
+                        **(  # Inject chat_id for job-tracking tools
+                            {"chat_id": chat_id}
+                            if tc.name in {
+                                "run_python_script",
+                                "run_shell_commands",
+                                "launch",
+                            }
+                            else {}
+                        ),
+                    }}
+                    for tc in llm_response.tool_calls
+                ]
+                tool_results = await execute_tools_batch(calls)
 
             # Stream each tool result back to the UI
             for tc, result in zip(llm_response.tool_calls, tool_results):
@@ -889,6 +922,19 @@ async def api_send_message_stream(
 
 
 # ── Semantic Cache Management Endpoints ─────────────────────────────────
+
+@app.post("/api/chats/{chat_id}/approve_tool")
+async def api_approve_tool(chat_id: str, payload: dict):
+    """Endpoint for the UI to approve or deny a pending tool call."""
+    approval_id = payload.get("approval_id")
+    approved = payload.get("approved", False)
+    
+    if not approval_id or approval_id not in PENDING_APPROVALS:
+        raise HTTPException(status_code=404, detail="Approval request not found or expired")
+        
+    PENDING_APPROVALS[approval_id].set_result(approved)
+    return {"status": "ok"}
+
 
 
 @app.get("/api/cache/stats")

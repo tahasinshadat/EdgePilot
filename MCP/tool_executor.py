@@ -24,6 +24,7 @@ from tools import (
     search,
     suggest_capacity_window,
 )
+from tools.kubernetes_actions import scale_workload, restart_workload, cordon_node
 
 
 class ToolExecutor:
@@ -45,6 +46,9 @@ class ToolExecutor:
             # Backwards compatibility
             "run_shell": self._execute_run_shell,
             "run_python": self._execute_run_python,
+            "scale_workload": self._execute_scale_workload,
+            "restart_workload": self._execute_restart_workload,
+            "cordon_node": self._execute_cordon_node,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -149,6 +153,27 @@ class ToolExecutor:
             horizon_hours=horizon_hours,
             host=host,
         )
+
+    def _execute_scale_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        namespace = args.get("namespace", "default")
+        deployment_name = args.get("deployment_name")
+        replicas = args.get("replicas")
+        if not deployment_name or replicas is None:
+            raise ValueError("deployment_name and replicas are required")
+        return scale_workload(namespace, deployment_name, int(replicas))
+
+    def _execute_restart_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        namespace = args.get("namespace", "default")
+        deployment_name = args.get("deployment_name")
+        if not deployment_name:
+            raise ValueError("deployment_name is required")
+        return restart_workload(namespace, deployment_name)
+
+    def _execute_cordon_node(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        node_name = args.get("node_name")
+        if not node_name:
+            raise ValueError("node_name is required")
+        return cordon_node(node_name)
 
     def _execute_launch(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Execute launch tool to start an application."""

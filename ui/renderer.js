@@ -741,6 +741,24 @@ const sendMessage = async (prompt) => {
         } else if (eventType === 'cache_hit') {
           wasCached = true;
           setStatus('Semantic cache found (instant response)');
+        } else if (eventType === 'approval_required') {
+          const approvalId = payload.approval_id;
+          const toolsList = payload.tools.map(t => `${t.name}(${JSON.stringify(t.arguments)})`).join(', ');
+          
+          const approvalBubble = document.createElement('div');
+          approvalBubble.className = 'message bot-message approval-prompt';
+          approvalBubble.id = `approval-bubble-${approvalId}`;
+          approvalBubble.innerHTML = `
+            <strong>⚠️ Approval Required</strong><br/>
+            EdgePilot wants to execute the following actions: <br/><code>${toolsList}</code><br/>
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+              <button onclick="window.submitApproval('${approvalId}', true)" style="background: var(--brand-blue); border: none; color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer;">Allow</button>
+              <button onclick="window.submitApproval('${approvalId}', false)" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer;">Deny</button>
+            </div>
+          `;
+          messagesEl.appendChild(approvalBubble);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          setStatus('Waiting for approval...');
         } else if (eventType === 'done') {
           finalLatencyMs = payload.latency_ms;
         } else if (eventType === 'error') {
@@ -787,6 +805,27 @@ const sendMessage = async (prompt) => {
     setStatus(`Send failed: ${error.message}`, true);
   }
 };
+
+window.submitApproval = async (approvalId, approved) => {
+  try {
+    const bubble = document.getElementById(`approval-bubble-${approvalId}`);
+    if (bubble) {
+      bubble.style.opacity = '0.5';
+      const btns = bubble.querySelectorAll('button');
+      btns.forEach(b => b.disabled = true);
+    }
+    
+    await fetchJSON(`/api/chats/${state.activeChat.id}/approve_tool`, {
+      method: 'POST',
+      body: JSON.stringify({ approval_id: approvalId, approved })
+    });
+    setStatus(`Approval ${approved ? 'granted' : 'denied'}. Resuming...`);
+  } catch (err) {
+    console.error('Failed to submit approval', err);
+    setStatus('Failed to submit approval', true);
+  }
+};
+
 
 // Event wiring
 newChatBtn.addEventListener('click', () => {

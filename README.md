@@ -4,7 +4,7 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 
 ## Highlights
 - **MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
-- **Kubernetes Capacity Evaluation** - Query K8s clusters to check node headroom, taints/tolerations, and workload fit
+- **Kubernetes Capacity Evaluation & AIOps** - Query K8s clusters to check node headroom, and actively scale/restart workloads with Human-in-the-Loop approvals.
 - **Real-time Metrics** - CPU, memory, disk, network monitoring with process-level details and executable paths
 - **Semantic Query Cache** - Skips redundant LLM API calls for near-duplicate questions using local embeddings
 - **Async Parallel Tool Execution** - Multiple tool calls run concurrently via `asyncio`, cutting multi-tool latency
@@ -467,6 +467,15 @@ The `evaluate_capacity` tool uses this provider to answer questions like *"Can m
 # Example: evaluate whether a workload fits on the cluster
 evaluate_capacity({"cpu_pct": 40, "mem_bytes": 2147483648})
 ```
+
+## Kubernetes AIOps & Human-in-the-Loop (HITL)
+
+Beyond read-only capacity checks, EdgePilot can actively manage your cluster state using built-in AIOps tooling:
+- **`scale_workload`** — scale a deployment up or down.
+- **`restart_workload`** — perform a rolling restart of a deployment (useful if metrics indicate a stuck process).
+- **`cordon_node`** — mark a specific Kubernetes node as unschedulable.
+
+**Human-in-the-Loop Safety**: Because these tools mutate cluster state, they are marked as **dangerous**. When the LLM decides to use them, execution pauses and emits an `approval_required` event to the Electron UI. The user is presented with a prompt to explicitly **Allow** or **Deny** the action before the backend proceeds.
 
 ## Performance
 

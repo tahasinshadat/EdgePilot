@@ -75,10 +75,6 @@ class PrometheusClient:
             raise PrometheusUnavailable(f"Prometheus returned non-success status: {data}")
         return data["data"]["result"]
 
-    def avg_over_time(self, base_query: str, window: str) -> float:
-        query = f"avg_over_time(({base_query})[{window}:])"
-        return _avg_vector(self.query(query))
-
     def fetch_scalar_map(self, query: str, *, label: str = "instance") -> Dict[str, float]:
         result = self.query(query)
         output: Dict[str, float] = {}
