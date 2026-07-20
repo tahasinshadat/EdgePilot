@@ -9,7 +9,6 @@ Provides four primary helpers:
 
 from __future__ import annotations
 from .providers import LocalMetricsProvider, MetricsProvider
-from datetime import datetime, timedelta
 
 import json
 import math
@@ -114,12 +113,6 @@ def _avg_vector(result: Iterable[Dict[str, Any]]) -> float:
     return (sum(values) / len(values)) if values else float("nan")
 
 
-def _is_finite_value(value: Any) -> bool:
-    try:
-        val = float(value[1] if isinstance(value, (list, tuple)) else value)
-    except (TypeError, ValueError):
-        return False
-    return math.isfinite(val)
 
 
 # ============================================================================
@@ -138,10 +131,6 @@ def _battery_info() -> Dict[str, float | bool | None]:
         "power_plugged": battery.power_plugged,
     }
 
-
-def _gpu_info() -> Dict[str, float | bool | None]:
-    # psutil does not expose GPU info; stub for future integrations.
-    return {"available": False}
 
 
 def _process_snapshot(limit: Optional[int] = 10) -> List[Dict[str, float | int | str]]:
@@ -165,8 +154,39 @@ def _process_snapshot(limit: Optional[int] = 10) -> List[Dict[str, float | int |
     return procs[:limit]
 
 
+# ============================================================================
+# TTL Cache — avoids re-scanning every process via psutil when the same
+# function is called multiple times within a short window (e.g., the LLM
+# calling gather_metrics in a multi-step tool loop).  The cache is keyed on
+# (top_n, all_processes) and expires after TTL_SECONDS.
+# ============================================================================
+
+_metrics_cache: Dict[tuple, tuple[float, Dict[str, Any]]] = {}
+_METRICS_TTL_SECONDS: float = 5.0
+
+
 def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, Any]:
-    """Collect local host metrics via psutil."""
+    """Collect local host metrics via psutil.
+
+    Results are cached for up to 5 seconds so that rapid successive calls
+    (common during LLM tool-calling loops) skip the expensive process scan.
+    """
+    cache_key = (top_n, all_processes)
+    now = time.time()
+
+    # Return cached result if it exists and hasn't expired
+    if cache_key in _metrics_cache:
+        cached_ts, cached_result = _metrics_cache[cache_key]
+        if now - cached_ts < _METRICS_TTL_SECONDS:
+            return cached_result
+
+    result = _gather_metrics_uncached(top_n=top_n, all_processes=all_processes)
+    _metrics_cache[cache_key] = (now, result)
+    return result
+
+
+def _gather_metrics_uncached(top_n: int = 10, all_processes: bool = False) -> Dict[str, Any]:
+    """Internal: actually collect metrics (no caching)."""
     cpu_percent = psutil.cpu_percent(interval=0.1)
     virtual_mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -210,7 +230,7 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
             "bytes_recv": net.bytes_recv if net else 0,
         },
         "battery": _battery_info(),
-        "gpu": _gpu_info(),
+        "gpu": {"available": False},  # psutil has no GPU support; placeholder
         "top_processes": _process_snapshot(None if all_processes else top_n),
     }
     return metrics
