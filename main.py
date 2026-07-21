@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import socket
@@ -15,7 +16,7 @@ from typing import Any, Dict, List, Optional
 import typer
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -45,7 +46,7 @@ what is the command to make the installer for Mac?
 
 pyinstaller --onefile --windowed --icon=assets/logo.ico --name=EdgePilot-Installer-Windows installer/install.py
 
-is for windows 
+is for windows
 '''
 
 ROOT_DIR = Path(__file__).parent
@@ -394,6 +395,22 @@ def api_providers() -> Dict[str, dict]:
 def api_metrics() -> Dict[str, object]:
     return gather_metrics()
 
+@app.websocket("/api/metrics/stream")
+async def api_metrics_stream(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            try:
+                data = gather_metrics()
+                await websocket.send_json(data)
+            except Exception as e:
+                # If we fail to send (e.g. client disconnected), break the loop
+                break
+            await asyncio.sleep(1.0)
+    except WebSocketDisconnect:
+        pass
+
+
 
 @app.post("/api/ask", response_model=AskResponse)
 def api_ask(payload: AskRequest) -> AskResponse:
@@ -487,7 +504,15 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
         "created_at": time.time(),
     }
     model_messages: List[ChatMessage] = [{"role": "system", "content": SYSTEM_PROMPT}]
-    model_messages.extend(session.get("messages", []))
+
+    # Context Pruning: keep only the last 10 messages
+    history = session.get("messages", [])
+    if len(history) > 10:
+        model_messages.append({"role": "system", "content": "[Note: Older conversation context has been pruned for performance]"})
+        model_messages.extend(history[-10:])
+    else:
+        model_messages.extend(history)
+
     model_messages.append(user_message)
 
     # Store all messages to be saved (user + assistant messages)
@@ -505,9 +530,17 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
     start = time.perf_counter()
     ok = True
 
+    from core.cache import check_cache, store_in_cache
+
+    # Check if the exact prompt has been answered before (static knowledge only)
+    cached = check_cache(payload.prompt)
+    if cached:
+        final_text = cached
+        iteration = max_iterations  # skip loop
+
     while iteration < max_iterations:
         iteration += 1
-        
+
         try:
             llm_response = provider.generate(model_messages)
             total_prompt_tokens += llm_response.prompt_tokens
@@ -526,35 +559,41 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
                 ok=False,
             )
             raise HTTPException(status_code=500, detail=f"Provider error: {error}") from error
-        
+
         # Check if there are tool calls
         if llm_response.has_tool_calls:
             # Execute each tool call
             tool_results = []
             total_tool_calls += len(llm_response.tool_calls)
 
-            for tool_call in llm_response.tool_calls:
+            import concurrent.futures
+
+            def execute_single_tool(tc):
                 tool_start = time.perf_counter()
-                arguments = dict(tool_call.arguments or {})
-                if tool_call.name in {"run_python_script", "run_shell_commands", "launch"}:
-                    arguments.setdefault("chat_id", chat_id)
-                result = execute_tool(tool_call.name, arguments)
+                args = dict(tc.arguments or {})
+                if tc.name in {"run_python_script", "run_shell_commands", "launch"}:
+                    args.setdefault("chat_id", chat_id)
+                res = execute_tool(tc.name, args)
                 tool_latency = (time.perf_counter() - tool_start) * 1000
 
                 # Log tool call
                 tool_call_logger.log(
                     provider=provider_name,
                     model=config.model,
-                    tool_name=tool_call.name,
-                    arguments=tool_call.arguments,
-                    result=result,
-                    success=result.get("success", False),
+                    tool_name=tc.name,
+                    arguments=tc.arguments,
+                    result=res,
+                    success=res.get("success", False),
                     latency_ms=tool_latency,
                     chat_id=chat_id,
                 )
+                return res
 
-                tool_results.append(result)
-            
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(execute_single_tool, tc) for tc in llm_response.tool_calls]
+                for future in futures:
+                    tool_results.append(future.result())
+
             # Add assistant message with tool calls info
             tool_call_summary = f"[Called tools: {', '.join(tc.name for tc in llm_response.tool_calls)}]"
             if llm_response.text:
@@ -567,7 +606,7 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
                     tool_results_text += f"- {result['tool']}: {json.dumps(result['result'], indent=2)}\n"
                 else:
                     tool_results_text += f"- {result['tool']} ERROR: {result['error']}\n"
-            
+
             # Continue the conversation with tool results
             model_messages.append({
                 "role": "assistant",
@@ -587,7 +626,11 @@ def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageRe
             final_text = f"I reached the maximum number of tool iterations ({max_iterations}). The task may be too complex or requires manual intervention."
         else:
             final_text = "I attempted to use tools but could not generate a final response."
-    
+
+    # Save to cache if it's a general knowledge question (used NO tools = static answer)
+    if ok and total_tool_calls == 0 and final_text:
+        store_in_cache(payload.prompt, final_text)
+
     latency_ms = (time.perf_counter() - start) * 1000
     assistant_message: ChatMessage = {
         "role": "assistant",

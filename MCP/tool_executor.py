@@ -35,9 +35,6 @@ class ToolExecutor:
             "end_task": self._execute_end_task,
             "run_shell_commands": self._execute_run_shell,
             "run_python_script": self._execute_run_python,
-            # Backwards compatibility
-            "run_shell": self._execute_run_shell,
-            "run_python": self._execute_run_python,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:

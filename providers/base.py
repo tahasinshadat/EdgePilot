@@ -73,6 +73,10 @@ class BaseLLM(Protocol):
         """Generate a completion from the conversation history."""
         ...
 
+    def generate_stream(self, messages: Iterable[ChatMessage]) -> Iterable[str | LLMResponse]:
+        """Generate a streaming completion. Yields text chunks, followed by a final LLMResponse."""
+        ...
+
     def format_messages(self, messages: Iterable[ChatMessage]) -> List[ChatMessage]:
         """Allow providers to tweak the message list before sending."""
         return list(messages)

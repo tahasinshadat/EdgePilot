@@ -165,9 +165,20 @@ def _process_snapshot(limit: Optional[int] = 10) -> List[Dict[str, float | int |
     return procs[:limit]
 
 
+_metrics_cache = {"ts": 0, "data": {}}
+
 def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, Any]:
-    """Collect local host metrics via psutil."""
-    cpu_percent = psutil.cpu_percent(interval=0.1)
+    """Collect local host metrics via psutil with a 1-second TTL cache."""
+    global _metrics_cache
+    now = time.time()
+    
+    # Return cached data if it's less than 1 second old
+    if now - _metrics_cache["ts"] < 1.0 and _metrics_cache["data"]:
+        return _metrics_cache["data"]
+        
+    # Use interval=None to instantly return the average CPU usage 
+    # since the last time this function was called, avoiding micro-spikes and blocking.
+    cpu_percent = psutil.cpu_percent(interval=None)
     virtual_mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     disk_io = psutil.disk_io_counters()
@@ -213,6 +224,8 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
         "gpu": _gpu_info(),
         "top_processes": _process_snapshot(None if all_processes else top_n),
     }
+    _metrics_cache["ts"] = now
+    _metrics_cache["data"] = metrics
     return metrics
 
 

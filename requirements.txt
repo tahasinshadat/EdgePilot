@@ -7,3 +7,4 @@ typer>=0.15.0
 httpx>=0.28.0
 plyer>=2.1.0
 pyinstaller>=6.11.0
+kubernetes>=36.0.0

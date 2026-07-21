@@ -9,6 +9,8 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 - **Smart Tool Calling** - LLM automatically decides when to gather metrics, launch apps, or end processes
 - **Desktop UI** - Electron-based chat interface with dark theme
 - **Provider Abstraction** - Pluggable system supporting Gemini (with tools), Claude, and GPT
+- **High-Performance Backend** - Utilizes multi-threaded parallel tool execution for ultra-low latency API responses
+- **Efficient Metrics Polling** - Non-blocking system telemetry via continuous interval averaging
 - **Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
 - **Lightweight** - Clean codebase focused on core functionality
 
