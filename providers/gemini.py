@@ -152,24 +152,15 @@ class GeminiProvider(BaseLLM):
         if system_instruction:
             payload["systemInstruction"] = system_instruction
             
-        if hasattr(self, "_tools") and self._tools:
+        if getattr(self, "tools_enabled", False) and getattr(self, "tool_schemas", []):
             function_declarations = []
-            for tool in self._tools:
-                props = {
-                    k: {"type": v.get("type", "string"), "description": v.get("description", "")}
-                    for k, v in tool["parameters"].get("properties", {}).items()
+            for schema in self.tool_schemas:
+                gemini_tool = {
+                    "name": schema["name"],
+                    "description": schema["description"],
+                    "parameters": schema["parameters"],
                 }
-                function_declarations.append(
-                    {
-                        "name": tool["name"],
-                        "description": tool["description"],
-                        "parameters": {
-                            "type": "object",
-                            "properties": props,
-                            "required": tool["parameters"].get("required", []),
-                        },
-                    }
-                )
+                function_declarations.append(gemini_tool)
 
             payload["tools"] = [{"functionDeclarations": function_declarations}]
 

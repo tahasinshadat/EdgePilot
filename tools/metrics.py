@@ -150,7 +150,7 @@ def _process_snapshot(limit: Optional[int] = 10) -> List[Dict[str, float | int |
     return procs[:limit]
 
 
-_metrics_cache = {"ts": 0, "data": {}}
+_metrics_cache = {"ts": 0, "data": {}, "raw": {}}
 
 def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, Any]:
     """Collect local host metrics via psutil with a 1-second TTL cache."""
@@ -169,6 +169,31 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
     disk_io = psutil.disk_io_counters()
     disk_usage = psutil.disk_usage("/")
     net = psutil.net_io_counters()
+
+    # Calculate per-second rates
+    prev_ts = _metrics_cache.get("ts", 0)
+    prev_raw = _metrics_cache.get("raw", {})
+    
+    dt = now - prev_ts if prev_ts else 1.0
+    if dt <= 0:
+        dt = 1.0
+
+    cur_disk_read = disk_io.read_bytes if disk_io else 0
+    cur_disk_write = disk_io.write_bytes if disk_io else 0
+    cur_net_sent = net.bytes_sent if net else 0
+    cur_net_recv = net.bytes_recv if net else 0
+
+    disk_read_rate = max(0, (cur_disk_read - prev_raw.get("disk_read", cur_disk_read)) / dt)
+    disk_write_rate = max(0, (cur_disk_write - prev_raw.get("disk_write", cur_disk_write)) / dt)
+    net_sent_rate = max(0, (cur_net_sent - prev_raw.get("net_sent", cur_net_sent)) / dt)
+    net_recv_rate = max(0, (cur_net_recv - prev_raw.get("net_recv", cur_net_recv)) / dt)
+
+    _metrics_cache["raw"] = {
+        "disk_read": cur_disk_read,
+        "disk_write": cur_disk_write,
+        "net_sent": cur_net_sent,
+        "net_recv": cur_net_recv
+    }
 
     metrics = {
         "ts": time.time(),
@@ -190,9 +215,9 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
             "swap_total": swap.total,
             "swap_used": swap.used,
         },
-        "disk_io": {
-            "read_bytes": disk_io.read_bytes if disk_io else 0,
-            "write_bytes": disk_io.write_bytes if disk_io else 0,
+        "disk": {
+            "read_bytes": disk_read_rate,
+            "write_bytes": disk_write_rate,
         },
         "filesystem": {
             "mount": "/",
@@ -202,8 +227,8 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
             "percent": disk_usage.percent,
         },
         "network": {
-            "bytes_sent": net.bytes_sent if net else 0,
-            "bytes_recv": net.bytes_recv if net else 0,
+            "bytes_sent": net_sent_rate,
+            "bytes_recv": net_recv_rate,
         },
         "battery": _battery_info(),
         "gpu": {"available": False},  # psutil has no GPU support; placeholder

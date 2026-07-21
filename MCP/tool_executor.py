@@ -43,9 +43,6 @@ class ToolExecutor:
             "end_task": self._execute_end_task,
             "run_shell_commands": self._execute_run_shell,
             "run_python_script": self._execute_run_python,
-            # Backwards compatibility
-            "run_shell": self._execute_run_shell,
-            "run_python": self._execute_run_python,
             "scale_workload": self._execute_scale_workload,
             "restart_workload": self._execute_restart_workload,
             "cordon_node": self._execute_cordon_node,

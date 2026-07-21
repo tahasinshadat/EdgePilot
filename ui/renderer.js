@@ -411,7 +411,30 @@ const calculateSessionMetrics = (chat) => {
 };
 
 const renderMetrics = (metrics) => {
-  metricGridEl.innerHTML = '';
+  const updateCards = (cards) => {
+    // Rebuild DOM if the layout changed (different mode or empty state)
+    if (metricGridEl.children.length !== cards.length || 
+        (metricGridEl.children[0] && metricGridEl.children[0].firstChild.textContent !== cards[0].label) ||
+        metricGridEl.querySelector('.metric-empty')) {
+      metricGridEl.innerHTML = '';
+      cards.forEach((cardData) => {
+        const card = document.createElement('div');
+        card.classList.add('metric-card');
+        const label = document.createElement('span');
+        label.textContent = cardData.label;
+        const value = document.createElement('div');
+        value.classList.add('metric-value');
+        value.textContent = cardData.value;
+        card.append(label, value);
+        metricGridEl.appendChild(card);
+      });
+    } else {
+      // Just update the values in place
+      cards.forEach((cardData, idx) => {
+        metricGridEl.children[idx].lastChild.textContent = cardData.value;
+      });
+    }
+  };
 
   if (state.metricsMode === 'session') {
     if (!state.activeChat) {
@@ -434,18 +457,7 @@ const renderMetrics = (metrics) => {
       { label: 'Assistant', value: sessionMetrics.assistantMessages },
     ];
 
-    cards.forEach((cardData) => {
-      const card = document.createElement('div');
-      card.classList.add('metric-card');
-      const label = document.createElement('span');
-      label.textContent = cardData.label;
-      const value = document.createElement('div');
-      value.classList.add('metric-value');
-      value.textContent = cardData.value;
-      card.append(label, value);
-      metricGridEl.appendChild(card);
-    });
-
+    updateCards(cards);
     return;
   }
 
@@ -464,17 +476,7 @@ const renderMetrics = (metrics) => {
     { label: 'Net Recv', value: metrics.network?.bytes_recv ? `${(metrics.network.bytes_recv / 1_000_000).toFixed(0)} MB` : '0 MB' },
   ];
 
-  cards.forEach((cardData) => {
-    const card = document.createElement('div');
-    card.classList.add('metric-card');
-    const label = document.createElement('span');
-    label.textContent = cardData.label;
-    const value = document.createElement('div');
-    value.classList.add('metric-value');
-    value.textContent = cardData.value;
-    card.append(label, value);
-    metricGridEl.appendChild(card);
-  });
+  updateCards(cards);
 };
 
 const setMetricsMode = (mode) => {
@@ -745,6 +747,18 @@ const sendMessage = async (prompt) => {
 
         if (eventType === 'status') {
           setStatus(payload.text);
+        } else if (eventType === 'chunk') {
+          hideThinking();
+          let streamBubble = document.getElementById('stream-bubble');
+          if (!streamBubble) {
+            streamBubble = document.createElement('div');
+            streamBubble.className = 'message bot-message';
+            streamBubble.id = 'stream-bubble';
+            messagesEl.appendChild(streamBubble);
+          }
+          const textNode = document.createTextNode(payload.text);
+          streamBubble.appendChild(textNode);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
         } else if (eventType === 'tool') {
           setStatus(`Ran tool: ${payload.name}`);
         } else if (eventType === 'cache_hit') {
@@ -770,6 +784,10 @@ const sendMessage = async (prompt) => {
           setStatus('Waiting for approval...');
         } else if (eventType === 'done') {
           finalLatencyMs = payload.latency_ms;
+          const streamBubble = document.getElementById('stream-bubble');
+          if (streamBubble) {
+            streamBubble.removeAttribute('id');
+          }
         } else if (eventType === 'error') {
           throw new Error(payload.detail || 'Streaming error');
         }
