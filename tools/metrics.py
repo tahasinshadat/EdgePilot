@@ -9,7 +9,6 @@ Provides four primary helpers:
 
 from __future__ import annotations
 from .providers import LocalMetricsProvider, MetricsProvider
-from datetime import datetime, timedelta
 
 import json
 import math
@@ -76,10 +75,6 @@ class PrometheusClient:
             raise PrometheusUnavailable(f"Prometheus returned non-success status: {data}")
         return data["data"]["result"]
 
-    def avg_over_time(self, base_query: str, window: str) -> float:
-        query = f"avg_over_time(({base_query})[{window}:])"
-        return _avg_vector(self.query(query))
-
     def fetch_scalar_map(self, query: str, *, label: str = "instance") -> Dict[str, float]:
         result = self.query(query)
         output: Dict[str, float] = {}
@@ -114,12 +109,6 @@ def _avg_vector(result: Iterable[Dict[str, Any]]) -> float:
     return (sum(values) / len(values)) if values else float("nan")
 
 
-def _is_finite_value(value: Any) -> bool:
-    try:
-        val = float(value[1] if isinstance(value, (list, tuple)) else value)
-    except (TypeError, ValueError):
-        return False
-    return math.isfinite(val)
 
 
 # ============================================================================
@@ -138,10 +127,6 @@ def _battery_info() -> Dict[str, float | bool | None]:
         "power_plugged": battery.power_plugged,
     }
 
-
-def _gpu_info() -> Dict[str, float | bool | None]:
-    # psutil does not expose GPU info; stub for future integrations.
-    return {"available": False}
 
 
 def _process_snapshot(limit: Optional[int] = 10) -> List[Dict[str, float | int | str]]:
@@ -221,7 +206,7 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
             "bytes_recv": net.bytes_recv if net else 0,
         },
         "battery": _battery_info(),
-        "gpu": _gpu_info(),
+        "gpu": {"available": False},  # psutil has no GPU support; placeholder
         "top_processes": _process_snapshot(None if all_processes else top_n),
     }
     _metrics_cache["ts"] = now

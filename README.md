@@ -1,18 +1,21 @@
 # EdgePilot - AI Copilot Console
 
-EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini and other providers to autonomously monitor your system, launch applications with scheduling, and manage processes through natural language. 
+EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI backend with an Electron desktop UI. It features **full MCP (Model Context Protocol) integration**, enabling Gemini and other providers to autonomously monitor your system, evaluate Kubernetes cluster capacity, launch applications with scheduling, and manage processes through natural language.
 
 ## Highlights
 - **MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
+- **Kubernetes Capacity Evaluation & AIOps** - Query K8s clusters to check node headroom, and actively scale/restart workloads with Human-in-the-Loop approvals.
 - **Real-time Metrics** - CPU, memory, disk, network monitoring with process-level details and executable paths
-- **Smart App Launcher** - Launch applications by name with delay support using Windows Start Menu search
+- **Semantic Query Cache** - Skips redundant LLM API calls for near-duplicate questions using local embeddings
+- **Async Parallel Tool Execution** - Multiple tool calls run concurrently via `asyncio`, cutting multi-tool latency
+- **SSE Streaming** - Real-time Server-Sent Events stream tool progress and LLM status to the UI
+- **Smart App Launcher** - Launch applications by name with delay support (cross-platform)
 - **Smart Tool Calling** - LLM automatically decides when to gather metrics, launch apps, or end processes
 - **Desktop UI** - Electron-based chat interface with dark theme
 - **Provider Abstraction** - Pluggable system supporting Gemini (with tools), Claude, and GPT
 - **High-Performance Backend** - Utilizes multi-threaded parallel tool execution for ultra-low latency API responses
 - **Efficient Metrics Polling** - Non-blocking system telemetry via continuous interval averaging
 - **Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
-- **Lightweight** - Clean codebase focused on core functionality
 
 ## Architecture
 
@@ -271,14 +274,11 @@ DEFAULT_PROVIDER=gemini               # Use gemini for tool calling
 EdgePilot/
 ├── README.md
 ├── requirements.txt
-├── test_tools.py            # MCP tools integration test
 ├── main.py                  # FastAPI backend + CLI entry point
-├── ui/                      # Electron desktop application
-│   ├── index.html           # UI markup
-│   ├── renderer.js          # Frontend logic
-│   ├── styles.css           # Dark theme styling
-│   ├── main.js              # Electron main process
-│   └── package.json         # Node.js dependencies
+├── core/                    # Shared logic
+│   ├── interface.py         # ask_question / schedule_operation helpers
+│   ├── settings.py          # Environment config + provider setup
+│   └── semantic_cache.py    # Embedding-based LLM response cache
 ├── providers/               # LLM provider adapters
 │   ├── base.py              # BaseLLM protocol + ToolCall classes
 │   ├── gemini.py            # Gemini with function calling
@@ -286,22 +286,32 @@ EdgePilot/
 │   └── gpt.py               # GPT placeholder
 ├── tools/                   # System utilities exposed as tools
 │   ├── __init__.py          # Export metrics, scheduler, process helpers
-│   ├── metrics.py           # psutil + Prometheus-backed host reporting
+│   ├── metrics.py           # psutil + Prometheus-backed host reporting (TTL-cached)
+│   ├── providers.py         # Kubernetes + local metrics provider abstraction
 │   ├── scheduler.py         # Task registry + app launcher + shell/python runner
 │   └── end_task.py          # Process termination
 ├── MCP/                     # Model Context Protocol integration
-│   ├── tool_schemas.py      # Function calling schemas for all 5 tools
-│   ├── tool_executor.py     # Tool execution engine
+│   ├── tool_schemas.py      # Function calling schemas for all tools
+│   ├── tool_executor.py     # Sync + async tool execution engine
 │   └── README.md            # Full MCP documentation
+├── ui/                      # Electron desktop application
+│   ├── index.html           # UI markup
+│   ├── renderer.js          # Frontend logic
+│   ├── styles.css           # Dark theme styling
+│   ├── main.js              # Electron main process
+│   └── package.json         # Node.js dependencies
+├── test/                    # Test suite
+│   ├── test_cli_api.py      # CLI + API endpoint tests
+│   ├── test_tools.py        # MCP tool smoke tests
+│   ├── test_providers.py    # Kubernetes provider tests
+│   └── test_optimization.py # TTL cache, async executor, semantic cache tests
 ├── env/.env                 # API keys and configuration
 ├── scripts/
-│   └── bootstrap_prometheus.sh  # Installs Prometheus + node_exporter and updates env/config
-└── data/                    # JSON persistence + blueprints
-    ├── chat_history.json    # Chat sessions
-    ├── usage_metrics.json   # API usage tracking
-    ├── tool_call_history.json  # Tool execution logs
-    ├── ring.edgepilot.json      # Metrics entity definitions
-    └── blueprint.edge_status.json # Edge status reporting plan
+│   └── bootstrap_prometheus.sh  # Installs Prometheus + node_exporter
+└── data/                    # JSON persistence
+    ├── chat_history.json
+    ├── usage_metrics.json
+    └── tool_call_history.json
 ```
 
 ## API Overview
@@ -310,14 +320,17 @@ EdgePilot/
 - `POST /api/chats` – create a new chat session
 - `GET /api/chats/{chat_id}` – fetch full conversation history
 - `POST /api/chats/{chat_id}/messages` – send a prompt and get LLM response (with tool calling)
+- `POST /api/chats/{chat_id}/messages/stream` – SSE streaming variant with real-time tool progress
 - `GET /api/metrics` – retrieve current system metrics snapshot
 - `POST /api/ask` – answer natural-language questions with shared assistant logic
 - `POST /api/schedule` – queue shell/python/launch tasks
 - `GET /api/tasks` – show the scheduler queue/status
+- `GET /api/cache/stats` – semantic cache diagnostics
+- `POST /api/cache/clear` – flush the semantic query cache
 
 ## MCP (Model Context Protocol)
 
-EdgePilot includes full MCP integration with **5 powerful tools** using launcher.py for intelligent app launching:
+EdgePilot includes full MCP integration with powerful tools using launcher.py for intelligent app launching:
 
 ### Available Tools
 
@@ -441,6 +454,39 @@ EdgePilot's application launching is powered by `launcher.py`, which provides:
 5. **Simple API** - Just 3 core functions: `launch()`, `search()`, `list_apps()`
 
 The LLM can use simple app names like "chrome", "minecraft", or "notepad" without needing full paths!
+
+## Kubernetes Capacity Evaluation
+
+EdgePilot can connect to a Kubernetes cluster and evaluate node-level capacity. The `tools/providers.py` module provides a `KubernetesMetricsProvider` that queries the K8s API for:
+
+- **Node headroom** — available CPU cores, free memory, and open pod slots per worker node
+- **Taints & tolerations** — checks whether a workload's tolerations match a node's scheduling constraints
+- **Node health** — verifies `Ready` status and schedulability before recommending placement
+
+The `evaluate_capacity` tool uses this provider to answer questions like *"Can my cluster handle a new 4-core workload?"* directly through natural language.
+
+```python
+# Example: evaluate whether a workload fits on the cluster
+evaluate_capacity({"cpu_pct": 40, "mem_bytes": 2147483648})
+```
+
+## Kubernetes AIOps & Human-in-the-Loop (HITL)
+
+Beyond read-only capacity checks, EdgePilot can actively manage your cluster state using built-in AIOps tooling:
+- **`scale_workload`** — scale a deployment up or down.
+- **`restart_workload`** — perform a rolling restart of a deployment (useful if metrics indicate a stuck process).
+- **`cordon_node`** — mark a specific Kubernetes node as unschedulable.
+
+**Human-in-the-Loop Safety**: Because these tools mutate cluster state, they are marked as **dangerous**. When the LLM decides to use them, execution pauses and emits an `approval_required` event to the Electron UI. The user is presented with a prompt to explicitly **Allow** or **Deny** the action before the backend proceeds.
+
+## Performance
+
+EdgePilot includes several performance optimizations to minimize latency:
+
+- **TTL-Cached Metrics** — `gather_metrics()` results are cached for 5 seconds, preventing redundant psutil process scans during rapid LLM tool-calling loops
+- **Async Parallel Tool Execution** — when the LLM emits multiple tool calls in a single turn, they run concurrently via `asyncio.gather()` instead of sequentially
+- **Semantic Query Cache** — near-duplicate user queries are detected via sentence-transformer embeddings and served from an in-memory cache, bypassing the cloud LLM API entirely
+- **SSE Streaming** — the `/api/chats/{chat_id}/messages/stream` endpoint uses Server-Sent Events to push real-time status updates (tool execution, cache hits) to the UI
 
 ## Documentation
 - **`README.md`** (this file) - Quick start and overview

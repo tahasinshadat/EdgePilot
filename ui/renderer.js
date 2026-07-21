@@ -694,22 +694,99 @@ const sendMessage = async (prompt) => {
   setStatus('Sending...');
 
   try {
-    const response = await fetchJSON(`/api/chats/${state.activeChat.id}/messages`, {
+    const response = await fetch(`${BACKEND_URL}/api/chats/${state.activeChat.id}/messages/stream`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: finalPrompt,
         provider: state.providerId
       })
     });
 
+    if (!response.ok) {
+      throw new Error(`Stream failed: ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    let finalLatencyMs = null;
+    let wasCached = false;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const blocks = buffer.split('\n\n');
+      buffer = blocks.pop(); // keep incomplete chunk
+
+      for (const block of blocks) {
+        if (!block.trim()) continue;
+
+        let eventType = 'message';
+        let eventData = '';
+
+        for (const line of block.split('\n')) {
+          if (line.startsWith('event: ')) {
+            eventType = line.slice(7);
+          } else if (line.startsWith('data: ')) {
+            eventData = line.slice(6);
+          }
+        }
+
+        let payload = {};
+        try {
+          payload = JSON.parse(eventData);
+        } catch (e) {
+          payload = eventData;
+        }
+
+        if (eventType === 'status') {
+          setStatus(payload.text);
+        } else if (eventType === 'tool') {
+          setStatus(`Ran tool: ${payload.name}`);
+        } else if (eventType === 'cache_hit') {
+          wasCached = true;
+          setStatus('Semantic cache found (instant response)');
+        } else if (eventType === 'approval_required') {
+          const approvalId = payload.approval_id;
+          const toolsList = payload.tools.map(t => `${t.name}(${JSON.stringify(t.arguments)})`).join(', ');
+          
+          const approvalBubble = document.createElement('div');
+          approvalBubble.className = 'message bot-message approval-prompt';
+          approvalBubble.id = `approval-bubble-${approvalId}`;
+          approvalBubble.innerHTML = `
+            <strong>⚠️ Approval Required</strong><br/>
+            EdgePilot wants to execute the following actions: <br/><code>${toolsList}</code><br/>
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+              <button onclick="window.submitApproval('${approvalId}', true)" style="background: var(--brand-blue); border: none; color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer;">Allow</button>
+              <button onclick="window.submitApproval('${approvalId}', false)" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer;">Deny</button>
+            </div>
+          `;
+          messagesEl.appendChild(approvalBubble);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          setStatus('Waiting for approval...');
+        } else if (eventType === 'done') {
+          finalLatencyMs = payload.latency_ms;
+        } else if (eventType === 'error') {
+          throw new Error(payload.detail || 'Streaming error');
+        }
+      }
+    }
+
+    // Stream finished successfully, fetch the updated chat state
+    const updatedChat = await fetchJSON(`/api/chats/${state.activeChat.id}`);
+
     hideThinking();
 
-    state.activeChat = response.chat;
-    const idx = state.chats.findIndex((chat) => chat.id === response.chat.id);
+    state.activeChat = updatedChat;
+    const idx = state.chats.findIndex((chat) => chat.id === updatedChat.id);
     if (idx !== -1) {
-      state.chats[idx] = response.chat;
+      state.chats[idx] = updatedChat;
     }
-    chatTitleEl.textContent = response.chat.title;
+    chatTitleEl.textContent = updatedChat.title;
     renderChats();
     renderMessages();
 
@@ -721,7 +798,14 @@ const sendMessage = async (prompt) => {
       loadJobs(true).catch(() => {});
     }
 
-    setStatus('Ready');
+    let readyMsg = 'Ready';
+    if (finalLatencyMs !== null && finalLatencyMs !== undefined) {
+      const sec = (finalLatencyMs / 1000).toFixed(2);
+      readyMsg = `Ready (took ${sec}s${wasCached ? ' - Cache Found' : ''})`;
+    } else if (wasCached) {
+      readyMsg = 'Ready (Cache Found)';
+    }
+    setStatus(readyMsg);
   } catch (error) {
     hideThinking();
     // Remove the user message we added optimistically
@@ -730,6 +814,27 @@ const sendMessage = async (prompt) => {
     setStatus(`Send failed: ${error.message}`, true);
   }
 };
+
+window.submitApproval = async (approvalId, approved) => {
+  try {
+    const bubble = document.getElementById(`approval-bubble-${approvalId}`);
+    if (bubble) {
+      bubble.style.opacity = '0.5';
+      const btns = bubble.querySelectorAll('button');
+      btns.forEach(b => b.disabled = true);
+    }
+    
+    await fetchJSON(`/api/chats/${state.activeChat.id}/approve_tool`, {
+      method: 'POST',
+      body: JSON.stringify({ approval_id: approvalId, approved })
+    });
+    setStatus(`Approval ${approved ? 'granted' : 'denied'}. Resuming...`);
+  } catch (err) {
+    console.error('Failed to submit approval', err);
+    setStatus('Failed to submit approval', true);
+  }
+};
+
 
 // Event wiring
 newChatBtn.addEventListener('click', () => {

@@ -1,6 +1,12 @@
 """Model Context Protocol (MCP) integration for EdgePilot."""
 
-from .tool_executor import ToolExecutor, execute_tool, parse_tool_calls_from_text
+from .tool_executor import (
+    ToolExecutor,
+    execute_tool,
+    execute_tool_async,
+    execute_tools_batch,
+    parse_tool_calls_from_text,
+)
 from .tool_schemas import (
     TOOL_SCHEMAS,
     format_tools_for_claude,
@@ -12,6 +18,8 @@ from .tool_schemas import (
 __all__ = [
     "ToolExecutor",
     "execute_tool",
+    "execute_tool_async",
+    "execute_tools_batch",
     "parse_tool_calls_from_text",
     "TOOL_SCHEMAS",
     "get_tool_schema",
