@@ -157,9 +157,10 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
     global _metrics_cache
     now = time.time()
     
-    # Return cached data if it's less than 1 second old
-    if now - _metrics_cache["ts"] < 1.0 and _metrics_cache["data"]:
-        return _metrics_cache["data"]
+    # Return cached data if it's less than 1 second old and args match
+    if now - _metrics_cache.get("ts", 0) < 1.0 and _metrics_cache.get("data"):
+        if _metrics_cache.get("args") == (top_n, all_processes):
+            return _metrics_cache["data"]
         
     # Use interval=None to instantly return the average CPU usage 
     # since the last time this function was called, avoiding micro-spikes and blocking.
@@ -236,6 +237,7 @@ def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, An
     }
     _metrics_cache["ts"] = now
     _metrics_cache["data"] = metrics
+    _metrics_cache["args"] = (top_n, all_processes)
     return metrics
 
 
