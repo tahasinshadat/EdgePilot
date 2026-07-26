@@ -25,6 +25,25 @@ from tools import (
     suggest_capacity_window,
 )
 from tools.kubernetes_actions import scale_workload, restart_workload, cordon_node
+from tools import (
+    preview_free_disk_space,
+    execute_free_disk_space,
+    hibernate_background_apps,
+    analyze_network_hogs,
+    query_slurm_jobstats,
+    query_slurm_accounting,
+    slurm_queue_snapshot,
+    query_node_exporter_subset,
+    query_node_specs,
+    cancel_slurm_job,
+    update_slurm_job_qos,
+    compare_job_efficiency,
+    query_cluster_incidents,
+    ingest_historical_sample,
+    analyze_oomkilled_pods,
+    drain_k8s_node,
+    query_ray_workers,
+)
 
 
 class ToolExecutor:
@@ -46,6 +65,23 @@ class ToolExecutor:
             "scale_workload": self._execute_scale_workload,
             "restart_workload": self._execute_restart_workload,
             "cordon_node": self._execute_cordon_node,
+            "preview_free_disk_space": self._execute_preview_free_disk_space,
+            "execute_free_disk_space": self._execute_execute_free_disk_space,
+            "hibernate_background_apps": self._execute_hibernate_background_apps,
+            "analyze_network_hogs": self._execute_analyze_network_hogs,
+            "query_slurm_jobstats": self._execute_query_slurm_jobstats,
+            "query_slurm_accounting": self._execute_query_slurm_accounting,
+            "slurm_queue_snapshot": self._execute_slurm_queue_snapshot,
+            "query_node_exporter_subset": self._execute_query_node_exporter_subset,
+            "query_node_specs": self._execute_query_node_specs,
+            "cancel_slurm_job": self._execute_cancel_slurm_job,
+            "update_slurm_job_qos": self._execute_update_slurm_job_qos,
+            "compare_job_efficiency": self._execute_compare_job_efficiency,
+            "query_cluster_incidents": self._execute_query_cluster_incidents,
+            "ingest_historical_sample": self._execute_ingest_historical_sample,
+            "analyze_oomkilled_pods": self._execute_analyze_oomkilled_pods,
+            "drain_k8s_node": self._execute_drain_k8s_node,
+            "query_ray_workers": self._execute_query_ray_workers,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -304,6 +340,66 @@ class ToolExecutor:
             "delay_seconds": raw.get("delay_seconds"),
             "message": "Python job recorded. Check the Jobs tab for progress and output.",
         }
+
+    def _execute_preview_free_disk_space(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return preview_free_disk_space()
+
+    def _execute_execute_free_disk_space(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        paths = args.get("paths_to_delete", [])
+        return execute_free_disk_space(paths)
+
+    def _execute_hibernate_background_apps(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        app_names = args.get("app_names")
+        if not app_names:
+            raise ValueError("app_names parameter is required")
+        return hibernate_background_apps(app_names)
+
+    def _execute_analyze_network_hogs(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return analyze_network_hogs()
+
+    def _execute_query_slurm_jobstats(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_slurm_jobstats(args.get("job_id", ""))
+
+    def _execute_query_slurm_accounting(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_slurm_accounting(args.get("job_id", ""))
+
+    def _execute_slurm_queue_snapshot(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return slurm_queue_snapshot(args.get("partition", "all"))
+
+    def _execute_query_node_exporter_subset(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_node_exporter_subset(args.get("node", ""))
+
+    def _execute_query_node_specs(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_node_specs(args.get("node", ""))
+
+    def _execute_cancel_slurm_job(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return cancel_slurm_job(args.get("job_id", ""))
+
+    def _execute_update_slurm_job_qos(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        job_id = args.get("job_id")
+        new_qos = args.get("new_qos")
+        return update_slurm_job_qos(job_id, new_qos)
+
+    def _execute_compare_job_efficiency(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        job_id = args.get("job_id")
+        return compare_job_efficiency(job_id)
+
+    def _execute_query_cluster_incidents(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        hours_back = args.get("hours_back", 24)
+        return query_cluster_incidents(hours_back)
+
+    def _execute_ingest_historical_sample(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        csv_file_path = args.get("csv_file_path")
+        return ingest_historical_sample(csv_file_path)
+
+    def _execute_analyze_oomkilled_pods(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return analyze_oomkilled_pods(args.get("namespace", "default"))
+
+    def _execute_drain_k8s_node(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return drain_k8s_node(args.get("node_name", ""))
+
+    def _execute_query_ray_workers(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_ray_workers()
 
 
 

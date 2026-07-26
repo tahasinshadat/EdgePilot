@@ -13,6 +13,9 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 - **Smart App Launcher** - Launch applications by name with delay support (cross-platform)
 - **Desktop UI** - Electron-based chat interface with dark theme and live telemetry dashboards
 - **High-Performance Backend** - Utilizes in-memory caching for chats and loggers to eliminate blocking disk I/O reads
+- **HPC Cluster Optimization** - Native Slurm integrations to monitor job limits, track node failures, cancel stalled jobs, and analyze actual hardware usage via `sacct`, `sstat`, `squeue`, and `sinfo`
+- **Local PC Management** - Analyzes network hogs, dry-runs temporary file cleanups with a preview/execute two-step flow, and suspends heavy background processes to save battery
+- **Agentic Offline Simulations** - Ingests historical CSV job data to run resource optimization simulations offline without needing a live cluster connection
 
 ## Architecture
 
@@ -89,7 +92,25 @@ EdgePilot integrates natively with your local `~/.kube/config`. Try:
 - *"Check if any pods are crashing in the kube-system namespace."*
 *(Note: All destructive actions like scaling or restarting require explicit Allow/Deny approval via the UI)*
 
+**Local PC Optimization:**
+- *"Can you safely preview what junk files can be deleted from my computer to free up space?"*
+- *"Execute the disk cleanup and wipe those files."* (Triggers HITL approval pop-up)
+- *"Hibernate Docker Desktop and Slack so my battery doesn't die."* (Triggers HITL approval pop-up)
+- *"Are there any background apps secretly hogging my network?"*
+
+**HPC / Slurm Cluster Management:**
+- *"Give me a snapshot of the current slurm queue."*
+- *"Check the jobstats for job ID 3841920. Is it wasting GPUs?"*
+- *"Cancel Slurm job 3841920 because it is stalled."* (Triggers HITL approval pop-up)
+- *"Demote job 3841920 to a lower QoS."* (Triggers HITL approval pop-up)
+
+**Agentic Simulations:**
+- *"Load the scripts/mock_jobs.csv file and tell me if any of the historical jobs ran out of memory."*
+- *"Compare the requested limits against the actual usage for job 1001 and tell me its waste percentage."*
+- *"Scrape the cluster logs for the last 24 hours and tell me if any nodes failed or jobs were preempted."*
+
 ## Usage Alerts
+
 
 EdgePilot includes a powerful usage monitoring system that sends desktop notifications and email alerts when your system resources exceed defined thresholds.
 
