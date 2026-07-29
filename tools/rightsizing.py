@@ -566,6 +566,61 @@ def analyze_bottlenecks(
     return report
 
 
+def analyze_workload_families(
+    *,
+    source: str = "auto",
+    namespace: str | None = None,
+    csv_path: str | None = None,
+    node_csv_path: str | None = None,
+    jobstats_path: str | None = None,
+    days_back: int = 7,
+    similarity_threshold: float = 0.75,
+    anomaly_threshold: float = 3.5,
+    min_family_size: int = 4,
+    use_embeddings: bool = True,
+) -> Dict[str, Any]:
+    """Group workloads into families and flag outliers within each.
+
+    Peer-relative counterpart to :func:`recommend_rightsizing`: instead of
+    judging a job against a fixed utilization target, it judges the job
+    against other jobs like it.
+    """
+
+    from .workload_families import (
+        analyze_workload_families as _group_and_score,
+    )
+
+    records, resolved, errors = _load_records(
+        source=source,
+        namespace=namespace,
+        csv_path=csv_path,
+        node_csv_path=node_csv_path,
+        jobstats_path=jobstats_path,
+        days_back=days_back,
+    )
+
+    if resolved == "none":
+        return {
+            "status": "unavailable",
+            "errors": errors,
+            "families": [],
+            "anomalies": [],
+            "summary": {"record_count": 0, "family_count": 0},
+        }
+
+    report = _group_and_score(
+        records,
+        similarity_threshold=similarity_threshold,
+        anomaly_threshold=anomaly_threshold,
+        min_family_size=min_family_size,
+        use_embeddings=use_embeddings,
+    )
+    report["source"] = resolved
+    report["errors"] = errors
+
+    return report
+
+
 def inspect_cluster_resources(
     *,
     node: str | None = None,

@@ -14,6 +14,7 @@ from typing import Any, Dict, List
 
 from tools import (
     analyze_bottlenecks,
+    analyze_workload_families,
     end_task,
     evaluate_capacity,
     gather_metrics,
@@ -59,6 +60,7 @@ class ToolExecutor:
             "cordon_node": self._execute_cordon_node,
             "recommend_rightsizing": self._execute_recommend_rightsizing,
             "analyze_bottlenecks": self._execute_analyze_bottlenecks,
+            "analyze_workload_families": self._execute_analyze_workload_families,
             "inspect_cluster_resources": self._execute_inspect_cluster_resources,
             "apply_resource_requests": self._execute_apply_resource_requests,
         }
@@ -218,6 +220,18 @@ class ToolExecutor:
         self, args: Dict[str, Any]
     ) -> Dict[str, Any]:
         return analyze_bottlenecks(**self._source_args(args))
+
+    def _execute_analyze_workload_families(
+        self, args: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        return analyze_workload_families(
+            **self._source_args(args),
+            similarity_threshold=float(
+                args.get("similarity_threshold", 0.75) or 0.75
+            ),
+            anomaly_threshold=float(args.get("anomaly_threshold", 3.5) or 3.5),
+            min_family_size=int(args.get("min_family_size", 4) or 4),
+        )
 
     def _execute_inspect_cluster_resources(
         self, args: Dict[str, Any]

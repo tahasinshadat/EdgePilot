@@ -419,6 +419,81 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
         }
     },
     {
+        "name": "analyze_workload_families",
+        "description": (
+            "Group jobs into families of similar workloads using a local "
+            "embedding model, then flag the runs that deviate from their own "
+            "family - e.g. 'this run used a twentieth of the memory of the "
+            "other 37 jobs like it'. Peer-relative counterpart to "
+            "recommend_rightsizing: judges a job against its peers rather "
+            "than a fixed utilization target, so it needs no arbitrary "
+            "threshold. Falls back to grouping by job name when the local "
+            "model is unavailable, and says so in the 'degraded' field. "
+            "Read-only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "string",
+                    "description": (
+                        "Which scheduler to read: 'slurm', 'kubernetes', "
+                        "'csv', or 'auto'."
+                    ),
+                    "default": "auto"
+                },
+                "namespace": {
+                    "type": "string",
+                    "description": "Kubernetes namespace to restrict analysis to."
+                },
+                "csv_path": {
+                    "type": "string",
+                    "description": "Path to a sacct-shaped CSV export."
+                },
+                "node_csv_path": {
+                    "type": "string",
+                    "description": "Optional path to a node-specification CSV."
+                },
+                "jobstats_path": {
+                    "type": "string",
+                    "description": (
+                        "Optional path to a Jobstats time-series JSON export."
+                    )
+                },
+                "days_back": {
+                    "type": "integer",
+                    "description": "How many days of Slurm accounting to analyze.",
+                    "default": 7
+                },
+                "similarity_threshold": {
+                    "type": "number",
+                    "description": (
+                        "How alike two jobs must be to share a family, "
+                        "0 to 1. Higher means tighter families."
+                    ),
+                    "default": 0.75
+                },
+                "anomaly_threshold": {
+                    "type": "number",
+                    "description": (
+                        "Robust outlier score above which a run is flagged. "
+                        "Defaults to 3.5."
+                    ),
+                    "default": 3.5
+                },
+                "min_family_size": {
+                    "type": "integer",
+                    "description": (
+                        "Smallest family that can produce outliers; below "
+                        "this a median is not meaningful."
+                    ),
+                    "default": 4
+                }
+            },
+            "required": []
+        }
+    },
+    {
         "name": "inspect_cluster_resources",
         "description": (
             "Read the Kubernetes cluster's node and cluster-wide resource "

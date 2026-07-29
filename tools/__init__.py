@@ -8,6 +8,7 @@ from .metrics import (
 )
 from .rightsizing import (
     analyze_bottlenecks,
+    analyze_workload_families,
     inspect_cluster_resources,
     recommend_rightsizing,
 )

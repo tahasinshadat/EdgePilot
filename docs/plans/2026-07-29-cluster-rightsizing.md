@@ -3891,6 +3891,45 @@ The plug points, in order:
 
 ---
 
+## Addendum: peer-relative analysis (`tools/workload_families.py`)
+
+Added after the first implementation, and it addresses the weakest point of everything above:
+the fixed thresholds. "Below 70% utilization is wasteful" cannot distinguish a simulation that
+genuinely needs 5% of its cores from one over-requested twentyfold.
+
+Peer comparison needs no such constant. Jobs are grouped into **workload families** using the
+local `all-MiniLM-L6-v2` sentence-embedding model already declared in `requirements.txt`, then
+each run is scored against its own family with a **modified z-score** (median absolute
+deviation, Iglewicz & Hoaglin, cutoff 3.5). The median and MAD are used rather than mean and
+standard deviation because a handful of extreme jobs — exactly what is being hunted — would
+inflate a standard deviation enough to conceal themselves.
+
+Two design rules carry weight:
+
+- **The descriptor excludes the resource request.** Families are formed from workload *identity*
+  (name, account, partition) and then judged on what they asked for. Folding the request into
+  the descriptor would make the comparison circular: over-requested jobs would cluster together
+  and look normal relative to each other. `test_descriptor_excludes_the_resource_request` guards this.
+- **Records are sorted before greedy clustering**, so the same jobs always yield the same
+  families regardless of input order (`test_result_is_independent_of_input_order`).
+
+The model is **optional**. Missing package, or a model that cannot load on an offline compute
+node, both degrade to grouping by normalized job name, with `degraded: true` and a reason in the
+report. Measured on a 56-job simulation with three families and three planted problems:
+
+| | Families | Outliers |
+|---|---|---|
+| Local model | 3 (correct) | 4 — exactly the planted problems |
+| Name fallback | 6 (fragmented) | 8 — extra flags from split peer groups |
+
+The fallback splits `md_sim` / `md_simulation` / `md_sim_run` into three families and
+`train_net` / `train_network` into two. Smaller fragments have less representative medians, so
+ordinary runs start scoring as anomalies. The report says when it is in that state so the
+degradation is never silent.
+
+Still no hosted LLM in the analysis path: the embedding model runs locally, and results are
+deterministic for a given input.
+
 ## Out of scope
 
 Deliberately excluded, worth noting as follow-ups:

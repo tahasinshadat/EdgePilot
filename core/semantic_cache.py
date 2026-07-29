@@ -39,6 +39,7 @@ _STATE_CHANGING_TOOLS: Set[str] = frozenset({
     # anonymized under a data-use agreement.
     "recommend_rightsizing",
     "analyze_bottlenecks",
+    "analyze_workload_families",
     "inspect_cluster_resources",
 })
 
