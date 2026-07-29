@@ -329,7 +329,12 @@ app = FastAPI(title="EdgePilot Backend", version="0.4.0")
 
 # Store futures for tools requiring human-in-the-loop approval
 PENDING_APPROVALS: Dict[str, asyncio.Future] = {}
-DANGEROUS_TOOLS = {"scale_workload", "restart_workload", "cordon_node"}
+DANGEROUS_TOOLS = {
+    "scale_workload",
+    "restart_workload",
+    "cordon_node",
+    "apply_resource_requests",
+}
 
 # ── Semantic Cache ──────────────────────────────────────────────────────
 # Initialized lazily: the embedding model is only loaded on the first

@@ -6,6 +6,11 @@ from .metrics import (
     evaluate_capacity,
     suggest_capacity_window,
 )
+from .rightsizing import (
+    analyze_bottlenecks,
+    inspect_cluster_resources,
+    recommend_rightsizing,
+)
 from .end_task import end_task
 from .scheduler import (
     launch,

@@ -84,6 +84,89 @@ def restart_workload(namespace: str, deployment_name: str) -> Dict[str, Any]:
         logger.error(err_msg)
         return {"success": False, "error": err_msg}
 
+def apply_resource_requests(
+    namespace: str,
+    deployment_name: str,
+    container_name: str,
+    cpu_request: str | None = None,
+    memory_request: str | None = None,
+    cpu_limit: str | None = None,
+    memory_limit: str | None = None,
+) -> Dict[str, Any]:
+    """Patch a deployment container's resource requests and/or limits.
+
+    Quantities are Kubernetes strings such as ``500m`` or ``512Mi`` —
+    exactly what ``tools.rightsizing`` emits in its recommendations.
+    """
+
+    requests: Dict[str, str] = {}
+    limits: Dict[str, str] = {}
+
+    if cpu_request:
+        requests["cpu"] = cpu_request
+    if memory_request:
+        requests["memory"] = memory_request
+    if cpu_limit:
+        limits["cpu"] = cpu_limit
+    if memory_limit:
+        limits["memory"] = memory_limit
+
+    if not requests and not limits:
+        return {
+            "success": False,
+            "error": (
+                "At least one of cpu_request, memory_request, cpu_limit "
+                "or memory_limit must be provided."
+            ),
+        }
+
+    resources: Dict[str, Any] = {}
+
+    if requests:
+        resources["requests"] = requests
+    if limits:
+        resources["limits"] = limits
+
+    api = _get_client()
+
+    try:
+        # A strategic merge patch keys the container list by name, so
+        # sibling containers are left untouched.
+        patch = {
+            "spec": {
+                "template": {
+                    "spec": {
+                        "containers": [
+                            {"name": container_name, "resources": resources}
+                        ]
+                    }
+                }
+            }
+        }
+        api.patch_namespaced_deployment(
+            name=deployment_name,
+            namespace=namespace,
+            body=patch,
+        )
+        msg = (
+            f"Updated resources for container '{container_name}' in "
+            f"deployment '{deployment_name}' (namespace '{namespace}'): "
+            f"{resources}."
+        )
+        logger.info(msg)
+        return {"success": True, "message": msg}
+    except ApiException as e:
+        err_msg = (
+            f"Kubernetes API error updating deployment resources: "
+            f"{e.reason} ({e.status})"
+        )
+        logger.error(err_msg)
+        return {"success": False, "error": err_msg}
+    except Exception as e:
+        err_msg = f"Unexpected error updating deployment resources: {e}"
+        logger.error(err_msg)
+        return {"success": False, "error": err_msg}
+
 def cordon_node(node_name: str) -> Dict[str, Any]:
     """Marks a node as unschedulable (cordoned)."""
     api = _get_core_client()

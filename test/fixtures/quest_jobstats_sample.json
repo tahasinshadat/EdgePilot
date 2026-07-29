@@ -1,0 +1,24 @@
+{
+  "jobs": [
+    {
+      "job_id": "1006",
+      "interval_seconds": 300,
+      "nodes": ["qgpu0202"],
+      "samples": [
+        {"offset": 0,    "cpu_cores": 2.1,  "memory_bytes": 8589934592,  "gpu_utilization": 4, "gpu_memory_bytes": 2147483648},
+        {"offset": 300,  "cpu_cores": 2.4,  "memory_bytes": 10737418240, "gpu_utilization": 6, "gpu_memory_bytes": 2147483648},
+        {"offset": 600,  "cpu_cores": 2.2,  "memory_bytes": 12884901888, "gpu_utilization": 3, "gpu_memory_bytes": 2147483648},
+        {"offset": 900,  "cpu_cores": 15.8, "memory_bytes": 12884901888, "gpu_utilization": 5, "gpu_memory_bytes": 2147483648}
+      ]
+    },
+    {
+      "job_id": "1004",
+      "interval_seconds": 300,
+      "nodes": ["qgpu0201"],
+      "samples": [
+        {"offset": 0,   "cpu_cores": 7.2, "memory_bytes": 34359738368, "gpu_utilization": 91, "gpu_memory_bytes": 42949672960},
+        {"offset": 300, "cpu_cores": 7.6, "memory_bytes": 42949672960, "gpu_utilization": 94, "gpu_memory_bytes": 45097156608}
+      ]
+    }
+  ]
+}

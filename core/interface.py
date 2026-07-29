@@ -25,6 +25,36 @@ def _recent_tasks(limit: int = 5) -> List[Dict[str, Any]]:
     return _REGISTRY.list_recent(action=None, limit=limit)
 
 
+def os_profile() -> str:
+    """Return a concise description of the current operating system."""
+    return platform.platform()
+
+
+def summarize_tasks(
+    action: Optional[str] = None,
+    limit: int = 5,
+) -> List[Dict[str, Any]]:
+    """Return recent scheduled tasks, optionally filtered by action."""
+    tasks = _recent_tasks(limit=max(1, limit))
+
+    if action:
+        tasks = [
+            task
+            for task in tasks
+            if task.get("action") == action
+        ]
+
+    return [
+        {
+            "task_id": task.get("task_id"),
+            "action": task.get("action"),
+            "target": task.get("target"),
+            "status": task.get("status"),
+        }
+        for task in tasks[:limit]
+    ]
+
+
 def _metrics_context(metrics: Dict[str, Any], tasks: List[Dict[str, Any]], extra_context: Optional[Dict[str, Any]]) -> str:
     summary = {
         "os": platform.platform(),

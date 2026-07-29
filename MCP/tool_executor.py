@@ -13,18 +13,26 @@ import json
 from typing import Any, Dict, List
 
 from tools import (
+    analyze_bottlenecks,
     end_task,
     evaluate_capacity,
     gather_metrics,
+    inspect_cluster_resources,
     launch,
     list_apps,
+    recommend_rightsizing,
     report_edge_status,
     run_python_script as launcher_run_python,
     run_shell_commands as launcher_run_shell,
     search,
     suggest_capacity_window,
 )
-from tools.kubernetes_actions import scale_workload, restart_workload, cordon_node
+from tools.kubernetes_actions import (
+    apply_resource_requests,
+    cordon_node,
+    restart_workload,
+    scale_workload,
+)
 
 
 class ToolExecutor:
@@ -49,6 +57,10 @@ class ToolExecutor:
             "scale_workload": self._execute_scale_workload,
             "restart_workload": self._execute_restart_workload,
             "cordon_node": self._execute_cordon_node,
+            "recommend_rightsizing": self._execute_recommend_rightsizing,
+            "analyze_bottlenecks": self._execute_analyze_bottlenecks,
+            "inspect_cluster_resources": self._execute_inspect_cluster_resources,
+            "apply_resource_requests": self._execute_apply_resource_requests,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -174,6 +186,64 @@ class ToolExecutor:
         if not node_name:
             raise ValueError("node_name is required")
         return cordon_node(node_name)
+
+    def _source_args(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract the source-selection arguments shared by both analyses."""
+        return {
+            "source": args.get("source", "auto"),
+            "namespace": args.get("namespace"),
+            "csv_path": args.get("csv_path"),
+            "node_csv_path": args.get("node_csv_path"),
+            "jobstats_path": args.get("jobstats_path"),
+            "days_back": int(args.get("days_back", 7) or 7),
+        }
+
+    def _execute_recommend_rightsizing(
+        self, args: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        return recommend_rightsizing(
+            **self._source_args(args),
+            cpu_target_utilization=float(
+                args.get("cpu_target_utilization", 0.7) or 0.7
+            ),
+            memory_target_utilization=float(
+                args.get("memory_target_utilization", 0.8) or 0.8
+            ),
+            gpu_target_utilization=float(
+                args.get("gpu_target_utilization", 0.7) or 0.7
+            ),
+        )
+
+    def _execute_analyze_bottlenecks(
+        self, args: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        return analyze_bottlenecks(**self._source_args(args))
+
+    def _execute_inspect_cluster_resources(
+        self, args: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        return inspect_cluster_resources(node=args.get("node"))
+
+    def _execute_apply_resource_requests(
+        self, args: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        deployment_name = args.get("deployment_name")
+        container_name = args.get("container_name")
+
+        if not deployment_name or not container_name:
+            raise ValueError(
+                "deployment_name and container_name are required"
+            )
+
+        return apply_resource_requests(
+            args.get("namespace", "default"),
+            deployment_name,
+            container_name,
+            cpu_request=args.get("cpu_request"),
+            memory_request=args.get("memory_request"),
+            cpu_limit=args.get("cpu_limit"),
+            memory_limit=args.get("memory_limit"),
+        )
 
     def _execute_launch(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Execute launch tool to start an application."""

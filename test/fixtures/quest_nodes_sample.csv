@@ -1,0 +1,9 @@
+NodeName,CPUs,RealMemory,Gres,GpuMemory,HardwareClass,Partition
+qnode0101,64,257698037760,,0,standard,normal
+qnode0102,64,257698037760,,0,standard,normal
+qnode0103,64,549755813888,,0,himem,normal
+qnode0104,64,549755813888,,0,himem,normal
+qnode0105,64,549755813888,,0,himem,normal
+qnode0106,64,549755813888,,0,himem,normal
+qgpu0201,52,412316860416,gpu:a100:4,85899345920,gpu,gpu
+qgpu0202,52,412316860416,gpu:a100:4,85899345920,gpu,gpu

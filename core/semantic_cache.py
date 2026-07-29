@@ -25,14 +25,21 @@ _STATE_CHANGING_TOOLS: Set[str] = frozenset({
     "run_python_script",
     "run_shell",
     "run_python",
-    "scale_workload",       # future Kubernetes action
-    "restart_workload",     # future Kubernetes action
-    "cordon_node",          # future Kubernetes action
+    "scale_workload",
+    "restart_workload",
+    "cordon_node",
+    "apply_resource_requests",
     # Observability tools (responses should not be cached)
     "gather_metrics",
     "report_edge_status",
     "evaluate_capacity",
     "suggest_capacity_window",
+    # Cluster analysis. Caching would serve stale cluster state, and keeps
+    # job-derived data out of the cache entirely — the Quest dataset is
+    # anonymized under a data-use agreement.
+    "recommend_rightsizing",
+    "analyze_bottlenecks",
+    "inspect_cluster_resources",
 })
 
 

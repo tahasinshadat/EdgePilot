@@ -298,6 +298,188 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             },
             "required": ["node_name"]
         }
+    },
+    {
+        "name": "recommend_rightsizing",
+        "description": (
+            "Compare what each workload requests against what it actually "
+            "consumes, and recommend corrected CPU, memory and GPU sizing. "
+            "Works over Slurm job accounting, an exported accounting CSV, or "
+            "Kubernetes. Flags over-requested, under-requested, OOM-killed, "
+            "idle-GPU and no-requests-set workloads, and reports total "
+            "reclaimable resources. Read-only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "string",
+                    "description": (
+                        "Which scheduler to read: 'slurm', 'kubernetes', "
+                        "'csv' for an exported accounting file, or 'auto' to "
+                        "use whichever is reachable."
+                    ),
+                    "default": "auto"
+                },
+                "namespace": {
+                    "type": "string",
+                    "description": "Kubernetes namespace to restrict analysis to."
+                },
+                "csv_path": {
+                    "type": "string",
+                    "description": (
+                        "Path to a sacct-shaped CSV export. Required when "
+                        "source is 'csv'."
+                    )
+                },
+                "node_csv_path": {
+                    "type": "string",
+                    "description": (
+                        "Optional path to a node-specification CSV, enabling "
+                        "node-class fit analysis."
+                    )
+                },
+                "jobstats_path": {
+                    "type": "string",
+                    "description": (
+                        "Optional path to a Jobstats time-series JSON export, "
+                        "which yields more accurate usage than accounting "
+                        "summaries alone."
+                    )
+                },
+                "days_back": {
+                    "type": "integer",
+                    "description": "How many days of Slurm accounting to analyze.",
+                    "default": 7
+                },
+                "cpu_target_utilization": {
+                    "type": "number",
+                    "description": "Target CPU utilization ratio. Defaults to 0.7.",
+                    "default": 0.7
+                },
+                "memory_target_utilization": {
+                    "type": "number",
+                    "description": "Target memory utilization ratio. Defaults to 0.8.",
+                    "default": 0.8
+                },
+                "gpu_target_utilization": {
+                    "type": "number",
+                    "description": "Target GPU utilization ratio. Defaults to 0.7.",
+                    "default": 0.7
+                }
+            },
+            "required": []
+        }
+    },
+    {
+        "name": "analyze_bottlenecks",
+        "description": (
+            "Identify which resource actually limits each workload - CPU, "
+            "memory, GPU, or none - and roll the findings up by partition. "
+            "Answers 'where are the bottlenecks in this cluster', as distinct "
+            "from recommend_rightsizing's 'is this workload the right size'. "
+            "Read-only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "string",
+                    "description": (
+                        "Which scheduler to read: 'slurm', 'kubernetes', "
+                        "'csv', or 'auto'."
+                    ),
+                    "default": "auto"
+                },
+                "namespace": {
+                    "type": "string",
+                    "description": "Kubernetes namespace to restrict analysis to."
+                },
+                "csv_path": {
+                    "type": "string",
+                    "description": "Path to a sacct-shaped CSV export."
+                },
+                "node_csv_path": {
+                    "type": "string",
+                    "description": "Optional path to a node-specification CSV."
+                },
+                "jobstats_path": {
+                    "type": "string",
+                    "description": (
+                        "Optional path to a Jobstats time-series JSON export."
+                    )
+                },
+                "days_back": {
+                    "type": "integer",
+                    "description": "How many days of Slurm accounting to analyze.",
+                    "default": 7
+                }
+            },
+            "required": []
+        }
+    },
+    {
+        "name": "inspect_cluster_resources",
+        "description": (
+            "Read the Kubernetes cluster's node and cluster-wide resource "
+            "picture: allocatable, requested and available CPU/memory per "
+            "node, pod slots, node readiness and taints. Read-only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "node": {
+                    "type": "string",
+                    "description": (
+                        "Optional node name. Omit for the whole cluster."
+                    )
+                }
+            },
+            "required": []
+        }
+    },
+    {
+        "name": "apply_resource_requests",
+        "description": (
+            "Update the CPU/memory requests and limits of a container in a "
+            "Kubernetes deployment. Use the quantity strings returned by "
+            "recommend_rightsizing. Requires human approval."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "The Kubernetes namespace.",
+                    "default": "default"
+                },
+                "deployment_name": {
+                    "type": "string",
+                    "description": "The deployment to update."
+                },
+                "container_name": {
+                    "type": "string",
+                    "description": "The container within the pod template."
+                },
+                "cpu_request": {
+                    "type": "string",
+                    "description": "CPU request quantity, e.g. '500m'."
+                },
+                "memory_request": {
+                    "type": "string",
+                    "description": "Memory request quantity, e.g. '512Mi'."
+                },
+                "cpu_limit": {
+                    "type": "string",
+                    "description": "CPU limit quantity, e.g. '1'."
+                },
+                "memory_limit": {
+                    "type": "string",
+                    "description": "Memory limit quantity, e.g. '1Gi'."
+                }
+            },
+            "required": ["deployment_name", "container_name"]
+        }
     }
 ]
 

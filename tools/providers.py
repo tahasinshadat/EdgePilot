@@ -564,3 +564,78 @@ def _untolerated_taints(
 
         if not tolerated:
             unmatched.append(taint)
+
+    return unmatched
+
+
+def evaluate_kubernetes_capacity(
+    provider: MetricsProvider,
+    request: Dict[str, Any],
+    node: str | None = None,
+) -> Dict[str, Any]:
+    """Determine which cluster nodes can admit a workload request.
+
+    ``request`` accepts ``cpu_cores``, ``memory_bytes``, ``pods`` and an
+    optional ``tolerations`` list shaped like a Pod spec's tolerations.
+    """
+
+    capacities = provider.get_capacity(host=node)
+
+    need_cpu = float(request.get("cpu_cores", 0) or 0)
+    need_memory = int(request.get("memory_bytes", 0) or 0)
+    need_pods = int(request.get("pods", 0) or 0)
+    tolerations = request.get("tolerations") or []
+
+    results: list[Dict[str, Any]] = []
+
+    for capacity in capacities:
+        reasons: list[str] = []
+        status = capacity.get("status", {})
+
+        if not status.get("ready", False):
+            reasons.append("Node is not Ready")
+
+        if not status.get("schedulable", False):
+            reasons.append("Node is unschedulable")
+
+        headroom = capacity.get("headroom", {})
+        available_cpu = float(headroom.get("cpu_cores", 0) or 0)
+        available_memory = int(headroom.get("memory_bytes", 0) or 0)
+        available_pods = int(headroom.get("pods", 0) or 0)
+
+        if available_cpu < need_cpu:
+            reasons.append(
+                f"CPU available {available_cpu:.3f} cores "
+                f"< required {need_cpu:.3f} cores"
+            )
+
+        if available_memory < need_memory:
+            reasons.append(
+                f"Memory available {available_memory} bytes "
+                f"< required {need_memory} bytes"
+            )
+
+        if available_pods < need_pods:
+            reasons.append(
+                f"Pod slots available {available_pods} "
+                f"< required {need_pods}"
+            )
+
+        for taint in _untolerated_taints(
+            capacity.get("taints", []),
+            tolerations,
+        ):
+            reasons.append(
+                f"Untolerated node taint: "
+                f"{taint['key']}={taint['value']}:{taint['effect']}"
+            )
+
+        results.append(
+            {
+                "instance": capacity.get("instance"),
+                "can_run_now": not reasons,
+                "reasons": reasons,
+            }
+        )
+
+    return {"status": "ok", "results": results, "source": "kubernetes"}

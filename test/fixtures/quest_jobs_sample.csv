@@ -1,0 +1,9 @@
+JobID,JobName,State,ExitCode,ReqTRES,AllocTRES,MaxRSS,TotalCPU,Elapsed,NNodes,NodeList,Partition,QOS,Account
+1001,md_sim,COMPLETED,0:0,"cpu=4,mem=32G,node=1","cpu=4,mem=32G,node=1",2100000K,01:12:00,02:00:00,1,qnode0101,normal,normal,acct_a
+1002,md_sim,COMPLETED,0:0,"cpu=4,mem=32G,node=1","cpu=4,mem=32G,node=1",2400000K,01:20:00,02:10:00,1,qnode0101,normal,normal,acct_a
+1003,train_net,OUT_OF_MEMORY,0:125,"cpu=8,mem=16G,node=1,gres/gpu=1","cpu=8,mem=16G,node=1,gres/gpu=1",16700000K,00:40:00,00:45:00,1,qgpu0201,gpu,normal,acct_b
+1004,train_net,COMPLETED,0:0,"cpu=8,mem=64G,node=1,gres/gpu=1","cpu=8,mem=64G,node=1,gres/gpu=1",41900000K,05:30:00,03:00:00,1,qgpu0201,gpu,normal,acct_b
+1005,preprocess,COMPLETED,0:0,"cpu=16,mem=128G,node=1","cpu=16,mem=128G,node=1",8300000K,00:50:00,03:00:00,1,qnode0102,normal,normal,acct_a
+1006,hyperparam,COMPLETED,0:0,"cpu=16,mem=64G,node=1,gres/gpu=4","cpu=16,mem=64G,node=1,gres/gpu=4",12000000K,02:00:00,08:00:00,1,qgpu0202,gpu,normal,acct_b
+1007,mpi_solve,COMPLETED,0:0,"cpu=128,mem=512G,node=4","cpu=128,mem=512G,node=4",98000000K,3-12:00:00,00:50:00,4,"qnode[0103-0106]",normal,normal,acct_c
+1008,fit_model,TIMEOUT,0:0,"cpu=8,mem=32G,node=1","cpu=8,mem=32G,node=1",30500000K,15:40:00,02:00:00,1,qnode0102,normal,normal,acct_c
