@@ -30,6 +30,7 @@ from tools.kubernetes import (
     inspect_kubernetes_cluster,
     inspect_kubernetes_deployment,
 )
+from tools.skills import list_skills, load_skill
 from tools import (
     preview_free_disk_space,
     execute_free_disk_space,
@@ -90,6 +91,8 @@ class ToolExecutor:
             "scale_workload": self._execute_scale_workload,
             "restart_workload": self._execute_restart_workload,
             "cordon_node": self._execute_cordon_node,
+            "list_skills": self._execute_list_skills,
+            "load_skill": self._execute_load_skill,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -448,6 +451,23 @@ class ToolExecutor:
 
     def _execute_query_ray_workers(self, args: Dict[str, Any]) -> Dict[str, Any]:
         return query_ray_workers()
+
+    def _execute_list_skills(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return list_skills()
+
+    def _execute_load_skill(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        name = args.get("name")
+
+        if not name:
+            raise ValueError("name is required")
+
+        return load_skill(name)
 
 
 

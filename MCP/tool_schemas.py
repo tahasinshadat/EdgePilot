@@ -612,6 +612,39 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             "type": "object",
             "properties": {}
         }
+    },
+    {
+        "name": "list_skills",
+        "description": (
+            "List project-local EdgePilot Skills and their descriptions. "
+            "Use this when determining whether a specialized workflow is "
+            "available for a request."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+        },
+    },
+    {
+        "name": "load_skill",
+        "description": (
+            "Load the complete instructions for an exact project-local "
+            "EdgePilot Skill. Load a relevant Skill before following its "
+            "specialized workflow."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": (
+                        "Exact Skill name returned by list_skills, such as "
+                        "'kubernetes-control'."
+                    ),
+                },
+            },
+            "required": ["name"],
+        },
     }
 ]
 
