@@ -74,7 +74,7 @@ class TestAsyncToolExecution:
         executor = ToolExecutor()
         sync_result = executor.execute("gather_metrics", {"top_n": 2})
 
-        async_result = asyncio.get_event_loop().run_until_complete(
+        async_result = asyncio.run(
             executor.execute_async("gather_metrics", {"top_n": 2})
         )
 
@@ -92,7 +92,7 @@ class TestAsyncToolExecution:
             {"name": "list_apps", "arguments": {"filter_term": "zzz_nonexistent"}},
         ]
 
-        results = asyncio.get_event_loop().run_until_complete(
+        results = asyncio.run(
             executor.execute_batch(calls)
         )
 
@@ -110,7 +110,7 @@ class TestAsyncToolExecution:
             {"name": "nonexistent_tool", "arguments": {}},
         ]
 
-        results = asyncio.get_event_loop().run_until_complete(
+        results = asyncio.run(
             executor.execute_batch(calls)
         )
 
