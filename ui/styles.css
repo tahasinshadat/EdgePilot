@@ -245,7 +245,7 @@ select:focus {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
-  max-height: 250px;
+  max-height: 350px;
   overflow-y: auto;
 }
 
@@ -414,6 +414,15 @@ select:focus {
   text-align: center;
   font-size: 0.8125rem;
   border-radius: 0.5rem;
+}
+
+.message ul {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.message li {
+  margin-bottom: 0.25rem;
 }
 
 .jobs-panel {

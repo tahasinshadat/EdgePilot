@@ -69,9 +69,21 @@ def _parse_delay(*values: object) -> int:
 # Main Functions (5 core functions)
 # ============================================================================
 
+_app_cache = {}
+CACHE_TTL = 300 # 5 minutes
+
 def list_applications(filter_term: str = "") -> List[str]:
     """List installed applications, optionally filtered by search term."""
-    return _SCHEDULER.list_applications(filter_term)
+    now = time.time()
+    cache_key = f"list:{filter_term}"
+    if cache_key in _app_cache:
+        ts, data = _app_cache[cache_key]
+        if now - ts < CACHE_TTL:
+            return data
+            
+    result = _SCHEDULER.list_applications(filter_term)
+    _app_cache[cache_key] = (now, result)
+    return result
 
 def launch_application(app_name: str, delay_seconds: int = 0, chat_id: Optional[str] = None) -> bool:
     """Launch an application with optional delay."""
@@ -116,7 +128,16 @@ launch = launch_application
 
 def search(app_name: str) -> List[str]:
     """Search for applications by name."""
-    return _SCHEDULER.search(app_name)
+    now = time.time()
+    cache_key = f"search:{app_name}"
+    if cache_key in _app_cache:
+        ts, data = _app_cache[cache_key]
+        if now - ts < CACHE_TTL:
+            return data
+            
+    result = _SCHEDULER.search(app_name)
+    _app_cache[cache_key] = (now, result)
+    return result
 
 
 def run_python_script(path: str, args: Optional[List[str]] = None, cwd: Optional[str] = None, delay_seconds: object = 0, seconds: object = None, delay: object = None, chat_id: Optional[str] = None) -> Dict[str, object]:
@@ -196,7 +217,22 @@ def run_shell_commands(command: str, cwd: Optional[str] = None, delay_seconds: o
         try:
             start = time.time()
             completed = subprocess.run(cleaned, cwd=str(Path(cwd).expanduser().resolve()) if cwd else None, capture_output=True, text=True, shell=True)
-            result = CommandResult(action="run_shell_commands", command=cleaned, cwd=str(Path(cwd).expanduser().resolve()) if cwd else None, started_at=start, finished_at=time.time(), stdout=completed.stdout, stderr=completed.stderr, exit_code=completed.returncode)
+            
+            # Truncate output to prevent context window bloat
+            out_text = completed.stdout or ""
+            err_text = completed.stderr or ""
+            
+            if len(out_text) > 3000:
+                lines = out_text.splitlines()
+                if len(lines) > 60:
+                    out_text = "\n".join(lines[:30]) + "\n... [STDOUT TRUNCATED] ...\n" + "\n".join(lines[-30:])
+            
+            if len(err_text) > 3000:
+                lines = err_text.splitlines()
+                if len(lines) > 60:
+                    err_text = "\n".join(lines[:30]) + "\n... [STDERR TRUNCATED] ...\n" + "\n".join(lines[-30:])
+                    
+            result = CommandResult(action="run_shell_commands", command=cleaned, cwd=str(Path(cwd).expanduser().resolve()) if cwd else None, started_at=start, finished_at=time.time(), stdout=out_text, stderr=err_text, exit_code=completed.returncode)
             _REGISTRY.mark_completed(record["task_id"], result.to_dict())
             return result
         except Exception as exc:
