@@ -11,7 +11,11 @@ __pycache__/
 
 # Ignore configs
 .vscode
-.claude
+
+# Ignore local Claude configuration but share project Skills
+.claude/*
+!.claude/skills/
+!.claude/skills/**
 
 # Ignore environment variables and secrets
 .env
@@ -33,3 +37,6 @@ build/
 dist/
 *.spec
 .DS_Store
+*.py[cod]
+evaluations/results/
+kubeconfig-docker.yaml

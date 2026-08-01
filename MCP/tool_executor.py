@@ -25,6 +25,12 @@ from tools import (
     suggest_capacity_window,
 )
 from tools.kubernetes_actions import scale_workload, restart_workload, cordon_node
+from tools.kubernetes import (
+    evaluate_kubernetes_workload,
+    inspect_kubernetes_cluster,
+    inspect_kubernetes_deployment,
+)
+from tools.skills import list_skills, load_skill
 from tools import (
     preview_free_disk_space,
     execute_free_disk_space,
@@ -62,9 +68,6 @@ class ToolExecutor:
             "end_task": self._execute_end_task,
             "run_shell_commands": self._execute_run_shell,
             "run_python_script": self._execute_run_python,
-            "scale_workload": self._execute_scale_workload,
-            "restart_workload": self._execute_restart_workload,
-            "cordon_node": self._execute_cordon_node,
             "preview_free_disk_space": self._execute_preview_free_disk_space,
             "execute_free_disk_space": self._execute_execute_free_disk_space,
             "hibernate_background_apps": self._execute_hibernate_background_apps,
@@ -82,6 +85,14 @@ class ToolExecutor:
             "analyze_oomkilled_pods": self._execute_analyze_oomkilled_pods,
             "drain_k8s_node": self._execute_drain_k8s_node,
             "query_ray_workers": self._execute_query_ray_workers,
+            "inspect_kubernetes_cluster": self._execute_inspect_kubernetes_cluster,
+            "evaluate_kubernetes_workload": self._execute_evaluate_kubernetes_workload,
+            "inspect_kubernetes_deployment": self._execute_inspect_kubernetes_deployment,
+            "scale_workload": self._execute_scale_workload,
+            "restart_workload": self._execute_restart_workload,
+            "cordon_node": self._execute_cordon_node,
+            "list_skills": self._execute_list_skills,
+            "load_skill": self._execute_load_skill,
         }
 
     def execute(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -185,6 +196,46 @@ class ToolExecutor:
             duration=duration,
             horizon_hours=horizon_hours,
             host=host,
+        )
+
+    def _execute_inspect_kubernetes_cluster(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return inspect_kubernetes_cluster()
+
+    def _execute_evaluate_kubernetes_workload(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        requirements = args.get("requirements")
+
+        if not isinstance(requirements, dict):
+            raise ValueError("requirements must be an object")
+
+        node = args.get("node")
+
+        return evaluate_kubernetes_workload(
+            requirements=requirements,
+            node=node,
+        )
+
+    def _execute_inspect_kubernetes_deployment(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        namespace = args.get("namespace")
+        deployment_name = args.get("deployment_name")
+
+        if not namespace:
+            raise ValueError("namespace is required")
+
+        if not deployment_name:
+            raise ValueError("deployment_name is required")
+
+        return inspect_kubernetes_deployment(
+            namespace=namespace,
+            deployment_name=deployment_name,
         )
 
     def _execute_scale_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -400,6 +451,23 @@ class ToolExecutor:
 
     def _execute_query_ray_workers(self, args: Dict[str, Any]) -> Dict[str, Any]:
         return query_ray_workers()
+
+    def _execute_list_skills(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return list_skills()
+
+    def _execute_load_skill(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        name = args.get("name")
+
+        if not name:
+            raise ValueError("name is required")
+
+        return load_skill(name)
 
 
 

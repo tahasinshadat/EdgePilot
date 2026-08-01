@@ -564,3 +564,90 @@ def _untolerated_taints(
 
         if not tolerated:
             unmatched.append(taint)
+
+    return unmatched
+
+
+def evaluate_kubernetes_capacity(
+    provider: MetricsProvider,
+    workload: Dict[str, Any],
+    node: str | None = None,
+) -> Dict[str, Any]:
+    """Evaluate whether a workload can run on available Kubernetes nodes."""
+
+    required_cpu = float(workload.get("cpu_cores", 0) or 0)
+    required_memory = int(workload.get("memory_bytes", 0) or 0)
+    required_pods = int(workload.get("pods", 1) or 0)
+    tolerations = workload.get("tolerations") or []
+
+    capacities = provider.get_capacity(host=node)
+    results = []
+
+    for capacity in capacities:
+        status = capacity.get("status") or {}
+        headroom = capacity.get("headroom") or {}
+        taints = capacity.get("taints") or []
+
+        available_cpu = float(headroom.get("cpu_cores", 0) or 0)
+        available_memory = int(headroom.get("memory_bytes", 0) or 0)
+        available_pods = int(headroom.get("pods", 0) or 0)
+
+        reasons = []
+
+        if not status.get("ready", False):
+            reasons.append("Node is not Ready")
+
+        if not status.get("schedulable", False):
+            reasons.append("Node is unschedulable")
+
+        for taint in _untolerated_taints(taints, tolerations):
+            key = taint.get("key", "")
+            value = taint.get("value", "")
+            effect = taint.get("effect", "")
+
+            if value:
+                formatted_taint = f"{key}={value}:{effect}"
+            else:
+                formatted_taint = f"{key}:{effect}"
+
+            reasons.append(
+                f"Untolerated node taint: {formatted_taint}"
+            )
+
+        if available_cpu < required_cpu:
+            reasons.append(
+                f"CPU available {available_cpu} < required {required_cpu}"
+            )
+
+        if available_memory < required_memory:
+            reasons.append(
+                "Memory available "
+                f"{available_memory} < required {required_memory}"
+            )
+
+        if available_pods < required_pods:
+            reasons.append(
+                f"Pod slots available {available_pods} "
+                f"< required {required_pods}"
+            )
+
+        results.append(
+            {
+                "instance": capacity.get("instance"),
+                "can_run_now": not reasons,
+                "reasons": reasons,
+                "headroom": headroom,
+            }
+        )
+
+    return {
+        "can_run_now": any(
+            result["can_run_now"] for result in results
+        ),
+        "requested": {
+            "cpu_cores": required_cpu,
+            "memory_bytes": required_memory,
+            "pods": required_pods,
+        },
+        "results": results,
+    }

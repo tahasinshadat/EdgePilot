@@ -243,6 +243,95 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             "required": ["identifier"],
         },
     },
+{
+    "name": "inspect_kubernetes_cluster",
+    "description": (
+        "Inspect Kubernetes nodes, schedulable capacity, Pod resource "
+        "requests, taints, readiness, and available Pod slots. This is "
+        "read-only and reports schedulable headroom rather than live "
+        "CPU or memory utilization."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {},
+    },
+},
+{
+    "name": "evaluate_kubernetes_workload",
+    "description": (
+        "Evaluate whether a Kubernetes workload can fit on one or more "
+        "nodes using CPU, memory, Pod slots, readiness, schedulability, "
+        "taints, and tolerations. This operation is read-only."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "requirements": {
+                "type": "object",
+                "description": "The workload's Kubernetes resource requirements.",
+                "properties": {
+                    "cpu_cores": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Required CPU cores.",
+                    },
+                    "memory_bytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Required memory in bytes.",
+                    },
+                    "pods": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "default": 1,
+                        "description": "Required Pod slots.",
+                    },
+                    "tolerations": {
+                        "type": "array",
+                        "description": "Optional Kubernetes tolerations.",
+                        "items": {
+                            "type": "object",
+                        },
+                    },
+                },
+                "required": [
+                    "cpu_cores",
+                    "memory_bytes",
+                ],
+            },
+            "node": {
+                "type": "string",
+                "description": "Optional exact node name to evaluate.",
+            },
+        },
+        "required": ["requirements"],
+    },
+},
+    {
+        "name": "inspect_kubernetes_deployment",
+        "description": (
+            "Inspect the desired, ready, available, updated, and unavailable "
+            "replicas of an exact Kubernetes Deployment. This operation is "
+            "read-only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "Exact Kubernetes namespace.",
+                },
+                "deployment_name": {
+                    "type": "string",
+                    "description": "Exact Deployment name.",
+                },
+            },
+            "required": [
+                "namespace",
+                "deployment_name",
+            ],
+        },
+    },
     {
         "name": "scale_workload",
         "description": "Scales a Kubernetes deployment up or down. Requires human approval.",
@@ -523,6 +612,39 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             "type": "object",
             "properties": {}
         }
+    },
+    {
+        "name": "list_skills",
+        "description": (
+            "List project-local EdgePilot Skills and their descriptions. "
+            "Use this when determining whether a specialized workflow is "
+            "available for a request."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+        },
+    },
+    {
+        "name": "load_skill",
+        "description": (
+            "Load the complete instructions for an exact project-local "
+            "EdgePilot Skill. Load a relevant Skill before following its "
+            "specialized workflow."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": (
+                        "Exact Skill name returned by list_skills, such as "
+                        "'kubernetes-control'."
+                    ),
+                },
+            },
+            "required": ["name"],
+        },
     }
 ]
 
