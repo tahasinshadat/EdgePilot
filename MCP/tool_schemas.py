@@ -243,6 +243,95 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             "required": ["identifier"],
         },
     },
+{
+    "name": "inspect_kubernetes_cluster",
+    "description": (
+        "Inspect Kubernetes nodes, schedulable capacity, Pod resource "
+        "requests, taints, readiness, and available Pod slots. This is "
+        "read-only and reports schedulable headroom rather than live "
+        "CPU or memory utilization."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {},
+    },
+},
+{
+    "name": "evaluate_kubernetes_workload",
+    "description": (
+        "Evaluate whether a Kubernetes workload can fit on one or more "
+        "nodes using CPU, memory, Pod slots, readiness, schedulability, "
+        "taints, and tolerations. This operation is read-only."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "requirements": {
+                "type": "object",
+                "description": "The workload's Kubernetes resource requirements.",
+                "properties": {
+                    "cpu_cores": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Required CPU cores.",
+                    },
+                    "memory_bytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Required memory in bytes.",
+                    },
+                    "pods": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "default": 1,
+                        "description": "Required Pod slots.",
+                    },
+                    "tolerations": {
+                        "type": "array",
+                        "description": "Optional Kubernetes tolerations.",
+                        "items": {
+                            "type": "object",
+                        },
+                    },
+                },
+                "required": [
+                    "cpu_cores",
+                    "memory_bytes",
+                ],
+            },
+            "node": {
+                "type": "string",
+                "description": "Optional exact node name to evaluate.",
+            },
+        },
+        "required": ["requirements"],
+    },
+},
+    {
+        "name": "inspect_kubernetes_deployment",
+        "description": (
+            "Inspect the desired, ready, available, updated, and unavailable "
+            "replicas of an exact Kubernetes Deployment. This operation is "
+            "read-only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "Exact Kubernetes namespace.",
+                },
+                "deployment_name": {
+                    "type": "string",
+                    "description": "Exact Deployment name.",
+                },
+            },
+            "required": [
+                "namespace",
+                "deployment_name",
+            ],
+        },
+    },
     {
         "name": "scale_workload",
         "description": "Scales a Kubernetes deployment up or down. Requires human approval.",
@@ -298,6 +387,264 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
             },
             "required": ["node_name"]
         }
+    },
+    {
+        "name": "preview_free_disk_space",
+        "description": "(SAFE) Scans system temp files and browser caches to report what CAN be deleted and how much space it will free. Call this first before execute_free_disk_space.",
+        "parameters": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "execute_free_disk_space",
+        "description": "(HITL REQUIRED) Actually executes the deletion of system temp files. You MUST provide the exact paths to delete, obtained from preview_free_disk_space.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "paths_to_delete": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of absolute paths to delete. Must be obtained from preview_free_disk_space."
+                }
+            },
+            "required": ["paths_to_delete"]
+        }
+    },
+    {
+        "name": "hibernate_background_apps",
+        "description": "(HITL REQUIRED) Identifies and suspends/kills heavy background processes (e.g., Slack, Docker Desktop).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "app_names": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of application names to hibernate."
+                }
+            },
+            "required": ["app_names"]
+        }
+    },
+    {
+        "name": "analyze_network_hogs",
+        "description": "Queries active network connections to find apps silently downloading/uploading massive amounts of data in the background.",
+        "parameters": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "query_slurm_jobstats",
+        "description": "Returns time-series metrics (CPU, Memory, GPU) and labels (partition, QOS, node) for specific Slurm jobs.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string",
+                    "description": "The Slurm job ID."
+                }
+            },
+            "required": ["job_id"]
+        }
+    },
+    {
+        "name": "query_slurm_accounting",
+        "description": "Returns Slurm job lifecycles (submit, start, end, exit code, requested vs used TRES).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string",
+                    "description": "The Slurm job ID."
+                }
+            },
+            "required": ["job_id"]
+        }
+    },
+    {
+        "name": "slurm_queue_snapshot",
+        "description": "Returns pending/running job counts by partition, top waiters, and fairshare info.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "partition": {
+                    "type": "string",
+                    "description": "The partition name to query (default: all).",
+                    "default": "all"
+                }
+            }
+        }
+    },
+    {
+        "name": "query_node_exporter_subset",
+        "description": "Returns a curated subset of prometheus metrics to evaluate hardware pressure.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "node": {
+                    "type": "string",
+                    "description": "The node name."
+                }
+            },
+            "required": ["node"]
+        }
+    },
+    {
+        "name": "query_node_specs",
+        "description": "Returns hardware specs (cores, total memory, GPUs) to compare limits vs actual usage.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "node": {
+                    "type": "string",
+                    "description": "The node name."
+                }
+            },
+            "required": ["node"]
+        }
+    },
+    {
+        "name": "cancel_slurm_job",
+        "description": "(HITL REQUIRED) Safely cancel a stalled or hoarding Slurm job to immediately reclaim wasted resources.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string",
+                    "description": "The Slurm job ID."
+                }
+            },
+            "required": ["job_id"]
+        }
+    },
+    {
+        "name": "update_slurm_job_qos",
+        "description": "(HITL REQUIRED) Demote a non-critical resource-heavy Slurm job to a lower priority QoS to relieve queue contention.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string",
+                    "description": "The Slurm job ID."
+                },
+                "new_qos": {
+                    "type": "string",
+                    "description": "The new QoS level."
+                }
+            },
+            "required": ["job_id", "new_qos"]
+        }
+    },
+    {
+        "name": "compare_job_efficiency",
+        "description": "Compares Requested vs Actual usage for a Slurm job to calculate waste percentage.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string",
+                    "description": "The Slurm job ID"
+                }
+            },
+            "required": ["job_id"]
+        }
+    },
+    {
+        "name": "query_cluster_incidents",
+        "description": "Scrapes Slurm logs for OOMs, Node Fails, and Preemptions over the last N hours.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "hours_back": {
+                    "type": "integer",
+                    "description": "Hours to look back (default 24)"
+                }
+            }
+        }
+    },
+    {
+        "name": "ingest_historical_sample",
+        "description": "Parses a CSV of historical jobs to enable offline optimization simulations.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "csv_file_path": {
+                    "type": "string",
+                    "description": "Path to the CSV file"
+                }
+            },
+            "required": ["csv_file_path"]
+        }
+    },
+    {
+        "name": "analyze_oomkilled_pods",
+        "description": "Identify which K8s pods crashed due to memory limits and simulate how much more memory they actually need.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "The Kubernetes namespace.",
+                    "default": "default"
+                }
+            }
+        }
+    },
+    {
+        "name": "drain_k8s_node",
+        "description": "(HITL REQUIRED) Safely evict all workloads off a dying Kubernetes node before it crashes.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "node_name": {
+                    "type": "string",
+                    "description": "The name of the node to drain."
+                }
+            },
+            "required": ["node_name"]
+        }
+    },
+    {
+        "name": "query_ray_workers",
+        "description": "Check if GPU workers in a Ray cluster are actually saturated or sitting idle.",
+        "parameters": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "list_skills",
+        "description": (
+            "List project-local EdgePilot Skills and their descriptions. "
+            "Use this when determining whether a specialized workflow is "
+            "available for a request."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+        },
+    },
+    {
+        "name": "load_skill",
+        "description": (
+            "Load the complete instructions for an exact project-local "
+            "EdgePilot Skill. Load a relevant Skill before following its "
+            "specialized workflow."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": (
+                        "Exact Skill name returned by list_skills, such as "
+                        "'kubernetes-control'."
+                    ),
+                },
+            },
+            "required": ["name"],
+        },
     },
     {
         "name": "recommend_rightsizing",
@@ -488,26 +835,6 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
                         "this a median is not meaningful."
                     ),
                     "default": 4
-                }
-            },
-            "required": []
-        }
-    },
-    {
-        "name": "inspect_cluster_resources",
-        "description": (
-            "Read the Kubernetes cluster's node and cluster-wide resource "
-            "picture: allocatable, requested and available CPU/memory per "
-            "node, pod slots, node readiness and taints. Read-only."
-        ),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "node": {
-                    "type": "string",
-                    "description": (
-                        "Optional node name. Omit for the whole cluster."
-                    )
                 }
             },
             "required": []

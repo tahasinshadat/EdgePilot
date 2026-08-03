@@ -24,9 +24,8 @@ from tools.scheduler import (
 def _recent_tasks(limit: int = 5) -> List[Dict[str, Any]]:
     return _REGISTRY.list_recent(action=None, limit=limit)
 
-
 def os_profile() -> str:
-    """Return a concise description of the current operating system."""
+    """Return a short description of the current operating system."""
     return platform.platform()
 
 
@@ -35,14 +34,7 @@ def summarize_tasks(
     limit: int = 5,
 ) -> List[Dict[str, Any]]:
     """Return recent scheduled tasks, optionally filtered by action."""
-    tasks = _recent_tasks(limit=max(1, limit))
-
-    if action:
-        tasks = [
-            task
-            for task in tasks
-            if task.get("action") == action
-        ]
+    tasks = _REGISTRY.list_recent(action=action, limit=limit)
 
     return [
         {
@@ -50,8 +42,11 @@ def summarize_tasks(
             "action": task.get("action"),
             "target": task.get("target"),
             "status": task.get("status"),
+            "created_at": task.get("created_at"),
+            "result": task.get("result"),
+            "error": task.get("error"),
         }
-        for task in tasks[:limit]
+        for task in tasks
     ]
 
 

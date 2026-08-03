@@ -619,30 +619,3 @@ def analyze_workload_families(
     report["errors"] = errors
 
     return report
-
-
-def inspect_cluster_resources(
-    *,
-    node: str | None = None,
-    provider: Any = None,
-) -> Dict[str, Any]:
-    """Return the Kubernetes node and cluster-level resource snapshot.
-
-    Thin wrapper over ``KubernetesMetricsProvider.gather_metrics`` so the
-    existing, well-tested cluster model is reachable from MCP.
-    """
-
-    from .providers import KubernetesMetricsProvider
-
-    provider = provider or KubernetesMetricsProvider()
-    snapshot = provider.gather_metrics()
-
-    if node is not None:
-        snapshot = {
-            **snapshot,
-            "nodes": [
-                entry for entry in snapshot["nodes"] if entry["name"] == node
-            ],
-        }
-
-    return snapshot

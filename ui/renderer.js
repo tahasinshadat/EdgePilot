@@ -246,28 +246,29 @@ const hideThinking = () => {
   }
 };
 
-const renderMessages = () => {
+const messageWorker = new Worker('./worker.js');
+
+messageWorker.onmessage = (e) => {
+  const processed = e.data;
   messagesEl.innerHTML = '';
+  processed.forEach(msg => {
+    const bubble = document.createElement('div');
+    bubble.classList.add('message', msg.role);
+    bubble.innerHTML = msg.html;
+    messagesEl.appendChild(bubble);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+};
+
+const renderMessages = () => {
   if (!state.activeChat || !state.activeChat.messages.length) {
     messagesEl.innerHTML = '<div class="empty-state">Create or select a chat to begin</div>';
     tokenCounterEl.textContent = '';
     return;
   }
 
-  state.activeChat.messages.forEach((msg) => {
-    const bubble = document.createElement('div');
-    bubble.classList.add('message', msg.role);
-    bubble.innerHTML = (msg.content || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
-      .replace(/^\s*[\*-]\s+/gm, '• ')
-      .replace(/\n/g, '<br />');
-    messagesEl.appendChild(bubble);
-  });
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Offload markdown parsing to Web Worker
+  messageWorker.postMessage(state.activeChat.messages);
 
   // Update token counter with more details
   const tokens = state.activeChat.tokens_used ?? 0;
@@ -410,7 +411,30 @@ const calculateSessionMetrics = (chat) => {
 };
 
 const renderMetrics = (metrics) => {
-  metricGridEl.innerHTML = '';
+  const updateCards = (cards) => {
+    // Rebuild DOM if the layout changed (different mode or empty state)
+    if (metricGridEl.children.length !== cards.length || 
+        (metricGridEl.children[0] && metricGridEl.children[0].firstChild.textContent !== cards[0].label) ||
+        metricGridEl.querySelector('.metric-empty')) {
+      metricGridEl.innerHTML = '';
+      cards.forEach((cardData) => {
+        const card = document.createElement('div');
+        card.classList.add('metric-card');
+        const label = document.createElement('span');
+        label.textContent = cardData.label;
+        const value = document.createElement('div');
+        value.classList.add('metric-value');
+        value.textContent = cardData.value;
+        card.append(label, value);
+        metricGridEl.appendChild(card);
+      });
+    } else {
+      // Just update the values in place
+      cards.forEach((cardData, idx) => {
+        metricGridEl.children[idx].lastChild.textContent = cardData.value;
+      });
+    }
+  };
 
   if (state.metricsMode === 'session') {
     if (!state.activeChat) {
@@ -433,18 +457,7 @@ const renderMetrics = (metrics) => {
       { label: 'Assistant', value: sessionMetrics.assistantMessages },
     ];
 
-    cards.forEach((cardData) => {
-      const card = document.createElement('div');
-      card.classList.add('metric-card');
-      const label = document.createElement('span');
-      label.textContent = cardData.label;
-      const value = document.createElement('div');
-      value.classList.add('metric-value');
-      value.textContent = cardData.value;
-      card.append(label, value);
-      metricGridEl.appendChild(card);
-    });
-
+    updateCards(cards);
     return;
   }
 
@@ -463,17 +476,7 @@ const renderMetrics = (metrics) => {
     { label: 'Net Recv', value: metrics.network?.bytes_recv ? `${(metrics.network.bytes_recv / 1_000_000).toFixed(0)} MB` : '0 MB' },
   ];
 
-  cards.forEach((cardData) => {
-    const card = document.createElement('div');
-    card.classList.add('metric-card');
-    const label = document.createElement('span');
-    label.textContent = cardData.label;
-    const value = document.createElement('div');
-    value.classList.add('metric-value');
-    value.textContent = cardData.value;
-    card.append(label, value);
-    metricGridEl.appendChild(card);
-  });
+  updateCards(cards);
 };
 
 const setMetricsMode = (mode) => {
@@ -590,37 +593,45 @@ const loadChats = async () => {
   updateJobsScopeControl();
 };
 
-const loadMetrics = async (quiet = false, retryCount = 0) => {
-  if (state.metricsMode !== 'live') {
-    return;
+let metricsWs = null;
+
+const initMetricsWebSocket = () => {
+  if (metricsWs) {
+    metricsWs.close();
   }
-  try {
-    const metrics = await fetchJSON('/api/metrics');
-    state.metricsLastSnapshot = metrics;
-    state.metricsErrorCount = 0; // Reset error count on success
-    renderMetrics(metrics);
-  } catch (error) {
-    // Track consecutive errors
+  const wsUrl = BACKEND_URL.replace('http://', 'ws://') + '/api/metrics/stream';
+  metricsWs = new WebSocket(wsUrl);
+
+  metricsWs.onmessage = (event) => {
+    if (state.metricsMode !== 'live') return;
+    try {
+      const metrics = JSON.parse(event.data);
+      state.metricsLastSnapshot = metrics;
+      state.metricsErrorCount = 0;
+      renderMetrics(metrics);
+    } catch (err) {
+      console.error('Failed to parse metrics WS message:', err);
+    }
+  };
+
+  metricsWs.onclose = () => {
     state.metricsErrorCount = (state.metricsErrorCount || 0) + 1;
-
-    // Retry up to 3 times with exponential backoff
-    if (retryCount < 3) {
-      const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-      setTimeout(() => {
-        loadMetrics(true, retryCount + 1);
-      }, backoffDelay);
-      return;
-    }
-
-    // After retries fail, show error message
-    if (!quiet) {
-      setStatus(`Metrics unavailable: ${error.message}`, true);
-    }
-
-    // Show error state in metrics panel after multiple failures
-    if (state.metricsErrorCount >= 5) {
+    if (state.metricsErrorCount >= 5 && state.metricsMode === 'live') {
       metricGridEl.innerHTML = '<div class="metric-empty" style="color: var(--error);">Unable to load metrics. Check if the backend is running.</div>';
     }
+    // Retry connection after a delay
+    setTimeout(() => {
+      if (state.metricsMode === 'live') {
+        initMetricsWebSocket();
+      }
+    }, 2000);
+  };
+};
+
+const loadMetrics = async (quiet = false, retryCount = 0) => {
+  if (state.metricsMode !== 'live') return;
+  if (!metricsWs || metricsWs.readyState === WebSocket.CLOSED) {
+    initMetricsWebSocket();
   }
 };
 
@@ -736,6 +747,18 @@ const sendMessage = async (prompt) => {
 
         if (eventType === 'status') {
           setStatus(payload.text);
+        } else if (eventType === 'chunk') {
+          hideThinking();
+          let streamBubble = document.getElementById('stream-bubble');
+          if (!streamBubble) {
+            streamBubble = document.createElement('div');
+            streamBubble.className = 'message bot-message';
+            streamBubble.id = 'stream-bubble';
+            messagesEl.appendChild(streamBubble);
+          }
+          const textNode = document.createTextNode(payload.text);
+          streamBubble.appendChild(textNode);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
         } else if (eventType === 'tool') {
           setStatus(`Ran tool: ${payload.name}`);
         } else if (eventType === 'cache_hit') {
@@ -761,6 +784,10 @@ const sendMessage = async (prompt) => {
           setStatus('Waiting for approval...');
         } else if (eventType === 'done') {
           finalLatencyMs = payload.latency_ms;
+          const streamBubble = document.getElementById('stream-bubble');
+          if (streamBubble) {
+            streamBubble.removeAttribute('id');
+          }
         } else if (eventType === 'error') {
           throw new Error(payload.detail || 'Streaming error');
         }
@@ -1157,14 +1184,6 @@ const init = async () => {
     await loadProviders();
     await Promise.all([loadChats(), loadMetrics()]);
     setStatus('Ready');
-    if (state.metricsTimer) {
-      clearInterval(state.metricsTimer);
-    }
-    state.metricsTimer = setInterval(() => {
-      if (state.metricsMode === 'live') {
-        loadMetrics(true).catch(() => {});
-      }
-    }, 1000);
   } catch (error) {
     setStatus(`Init failed: ${error.message}`, true);
   }

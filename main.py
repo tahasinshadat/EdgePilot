@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 import typer
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -133,6 +133,7 @@ class ChatStore:
         self._lock = threading.Lock()
         if not self.path.exists():
             self._write({"sessions": []})
+        self._data = self._read()
 
     def _read(self) -> Dict[str, object]:
         with self.path.open("r", encoding="utf-8") as fh:
@@ -149,13 +150,11 @@ class ChatStore:
 
     def list_sessions(self) -> List[Dict[str, object]]:
         with self._lock:
-            data = self._read()
-            return data.get("sessions", [])
+            return self._data.get("sessions", [])
 
     def get_session(self, chat_id: str) -> Dict[str, object]:
         with self._lock:
-            data = self._read()
-            for session in data.get("sessions", []):
+            for session in self._data.get("sessions", []):
                 if session["id"] == chat_id:
                     return session
         raise KeyError(chat_id)
@@ -171,17 +170,14 @@ class ChatStore:
             "updated_at": time.time(),
         }
         with self._lock:
-            data = self._read()
-            sessions = data.get("sessions", [])
+            sessions = self._data.setdefault("sessions", [])
             sessions.insert(0, session)
-            data["sessions"] = sessions
-            self._write(data)
+            self._write(self._data)
         return session
 
     def append_messages(self, chat_id: str, messages: List[Dict[str, object]], token_delta: int, tool_calls_delta: int = 0) -> Dict[str, object]:
         with self._lock:
-            data = self._read()
-            sessions = data.get("sessions", [])
+            sessions = self._data.get("sessions", [])
             for session in sessions:
                 if session["id"] == chat_id:
                     session["messages"].extend(messages)
@@ -197,20 +193,18 @@ class ChatStore:
                             snippet = first_user["content"].strip().splitlines()[0][:50]
                             if snippet:
                                 session["title"] = snippet if len(snippet) > 2 else "Conversation"
-                    self._write(data)
+                    self._write(self._data)
                     return session
         raise KeyError(chat_id)
 
     def delete_session(self, chat_id: str) -> bool:
         """Delete a chat session by ID."""
         with self._lock:
-            data = self._read()
-            sessions = data.get("sessions", [])
+            sessions = self._data.get("sessions", [])
             original_length = len(sessions)
-            sessions = [s for s in sessions if s["id"] != chat_id]
-            if len(sessions) < original_length:
-                data["sessions"] = sessions
-                self._write(data)
+            self._data["sessions"] = [s for s in sessions if s["id"] != chat_id]
+            if len(self._data["sessions"]) < original_length:
+                self._write(self._data)
                 return True
         return False
 
@@ -224,6 +218,7 @@ class UsageLogger:
         self._lock = threading.Lock()
         if not self.path.exists():
             self._write({"records": []})
+        self._data = self._read()
 
     def _read(self) -> Dict[str, object]:
         with self.path.open("r", encoding="utf-8") as fh:
@@ -258,9 +253,8 @@ class UsageLogger:
             "ok": ok,
         }
         with self._lock:
-            data = self._read()
-            data.setdefault("records", []).append(record)
-            self._write(data)
+            self._data.setdefault("records", []).append(record)
+            self._write(self._data)
 
 
 class ToolCallLogger:
@@ -272,6 +266,7 @@ class ToolCallLogger:
         self._lock = threading.Lock()
         if not self.path.exists():
             self._write({"tool_calls": []})
+        self._data = self._read()
 
     def _read(self) -> Dict[str, object]:
         with self.path.open("r", encoding="utf-8") as fh:
@@ -301,6 +296,7 @@ class ToolCallLogger:
         """Log a tool call execution."""
         record = {
             "ts": time.time(),
+            "chat_id": chat_id,
             "provider": provider,
             "model": model,
             "tool_name": tool_name,
@@ -308,15 +304,13 @@ class ToolCallLogger:
             "result": result,
             "success": success,
             "latency_ms": latency_ms,
-            "chat_id": chat_id,
         }
         with self._lock:
-            data = self._read()
-            data.setdefault("tool_calls", []).append(record)
+            self._data.setdefault("tool_calls", []).append(record)
             # Keep only last 1000 tool calls to prevent file from growing too large
-            if len(data["tool_calls"]) > 1000:
-                data["tool_calls"] = data["tool_calls"][-1000:]
-            self._write(data)
+            if len(self._data["tool_calls"]) > 1000:
+                self._data["tool_calls"] = self._data["tool_calls"][-1000:]
+            self._write(self._data)
 
 
 load_env()
@@ -333,6 +327,13 @@ DANGEROUS_TOOLS = {
     "scale_workload",
     "restart_workload",
     "cordon_node",
+    "run_shell_commands",
+    "run_python_script",
+    "execute_free_disk_space",
+    "hibernate_background_apps",
+    "cancel_slurm_job",
+    "update_slurm_job_qos",
+    "drain_k8s_node",
     "apply_resource_requests",
 }
 
@@ -406,6 +407,22 @@ def api_providers() -> Dict[str, dict]:
 def api_metrics() -> Dict[str, object]:
     return gather_metrics()
 
+@app.websocket("/api/metrics/stream")
+async def api_metrics_stream(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            try:
+                data = gather_metrics()
+                await websocket.send_json(data)
+            except Exception as e:
+                # If we fail to send (e.g. client disconnected), break the loop
+                break
+            await asyncio.sleep(1.0)
+    except WebSocketDisconnect:
+        pass
+
+
 
 @app.post("/api/ask", response_model=AskResponse)
 def api_ask(payload: AskRequest) -> AskResponse:
@@ -461,176 +478,6 @@ def api_delete_chat(chat_id: str) -> Dict[str, str]:
     if chat_store.delete_session(chat_id):
         return {"status": "deleted", "chat_id": chat_id}
     raise HTTPException(status_code=404, detail="Chat not found")
-
-
-@app.post("/api/chats/{chat_id}/messages")
-def api_send_message(chat_id: str, payload: SendMessageRequest) -> SendMessageResponse:
-    provider_name = (payload.provider or DEFAULT_PROVIDER).lower()
-    try:
-        config = provider_config(provider_name)
-        provider = get_provider(provider_name, config)
-    except Exception as error:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail=str(error)) from error
-
-    try:
-        session = chat_store.get_session(chat_id)
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Chat not found") from None
-
-    # Enable tools for providers that support them
-    if hasattr(provider, "enable_tools"):
-        provider_id = ""
-        try:
-            provider_id = (type(provider).describe() or {}).get("id", "")
-        except Exception:
-            provider_id = ""
-
-        if provider_id == "claude":
-            tool_schemas = format_tools_for_claude()
-        elif provider_id == "gemini":
-            tool_schemas = format_tools_for_gemini()
-        else:
-            tool_schemas = get_all_tool_schemas()
-        provider.enable_tools(tool_schemas)
-
-    user_message: ChatMessage = {
-        "role": "user",
-        "content": payload.prompt.strip(),
-        "created_at": time.time(),
-    }
-    model_messages: List[ChatMessage] = [{"role": "system", "content": SYSTEM_PROMPT}]
-    model_messages.extend(session.get("messages", []))
-    model_messages.append(user_message)
-
-    # Store all messages to be saved (user + assistant messages)
-    messages_to_save = [user_message]
-
-    total_prompt_tokens = 0
-    total_response_tokens = 0
-    total_tool_calls = 0
-
-    # Tool calling loop - continue until we get a final response
-    max_iterations = 15  # Allow more iterations for complex multi-step tasks
-    iteration = 0
-    final_text = ""
-
-    start = time.perf_counter()
-    ok = True
-
-    while iteration < max_iterations:
-        iteration += 1
-        
-        try:
-            llm_response = provider.generate(model_messages)
-            total_prompt_tokens += llm_response.prompt_tokens
-            total_response_tokens += llm_response.response_tokens
-        except NotImplementedError as error:
-            raise HTTPException(status_code=501, detail=str(error)) from error
-        except Exception as error:  # noqa: BLE001
-            ok = False
-            latency_ms = (time.perf_counter() - start) * 1000
-            usage_logger.log(
-                provider=provider_name,
-                model=config.model,
-                prompt_tokens=total_prompt_tokens,
-                response_tokens=total_response_tokens,
-                latency_ms=latency_ms,
-                ok=False,
-            )
-            raise HTTPException(status_code=500, detail=f"Provider error: {error}") from error
-        
-        # Check if there are tool calls
-        if llm_response.has_tool_calls:
-            # Execute each tool call
-            tool_results = []
-            total_tool_calls += len(llm_response.tool_calls)
-
-            for tool_call in llm_response.tool_calls:
-                tool_start = time.perf_counter()
-                arguments = dict(tool_call.arguments or {})
-                if tool_call.name in {"run_python_script", "run_shell_commands", "launch"}:
-                    arguments.setdefault("chat_id", chat_id)
-                result = execute_tool(tool_call.name, arguments)
-                tool_latency = (time.perf_counter() - tool_start) * 1000
-
-                # Log tool call
-                tool_call_logger.log(
-                    provider=provider_name,
-                    model=config.model,
-                    tool_name=tool_call.name,
-                    arguments=tool_call.arguments,
-                    result=result,
-                    success=result.get("success", False),
-                    latency_ms=tool_latency,
-                    chat_id=chat_id,
-                )
-
-                tool_results.append(result)
-            
-            # Add assistant message with tool calls info
-            tool_call_summary = f"[Called tools: {', '.join(tc.name for tc in llm_response.tool_calls)}]"
-            if llm_response.text:
-                tool_call_summary = llm_response.text + " " + tool_call_summary
-
-            # Add tool results to the conversation
-            tool_results_text = "\n\nTool Results:\n"
-            for result in tool_results:
-                if result["success"]:
-                    tool_results_text += f"- {result['tool']}: {json.dumps(result['result'], indent=2)}\n"
-                else:
-                    tool_results_text += f"- {result['tool']} ERROR: {result['error']}\n"
-            
-            # Continue the conversation with tool results
-            model_messages.append({
-                "role": "assistant",
-                "content": tool_call_summary,
-            })
-            model_messages.append({
-                "role": "user",
-                "content": tool_results_text,
-            })
-        else:
-            # No tool calls, this is the final response
-            final_text = llm_response.text
-            break
-
-    if not final_text:
-        if iteration >= max_iterations:
-            final_text = f"I reached the maximum number of tool iterations ({max_iterations}). The task may be too complex or requires manual intervention."
-        else:
-            final_text = "I attempted to use tools but could not generate a final response."
-    
-    latency_ms = (time.perf_counter() - start) * 1000
-    assistant_message: ChatMessage = {
-        "role": "assistant",
-        "content": final_text,
-        "created_at": time.time(),
-    }
-    messages_to_save.append(assistant_message)
-
-    updated_session = chat_store.append_messages(
-        chat_id,
-        messages_to_save,
-        total_prompt_tokens + total_response_tokens,
-        tool_calls_delta=total_tool_calls
-    )
-    usage_logger.log(
-        provider=provider_name,
-        model=config.model,
-        prompt_tokens=total_prompt_tokens,
-        response_tokens=total_response_tokens,
-        latency_ms=latency_ms,
-        ok=ok,
-    )
-
-    detail = _to_detail(updated_session)
-    return SendMessageResponse(
-        reply=final_text,
-        tokens_used=detail.tokens_used,
-        prompt_tokens=total_prompt_tokens,
-        response_tokens=total_response_tokens,
-        chat=detail,
-    )
 
 
 # ====================================================================== #
@@ -742,13 +589,45 @@ async def _sse_message_generator(
         yield _event("status", {"text": f"Thinking… (step {iteration})"})
 
         try:
-            # Run the (synchronous) LLM call in a thread so we don't block
             loop = asyncio.get_running_loop()
-            llm_response = await loop.run_in_executor(
-                None, provider.generate, model_messages
-            )
-            total_prompt_tokens += llm_response.prompt_tokens
-            total_response_tokens += llm_response.response_tokens
+            
+            if hasattr(provider, 'generate_stream'):
+                import queue
+                # Use asyncio.Queue instead of blocking queue to avoid ThreadPool overhead
+                q = asyncio.Queue()
+                
+                def _worker():
+                    try:
+                        for item in provider.generate_stream(model_messages):
+                            loop.call_soon_threadsafe(q.put_nowait, item)
+                        loop.call_soon_threadsafe(q.put_nowait, None)
+                    except Exception as e:
+                        loop.call_soon_threadsafe(q.put_nowait, e)
+                        
+                loop.run_in_executor(None, _worker)
+                
+                llm_response = None
+                while True:
+                    item = await q.get()
+                    if item is None:
+                        break
+                    if isinstance(item, Exception):
+                        raise item
+                    if hasattr(item, 'text') and hasattr(item, 'tool_calls'):
+                        llm_response = item
+                        break
+                    elif isinstance(item, str):
+                        yield _event("chunk", {"text": item})
+                        
+                if llm_response:
+                    total_prompt_tokens += llm_response.prompt_tokens
+                    total_response_tokens += llm_response.response_tokens
+            else:
+                llm_response = await loop.run_in_executor(
+                    None, provider.generate, model_messages
+                )
+                total_prompt_tokens += llm_response.prompt_tokens
+                total_response_tokens += llm_response.response_tokens
         except Exception as exc:
             yield _event("error", {"detail": f"Provider error: {exc}"})
             return

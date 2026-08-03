@@ -18,7 +18,6 @@ from tools import (
     end_task,
     evaluate_capacity,
     gather_metrics,
-    inspect_cluster_resources,
     launch,
     list_apps,
     recommend_rightsizing,
@@ -33,6 +32,31 @@ from tools.kubernetes_actions import (
     cordon_node,
     restart_workload,
     scale_workload,
+)
+from tools.kubernetes import (
+    evaluate_kubernetes_workload,
+    inspect_kubernetes_cluster,
+    inspect_kubernetes_deployment,
+)
+from tools.skills import list_skills, load_skill
+from tools import (
+    preview_free_disk_space,
+    execute_free_disk_space,
+    hibernate_background_apps,
+    analyze_network_hogs,
+    query_slurm_jobstats,
+    query_slurm_accounting,
+    slurm_queue_snapshot,
+    query_node_exporter_subset,
+    query_node_specs,
+    cancel_slurm_job,
+    update_slurm_job_qos,
+    compare_job_efficiency,
+    query_cluster_incidents,
+    ingest_historical_sample,
+    analyze_oomkilled_pods,
+    drain_k8s_node,
+    query_ray_workers,
 )
 
 
@@ -52,16 +76,34 @@ class ToolExecutor:
             "end_task": self._execute_end_task,
             "run_shell_commands": self._execute_run_shell,
             "run_python_script": self._execute_run_python,
-            # Backwards compatibility
-            "run_shell": self._execute_run_shell,
-            "run_python": self._execute_run_python,
+            "preview_free_disk_space": self._execute_preview_free_disk_space,
+            "execute_free_disk_space": self._execute_execute_free_disk_space,
+            "hibernate_background_apps": self._execute_hibernate_background_apps,
+            "analyze_network_hogs": self._execute_analyze_network_hogs,
+            "query_slurm_jobstats": self._execute_query_slurm_jobstats,
+            "query_slurm_accounting": self._execute_query_slurm_accounting,
+            "slurm_queue_snapshot": self._execute_slurm_queue_snapshot,
+            "query_node_exporter_subset": self._execute_query_node_exporter_subset,
+            "query_node_specs": self._execute_query_node_specs,
+            "cancel_slurm_job": self._execute_cancel_slurm_job,
+            "update_slurm_job_qos": self._execute_update_slurm_job_qos,
+            "compare_job_efficiency": self._execute_compare_job_efficiency,
+            "query_cluster_incidents": self._execute_query_cluster_incidents,
+            "ingest_historical_sample": self._execute_ingest_historical_sample,
+            "analyze_oomkilled_pods": self._execute_analyze_oomkilled_pods,
+            "drain_k8s_node": self._execute_drain_k8s_node,
+            "query_ray_workers": self._execute_query_ray_workers,
+            "inspect_kubernetes_cluster": self._execute_inspect_kubernetes_cluster,
+            "evaluate_kubernetes_workload": self._execute_evaluate_kubernetes_workload,
+            "inspect_kubernetes_deployment": self._execute_inspect_kubernetes_deployment,
             "scale_workload": self._execute_scale_workload,
             "restart_workload": self._execute_restart_workload,
             "cordon_node": self._execute_cordon_node,
+            "list_skills": self._execute_list_skills,
+            "load_skill": self._execute_load_skill,
             "recommend_rightsizing": self._execute_recommend_rightsizing,
             "analyze_bottlenecks": self._execute_analyze_bottlenecks,
             "analyze_workload_families": self._execute_analyze_workload_families,
-            "inspect_cluster_resources": self._execute_inspect_cluster_resources,
             "apply_resource_requests": self._execute_apply_resource_requests,
         }
 
@@ -168,6 +210,46 @@ class ToolExecutor:
             host=host,
         )
 
+    def _execute_inspect_kubernetes_cluster(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return inspect_kubernetes_cluster()
+
+    def _execute_evaluate_kubernetes_workload(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        requirements = args.get("requirements")
+
+        if not isinstance(requirements, dict):
+            raise ValueError("requirements must be an object")
+
+        node = args.get("node")
+
+        return evaluate_kubernetes_workload(
+            requirements=requirements,
+            node=node,
+        )
+
+    def _execute_inspect_kubernetes_deployment(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        namespace = args.get("namespace")
+        deployment_name = args.get("deployment_name")
+
+        if not namespace:
+            raise ValueError("namespace is required")
+
+        if not deployment_name:
+            raise ValueError("deployment_name is required")
+
+        return inspect_kubernetes_deployment(
+            namespace=namespace,
+            deployment_name=deployment_name,
+        )
+
     def _execute_scale_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
         namespace = args.get("namespace", "default")
         deployment_name = args.get("deployment_name")
@@ -232,11 +314,6 @@ class ToolExecutor:
             anomaly_threshold=float(args.get("anomaly_threshold", 3.5) or 3.5),
             min_family_size=int(args.get("min_family_size", 4) or 4),
         )
-
-    def _execute_inspect_cluster_resources(
-        self, args: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        return inspect_cluster_resources(node=args.get("node"))
 
     def _execute_apply_resource_requests(
         self, args: Dict[str, Any]
@@ -391,6 +468,83 @@ class ToolExecutor:
             "delay_seconds": raw.get("delay_seconds"),
             "message": "Python job recorded. Check the Jobs tab for progress and output.",
         }
+
+    def _execute_preview_free_disk_space(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return preview_free_disk_space()
+
+    def _execute_execute_free_disk_space(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        paths = args.get("paths_to_delete", [])
+        return execute_free_disk_space(paths)
+
+    def _execute_hibernate_background_apps(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        app_names = args.get("app_names")
+        if not app_names:
+            raise ValueError("app_names parameter is required")
+        return hibernate_background_apps(app_names)
+
+    def _execute_analyze_network_hogs(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return analyze_network_hogs()
+
+    def _execute_query_slurm_jobstats(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_slurm_jobstats(args.get("job_id", ""))
+
+    def _execute_query_slurm_accounting(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_slurm_accounting(args.get("job_id", ""))
+
+    def _execute_slurm_queue_snapshot(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return slurm_queue_snapshot(args.get("partition", "all"))
+
+    def _execute_query_node_exporter_subset(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_node_exporter_subset(args.get("node", ""))
+
+    def _execute_query_node_specs(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_node_specs(args.get("node", ""))
+
+    def _execute_cancel_slurm_job(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return cancel_slurm_job(args.get("job_id", ""))
+
+    def _execute_update_slurm_job_qos(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        job_id = args.get("job_id")
+        new_qos = args.get("new_qos")
+        return update_slurm_job_qos(job_id, new_qos)
+
+    def _execute_compare_job_efficiency(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        job_id = args.get("job_id")
+        return compare_job_efficiency(job_id)
+
+    def _execute_query_cluster_incidents(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        hours_back = args.get("hours_back", 24)
+        return query_cluster_incidents(hours_back)
+
+    def _execute_ingest_historical_sample(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        csv_file_path = args.get("csv_file_path")
+        return ingest_historical_sample(csv_file_path)
+
+    def _execute_analyze_oomkilled_pods(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return analyze_oomkilled_pods(args.get("namespace", "default"))
+
+    def _execute_drain_k8s_node(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return drain_k8s_node(args.get("node_name", ""))
+
+    def _execute_query_ray_workers(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        return query_ray_workers()
+
+    def _execute_list_skills(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return list_skills()
+
+    def _execute_load_skill(
+            self,
+            args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        name = args.get("name")
+
+        if not name:
+            raise ValueError("name is required")
+
+        return load_skill(name)
 
 
 

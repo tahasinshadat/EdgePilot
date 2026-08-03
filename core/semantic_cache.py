@@ -40,7 +40,7 @@ _STATE_CHANGING_TOOLS: Set[str] = frozenset({
     "recommend_rightsizing",
     "analyze_bottlenecks",
     "analyze_workload_families",
-    "inspect_cluster_resources",
+    "inspect_kubernetes_cluster",
 })
 
 

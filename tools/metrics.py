@@ -150,45 +150,51 @@ def _process_snapshot(limit: Optional[int] = 10) -> List[Dict[str, float | int |
     return procs[:limit]
 
 
-# ============================================================================
-# TTL Cache — avoids re-scanning every process via psutil when the same
-# function is called multiple times within a short window (e.g., the LLM
-# calling gather_metrics in a multi-step tool loop).  The cache is keyed on
-# (top_n, all_processes) and expires after TTL_SECONDS.
-# ============================================================================
-
-_metrics_cache: Dict[tuple, tuple[float, Dict[str, Any]]] = {}
-_METRICS_TTL_SECONDS: float = 5.0
-
+_metrics_cache = {"ts": 0, "data": {}, "raw": {}}
 
 def gather_metrics(top_n: int = 10, all_processes: bool = False) -> Dict[str, Any]:
-    """Collect local host metrics via psutil.
-
-    Results are cached for up to 5 seconds so that rapid successive calls
-    (common during LLM tool-calling loops) skip the expensive process scan.
-    """
-    cache_key = (top_n, all_processes)
+    """Collect local host metrics via psutil with a 1-second TTL cache."""
+    global _metrics_cache
     now = time.time()
-
-    # Return cached result if it exists and hasn't expired
-    if cache_key in _metrics_cache:
-        cached_ts, cached_result = _metrics_cache[cache_key]
-        if now - cached_ts < _METRICS_TTL_SECONDS:
-            return cached_result
-
-    result = _gather_metrics_uncached(top_n=top_n, all_processes=all_processes)
-    _metrics_cache[cache_key] = (now, result)
-    return result
-
-
-def _gather_metrics_uncached(top_n: int = 10, all_processes: bool = False) -> Dict[str, Any]:
-    """Internal: actually collect metrics (no caching)."""
-    cpu_percent = psutil.cpu_percent(interval=0.1)
+    
+    # Return cached data if it's less than 1 second old and args match
+    if now - _metrics_cache.get("ts", 0) < 1.0 and _metrics_cache.get("data"):
+        if _metrics_cache.get("args") == (top_n, all_processes):
+            return _metrics_cache["data"]
+        
+    # Use interval=None to instantly return the average CPU usage 
+    # since the last time this function was called, avoiding micro-spikes and blocking.
+    cpu_percent = psutil.cpu_percent(interval=None)
     virtual_mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     disk_io = psutil.disk_io_counters()
     disk_usage = psutil.disk_usage("/")
     net = psutil.net_io_counters()
+
+    # Calculate per-second rates
+    prev_ts = _metrics_cache.get("ts", 0)
+    prev_raw = _metrics_cache.get("raw", {})
+    
+    dt = now - prev_ts if prev_ts else 1.0
+    if dt <= 0:
+        dt = 1.0
+
+    cur_disk_read = disk_io.read_bytes if disk_io else 0
+    cur_disk_write = disk_io.write_bytes if disk_io else 0
+    cur_net_sent = net.bytes_sent if net else 0
+    cur_net_recv = net.bytes_recv if net else 0
+
+    disk_read_rate = max(0, (cur_disk_read - prev_raw.get("disk_read", cur_disk_read)) / dt)
+    disk_write_rate = max(0, (cur_disk_write - prev_raw.get("disk_write", cur_disk_write)) / dt)
+    net_sent_rate = max(0, (cur_net_sent - prev_raw.get("net_sent", cur_net_sent)) / dt)
+    net_recv_rate = max(0, (cur_net_recv - prev_raw.get("net_recv", cur_net_recv)) / dt)
+
+    _metrics_cache["raw"] = {
+        "disk_read": cur_disk_read,
+        "disk_write": cur_disk_write,
+        "net_sent": cur_net_sent,
+        "net_recv": cur_net_recv
+    }
 
     metrics = {
         "ts": time.time(),
@@ -210,9 +216,9 @@ def _gather_metrics_uncached(top_n: int = 10, all_processes: bool = False) -> Di
             "swap_total": swap.total,
             "swap_used": swap.used,
         },
-        "disk_io": {
-            "read_bytes": disk_io.read_bytes if disk_io else 0,
-            "write_bytes": disk_io.write_bytes if disk_io else 0,
+        "disk": {
+            "read_bytes": disk_read_rate,
+            "write_bytes": disk_write_rate,
         },
         "filesystem": {
             "mount": "/",
@@ -222,13 +228,16 @@ def _gather_metrics_uncached(top_n: int = 10, all_processes: bool = False) -> Di
             "percent": disk_usage.percent,
         },
         "network": {
-            "bytes_sent": net.bytes_sent if net else 0,
-            "bytes_recv": net.bytes_recv if net else 0,
+            "bytes_sent": net_sent_rate,
+            "bytes_recv": net_recv_rate,
         },
         "battery": _battery_info(),
         "gpu": {"available": False},  # psutil has no GPU support; placeholder
         "top_processes": _process_snapshot(None if all_processes else top_n),
     }
+    _metrics_cache["ts"] = now
+    _metrics_cache["data"] = metrics
+    _metrics_cache["args"] = (top_n, all_processes)
     return metrics
 
 

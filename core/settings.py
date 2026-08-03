@@ -27,7 +27,7 @@ SYSTEM_PROMPT = (
     "- When users ask which runs look unusual, what stands out, or how a job compares to similar ones → call analyze_workload_families()\n"
     "- Peer comparisons are stronger evidence than fixed thresholds: prefer 'this run used 20x less memory than the 37 jobs like it' over 'below 70% is wasteful'\n"
     "- If a family report says degraded=true, the jobs were grouped by name rather than by similarity — say so, because unrelated jobs may share a family\n"
-    "- When users ask about node headroom or 'where can this run' on Kubernetes → call inspect_cluster_resources()\n"
+    "- When users ask about node headroom or 'where can this run' on Kubernetes → call inspect_kubernetes_cluster()\n"
     "- NEVER recommend a replica count, job size, or resource request without first reading real data from one of those tools\n"
     "- Report the observed utilization ratio alongside every recommendation so the user can judge it\n"
     "- If a workload is flagged usage_unavailable, say the measurement is missing — do not estimate usage\n"

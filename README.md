@@ -4,16 +4,18 @@ EdgePilot is an **on-premises AI copilot** that combines a lightweight FastAPI b
 
 ## Highlights
 - **MCP Integration** - Gemini can autonomously call tools for system monitoring, app launching, and process management
-- **Kubernetes Capacity Evaluation & AIOps** - Query K8s clusters to check node headroom, and actively scale/restart workloads with Human-in-the-Loop approvals.
-- **Real-time Metrics** - CPU, memory, disk, network monitoring with process-level details and executable paths
+- **Secure Tool Execution** - Executes shell commands, Python scripts, and Kubernetes actions with a built-in Human-in-the-Loop approval system to prevent unintended side effects
+- **Kubernetes Capacity Evaluation & AIOps** - Query K8s clusters to check node headroom, and actively scale/restart workloads with explicit user consent
+- **Real-time Metrics** - CPU, memory, disk (MB/s), and network (MB/s) telemetry streamed directly to the UI
+- **Real-Time Token Streaming** - Ultra-low latency chat responses powered by Server-Sent Events (SSE)
 - **Semantic Query Cache** - Skips redundant LLM API calls for near-duplicate questions using local embeddings
 - **Async Parallel Tool Execution** - Multiple tool calls run concurrently via `asyncio`, cutting multi-tool latency
-- **SSE Streaming** - Real-time Server-Sent Events stream tool progress and LLM status to the UI
 - **Smart App Launcher** - Launch applications by name with delay support (cross-platform)
-- **Smart Tool Calling** - LLM automatically decides when to gather metrics, launch apps, or end processes
-- **Desktop UI** - Electron-based chat interface with dark theme
-- **Provider Abstraction** - Pluggable system supporting Gemini (with tools), Claude, and GPT
-- **Local Persistence** - JSON-based chat history and usage analytics (privacy-first)
+- **Desktop UI** - Electron-based chat interface with dark theme and live telemetry dashboards
+- **High-Performance Backend** - Utilizes in-memory caching for chats and loggers to eliminate blocking disk I/O reads
+- **HPC Cluster Optimization** - Native Slurm integrations to monitor job limits, track node failures, cancel stalled jobs, and analyze actual hardware usage via `sacct`, `sstat`, `squeue`, and `sinfo`
+- **Local PC Management** - Analyzes network hogs, dry-runs temporary file cleanups with a preview/execute two-step flow, and suspends heavy background processes to save battery
+- **Agentic Offline Simulations** - Ingests historical CSV job data to run resource optimization simulations offline without needing a live cluster connection
 
 ## Architecture
 
@@ -70,13 +72,45 @@ python main.py serve --host 127.0.0.1 --port 8000
 ### 3. Test Tools
 ```bash
 # Test all MCP tools integration
-python test_tools.py
-
-# Test launcher directly
-python tools/launcher.py
+pytest test/test_tools.py
 ```
 
+### 4. Example Prompts
+Once running, you can interact with EdgePilot naturally. Here are some examples of what it can do:
+
+**System Management:**
+- *"List the files in my Documents folder."*
+- *"Kill the notepad process."*
+- *"Launch Calculator and wait 5 seconds before launching Chrome."*
+- *"Are there any python scripts currently running?"*
+
+**Kubernetes AIOps:**
+EdgePilot integrates natively with your local `~/.kube/config`. Try:
+- *"Scale my 'nginx' deployment in the default namespace down to 1 replica."*
+- *"Perform a rolling restart of the 'frontend' deployment."*
+- *"Cordon the 'worker-node-1' node so no new pods get scheduled there."*
+- *"Check if any pods are crashing in the kube-system namespace."*
+*(Note: All destructive actions like scaling or restarting require explicit Allow/Deny approval via the UI)*
+
+**Local PC Optimization:**
+- *"Can you safely preview what junk files can be deleted from my computer to free up space?"*
+- *"Execute the disk cleanup and wipe those files."* (Triggers HITL approval pop-up)
+- *"Hibernate Docker Desktop and Slack so my battery doesn't die."* (Triggers HITL approval pop-up)
+- *"Are there any background apps secretly hogging my network?"*
+
+**HPC / Slurm Cluster Management:**
+- *"Give me a snapshot of the current slurm queue."*
+- *"Check the jobstats for job ID 3841920. Is it wasting GPUs?"*
+- *"Cancel Slurm job 3841920 because it is stalled."* (Triggers HITL approval pop-up)
+- *"Demote job 3841920 to a lower QoS."* (Triggers HITL approval pop-up)
+
+**Agentic Simulations:**
+- *"Load the scripts/mock_jobs.csv file and tell me if any of the historical jobs ran out of memory."*
+- *"Compare the requested limits against the actual usage for job 1001 and tell me its waste percentage."*
+- *"Scrape the cluster logs for the last 24 hours and tell me if any nodes failed or jobs were preempted."*
+
 ## Usage Alerts
+
 
 EdgePilot includes a powerful usage monitoring system that sends desktop notifications and email alerts when your system resources exceed defined thresholds.
 
@@ -481,10 +515,12 @@ Beyond read-only capacity checks, EdgePilot can actively manage your cluster sta
 
 EdgePilot includes several performance optimizations to minimize latency:
 
-- **TTL-Cached Metrics** — `gather_metrics()` results are cached for 5 seconds, preventing redundant psutil process scans during rapid LLM tool-calling loops
-- **Async Parallel Tool Execution** — when the LLM emits multiple tool calls in a single turn, they run concurrently via `asyncio.gather()` instead of sequentially
-- **Semantic Query Cache** — near-duplicate user queries are detected via sentence-transformer embeddings and served from an in-memory cache, bypassing the cloud LLM API entirely
-- **SSE Streaming** — the `/api/chats/{chat_id}/messages/stream` endpoint uses Server-Sent Events to push real-time status updates (tool execution, cache hits) to the UI
+- **TTL-Cached Metrics** — `gather_metrics()` results are cached for 5 seconds, preventing redundant psutil process scans during rapid LLM tool-calling loops.
+- **In-Memory Chat & Telemetry Caching** — Chat histories and tool execution logs are persisted entirely in memory during active sessions to eliminate $O(N)$ synchronous disk I/O bottlenecks.
+- **In-Place DOM Mutation** — Real-time telemetry dashboards mutate text content directly rather than redrawing the DOM, preventing CPU spikes and layout thrashing during 1-second metric polling.
+- **Async Parallel Tool Execution** — when the LLM emits multiple tool calls in a single turn, they run concurrently via `asyncio.gather()` instead of sequentially.
+- **Semantic Query Cache** — near-duplicate user queries are detected via sentence-transformer embeddings and served from an in-memory cache, bypassing the cloud LLM API entirely.
+- **SSE Streaming** — the `/api/chats/{chat_id}/messages/stream` endpoint uses Server-Sent Events to push real-time status updates (tool execution, cache hits) to the UI.
 
 ## Documentation
 - **`README.md`** (this file) - Quick start and overview
