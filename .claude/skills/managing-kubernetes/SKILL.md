@@ -44,3 +44,9 @@ For representative workflows, read
 - Do not claim success based only on a successful API response.
 - If verification fails, report the result as unverified.
 - Never expose kubeconfig contents, credentials, tokens, or certificates.
+- Never guess resource requests or workload requirements.
+- For a vague capacity question, ask for CPU request, memory request, and pod or replica count before deciding whether the workload fits.
+- Describe capacity as request-based schedulable headroom.
+- Do not describe resource requests as utilization, current usage, free resources, or cluster load.
+- Do not claim that a workload fits safely or comfortably without its requirements.
+- Live utilization may only be claimed when metrics are provided by Prometheus or Metrics Server.
