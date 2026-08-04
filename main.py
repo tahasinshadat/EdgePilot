@@ -686,7 +686,24 @@ async def _sse_message_generator(
                     }}
                     for tc in llm_response.tool_calls
                 ]
-                tool_results = await execute_tools_batch(calls)
+                # Mutations and their verification must execute in model-specified order.
+                # Independent read-only calls may still run concurrently.
+                contains_mutation = any(
+                    call["name"] in DANGEROUS_TOOLS
+                    for call in calls
+                )
+
+                if contains_mutation:
+                    tool_results = []
+
+                    for call in calls:
+                        result = await execute_tool_async(
+                            call["name"],
+                            call.get("arguments", {}),
+                        )
+                        tool_results.append(result)
+                else:
+                    tool_results = await execute_tools_batch(calls)
 
             # Stream each tool result back to the UI
             for tc, result in zip(llm_response.tool_calls, tool_results):
