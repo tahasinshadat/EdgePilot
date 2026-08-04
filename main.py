@@ -36,6 +36,7 @@ from MCP import (
     get_all_tool_schemas,
 )
 from core.interface import ask_question, schedule_operation
+from core.skills import load_project_skill
 from core.semantic_cache import SemanticCache
 from core.settings import (
     DEFAULT_PROVIDER,
@@ -51,6 +52,39 @@ CHAT_FILE = DATA_DIR / "chat_history.json"
 USAGE_FILE = DATA_DIR / "usage_metrics.json"
 TOOL_HISTORY_FILE = DATA_DIR / "tool_call_history.json"
 FRONTEND_DIR = ROOT_DIR / "frontend"
+
+def _guard_kubernetes_capacity_response(text: str) -> str:
+    """Remove unsupported guarantees from Kubernetes capacity answers."""
+    replacements = {
+        "will be admitted by the scheduler": (
+            "fits based on current resource requests and the stated "
+            "placement constraints"
+        ),
+        "will be scheduled": (
+            "fits based on current resource requests and the stated "
+            "placement constraints"
+        ),
+        "can comfortably handle": "has request-based headroom for",
+        "cores available": "cores of request headroom",
+        "GiB available": "GiB of request headroom",
+        "MiB available": "MiB of request headroom",
+    }
+
+    guarded = text
+
+    for unsupported, replacement in replacements.items():
+        guarded = guarded.replace(unsupported, replacement)
+
+    if (
+        "not a guarantee" not in guarded.lower()
+        and "does not guarantee" not in guarded.lower()
+    ):
+        guarded += (
+            "\n\nThis request-based assessment does not guarantee admission, "
+            "successful scheduling, or live runtime performance."
+        )
+
+    return guarded
 
 
 def ensure_data_dir(path: Path) -> None:
@@ -505,6 +539,124 @@ async def _sse_message_generator(
         payload = json.dumps(data) if not isinstance(data, str) else data
         return f"event: {event_type}\ndata: {payload}\n\n"
 
+    # Clarify vague Kubernetes capacity requests before using cache or the LLM.
+    query = prompt.lower()
+
+    is_cluster_capacity_question = (
+            "cluster" in query
+            and any(
+        phrase in query
+        for phrase in (
+            "handle more",
+            "more work",
+            "capacity",
+            "headroom",
+            "fit another",
+            "fit",
+        )
+    )
+    )
+
+    has_cpu = "cpu" in query or "core" in query or "millicore" in query
+    has_memory = (
+            "memory" in query
+            or " ram" in query
+            or "mib" in query
+            or "gib" in query
+    )
+    has_pod_count = "pod" in query or "replica" in query
+
+    has_placement_info = any(
+        term in query
+        for term in (
+            "node selector",
+            "nodeselector",
+            "affinity",
+            "toleration",
+            "placement constraint",
+            "no placement constraints",
+        )
+    )
+
+    if is_cluster_capacity_question and not (
+            has_cpu
+            and has_memory
+            and has_pod_count
+            and has_placement_info
+    ):
+        clarification = (
+            "Please provide the workload's CPU request, memory request, and pod "
+            "or replica count. Also specify any node selectors, affinity rules, "
+            "or tolerations—or say that there are no placement constraints."
+        )
+
+        user_msg: ChatMessage = {
+            "role": "user",
+            "content": prompt,
+            "created_at": time.time(),
+        }
+        assistant_msg: ChatMessage = {
+            "role": "assistant",
+            "content": clarification,
+            "created_at": time.time(),
+        }
+
+        try:
+            chat_store.append_messages(
+                chat_id,
+                [user_msg, assistant_msg],
+                0,
+            )
+        except KeyError:
+            yield _event("error", {"detail": "Chat not found"})
+            return
+
+        yield _event("message", {"text": clarification})
+        yield _event("done", {})
+        return
+
+    # Clarify deployment-health requests that omit the namespace.
+    is_deployment_health_question = (
+        "deployment" in query
+        and any(
+            phrase in query
+            for phrase in ("how is", "doing", "status", "health", "healthy")
+        )
+    )
+
+    has_namespace = "namespace" in query
+
+    if is_deployment_health_question and not has_namespace:
+        clarification = (
+            "What namespace is this deployment in? I need the exact namespace "
+            "before inspecting its health."
+        )
+
+        user_msg: ChatMessage = {
+            "role": "user",
+            "content": prompt,
+            "created_at": time.time(),
+        }
+        assistant_msg: ChatMessage = {
+            "role": "assistant",
+            "content": clarification,
+            "created_at": time.time(),
+        }
+
+        try:
+            chat_store.append_messages(
+                chat_id,
+                [user_msg, assistant_msg],
+                0,
+            )
+        except KeyError:
+            yield _event("error", {"detail": "Chat not found"})
+            return
+
+        yield _event("message", {"text": clarification})
+        yield _event("done", {})
+        return
+
     # ── Check semantic cache first ──────────────────────────────────────
     cached = semantic_cache.lookup(prompt)
     if cached is not None:
@@ -570,6 +722,23 @@ async def _sse_message_generator(
     model_messages: List[ChatMessage] = [
         {"role": "system", "content": SYSTEM_PROMPT}
     ]
+    kubernetes_terms = (
+        "kubernetes", "k8s", "cluster", "pod", "deployment",
+        "namespace", "replica", "workload",
+    )
+
+    if any(term in prompt.lower() for term in kubernetes_terms):
+        skill = load_project_skill("kubernetes-control")
+        model_messages.append({
+            "role": "system",
+            "content": (
+            "This request has already been classified as Kubernetes. "
+            "Do not ask whether the cluster is Kubernetes, Slurm, or local.\n\n"
+            "Follow these Kubernetes instructions:\n\n"
+            + skill["instructions"]
+        ),
+        })
+
     model_messages.extend(session.get("messages", []))
     model_messages.append(user_message)
 
@@ -762,6 +931,10 @@ async def _sse_message_generator(
                 "I attempted to use tools but could not generate "
                 "a final response."
             )
+
+    # Prevent unsupported guarantees in Kubernetes capacity responses.
+    if is_cluster_capacity_question:
+        final_text = _guard_kubernetes_capacity_response(final_text)
 
     # ── Persist & cache ────────────────────────────────────────────────
     assistant_message: ChatMessage = {

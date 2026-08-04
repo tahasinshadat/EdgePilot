@@ -50,6 +50,13 @@ class ClaudeProvider(BaseLLM):
         self.tools_enabled = True
         self.tool_schemas = tool_schemas
 
+    def generate_stream(
+            self,
+            messages: List[ChatMessage],
+    ):
+        """Use the non-streaming Claude request through the streaming UI."""
+        yield self.generate(messages)
+
     def generate(self, messages: List[ChatMessage]) -> LLMResponse:
         prepared = self.format_messages(messages)
         system_prompts: List[str] = []

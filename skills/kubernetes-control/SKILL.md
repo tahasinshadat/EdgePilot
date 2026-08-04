@@ -53,3 +53,18 @@ Every control tool requires human approval. Never replace these tools with
 - Describe capacity from `inspect_kubernetes_cluster` as schedulable headroom
   based on Pod resource requests. Do not describe it as real-time CPU or memory
   availability unless live utilization metrics are provided by Prometheus.
+- Namespace is required for a named workload or namespaced operation, but not for a cluster-wide capacity question.
+- When the user supplies an exact deployment name and namespace, call
+  `inspect_kubernetes_deployment`; do not substitute `inspect_kubernetes_cluster`.
+- Cluster-wide inspection cannot prove that a named deployment is absent.
+- Report a deployment as not found only when `inspect_kubernetes_deployment`
+  returns not found for that exact name and namespace.
+- For deployment-health questions, report deployment replicas and pod health;
+  omit unrelated cluster-capacity statistics.
+- Use binary Kubernetes memory conversion: 1024 MiB equals 1 GiB.
+- Label allocatable minus existing requests as "request headroom," not simply
+  "available" or "free."
+- Phrase a positive result as "fits based on resource requests and the stated
+  placement constraints."
+- Never say that pods "will be scheduled"; admission policies, quotas, runtime
+  state, and other scheduler constraints may still prevent placement.
