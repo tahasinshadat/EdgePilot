@@ -2,7 +2,7 @@
 
 ## Read-only capacity evaluation
 
-Tool: `evaluate_kubernetes_capacity`
+Tool: `evaluate_kubernetes_workload`
 
 Purpose:
 

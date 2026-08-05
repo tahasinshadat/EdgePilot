@@ -100,3 +100,24 @@ def test_executor_requires_skill_name():
 
     assert result["success"] is False
     assert "name is required" in result["error"]
+
+def test_skill_only_names_tools_that_exist():
+    """A Skill naming an unregistered tool sends the model at a dead end.
+
+    The model has no way to discover the mistake — it calls what the manual
+    says and gets "Unknown tool" back.
+    """
+    import re
+    from pathlib import Path
+
+    from MCP.tool_schemas import get_all_tool_schemas
+
+    registered = {schema["name"] for schema in get_all_tool_schemas()}
+    unknown = []
+
+    for path in Path(".claude/skills").rglob("*.md"):
+        for referenced in re.findall(r"Tool: `([a-z_]+)`", path.read_text()):
+            if referenced not in registered:
+                unknown.append(f"{path}: {referenced}")
+
+    assert not unknown, f"Skill references undefined tools: {unknown}"
