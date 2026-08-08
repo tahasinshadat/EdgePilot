@@ -40,3 +40,4 @@ dist/
 *.py[cod]
 evaluations/results/
 kubeconfig-docker.yaml
+evaluations/reliability/results/
