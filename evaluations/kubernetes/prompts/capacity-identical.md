@@ -2,14 +2,18 @@
 
 ## Prompt ID
 
-`capacity-identical-v1`
+`capacity-identical-v2`
 
 ## Prompt
 
-> How much additional CPU and memory capacity is available in this
-> Kubernetes cluster for scheduling new workloads? Inspect the cluster,
-> show the source values and calculations, and state all units and
-> assumptions. Do not use information from the host machine.
+> Inspect this Kubernetes cluster and calculate its current CPU and
+> memory scheduling headroom. Report total allocatable CPU minus total
+> requested CPU, and total allocatable memory minus total requested
+> memory, across all schedulable nodes and relevant namespaces. This is
+> not a request to determine whether a particular pod or replica will
+> fit, and there are no placement constraints. Show the source values,
+> calculations, units, and assumptions. Do not use information from the
+> host machine.
 
 ## Experiment A
 

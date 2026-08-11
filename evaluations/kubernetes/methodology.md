@@ -126,3 +126,15 @@ The following remain unchanged across the five identical-prompt runs:
 - Semantic cache state
 - Scoring rubric
 - Ground-truth calculation method
+
+### Capacity Prompt Validation Pilot
+
+The initial capacity prompt triggered EdgePilot's deterministic
+clarification guard because it did not specify a pod count or placement
+constraints. The request returned before model invocation, Skill loading,
+or tool execution.
+
+This result was classified as a pipeline-validation pilot and excluded
+from Experiment A. The prompt was revised to distinguish cluster-headroom
+calculation from workload-fit analysis. The ground truth and scoring
+rubric were not changed.

@@ -1,0 +1,2 @@
+8705ee4b28718c3a35b36d75f650c8c5d794f5dfedbf99c2875e80f2023d53a9  .claude/skills/managing-kubernetes/SKILL.md
+2e97b73381d8d2c8a91c30bb4e8163c3ae126e3f8cb8e8020c58917022edbd06  skills/kubernetes-control/SKILL.md
