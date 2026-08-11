@@ -1,0 +1,29 @@
+namespace: edgepilot-eval
+
+expected_services:
+  - name: normal-web
+    type: ClusterIP
+    port: 80
+    protocol: TCP
+    externally_exposed: false
+
+  - name: suspicious-miner
+    type: ClusterIP
+    port: 3333
+    protocol: TCP
+    externally_exposed: false
+
+expected_workloads:
+  - name: normal-web
+    kind: Deployment
+    expected_ready_replicas: 1
+
+  - name: suspicious-miner
+    kind: Deployment
+    expected_ready_replicas: 1
+
+required_findings:
+  - "Port 80/TCP is exposed internally by service normal-web."
+  - "Port 3333/TCP is exposed internally by service suspicious-miner."
+  - "Port 3333 is the deliberately unexpected port."
+  - "Neither service is externally exposed because both are ClusterIP."

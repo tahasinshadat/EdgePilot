@@ -1,0 +1,91 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"normal-web\",\"namespace\":\"edgepilot-eval\"},\"spec\":{\"ports\":[{\"name\":\"http\",\"port\":80,\"targetPort\":80}],\"selector\":{\"app\":\"normal-web\"}}}\n"
+                },
+                "creationTimestamp": "2026-08-11T18:31:06Z",
+                "name": "normal-web",
+                "namespace": "edgepilot-eval",
+                "resourceVersion": "90695",
+                "uid": "678e2826-6567-40f7-9cd2-47e32d2a2066"
+            },
+            "spec": {
+                "clusterIP": "10.96.114.186",
+                "clusterIPs": [
+                    "10.96.114.186"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "http",
+                        "port": 80,
+                        "protocol": "TCP",
+                        "targetPort": 80
+                    }
+                ],
+                "selector": {
+                    "app": "normal-web"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"suspicious-miner\",\"namespace\":\"edgepilot-eval\"},\"spec\":{\"ports\":[{\"name\":\"unexpected\",\"port\":3333,\"targetPort\":3333}],\"selector\":{\"app\":\"suspicious-miner\"}}}\n"
+                },
+                "creationTimestamp": "2026-08-11T18:31:06Z",
+                "name": "suspicious-miner",
+                "namespace": "edgepilot-eval",
+                "resourceVersion": "90722",
+                "uid": "c255c367-835b-418d-9eb2-155e688737bd"
+            },
+            "spec": {
+                "clusterIP": "10.96.70.150",
+                "clusterIPs": [
+                    "10.96.70.150"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "unexpected",
+                        "port": 3333,
+                        "protocol": "TCP",
+                        "targetPort": 3333
+                    }
+                ],
+                "selector": {
+                    "app": "suspicious-miner"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

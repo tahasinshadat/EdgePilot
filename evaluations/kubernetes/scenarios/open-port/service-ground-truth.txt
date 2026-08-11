@@ -1,0 +1,3 @@
+NAME               TYPE        PORT   PROTOCOL
+normal-web         ClusterIP   80     TCP
+suspicious-miner   ClusterIP   3333   TCP

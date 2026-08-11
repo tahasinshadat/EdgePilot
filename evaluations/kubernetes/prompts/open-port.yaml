@@ -1,0 +1,11 @@
+experiment_a:
+  prompt: "Is there any network port open by any application?"
+  repetitions: 5
+
+experiment_b:
+  prompts:
+    - "Is there any network port open by any application?"
+    - "Which applications in the Kubernetes cluster expose network ports?"
+    - "Check the cluster for applications with open ports."
+    - "Are any workloads listening on network ports?"
+    - "Inspect Kubernetes and report the ports exposed by applications."

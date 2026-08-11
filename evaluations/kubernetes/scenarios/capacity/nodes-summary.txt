@@ -1,0 +1,2 @@
+NAME                      READY   UNSCHEDULABLE   CPU   MEMORY      PODS
+edgepilot-control-plane   True    <none>          8     8025700Ki   110
