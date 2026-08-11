@@ -1,0 +1,233 @@
+[
+  {
+    "namespace": "default",
+    "pod": "edgepilot-test-85449b974b-q5p8h",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "nginx",
+        "requests": {
+          "cpu": "250m",
+          "memory": "128Mi"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "edgepilot-eval",
+    "pod": "normal-web-588c647f84-dtdb4",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "web",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "edgepilot-eval",
+    "pod": "suspicious-miner-56dd489f66-jc6qh",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "worker",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "edgepilot-test",
+    "pod": "edgepilot-demo-5bf77f6d67-2qpmn",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "nginx",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "edgepilot-test",
+    "pod": "edgepilot-demo-5bf77f6d67-7v8xw",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "nginx",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "edgepilot-test",
+    "pod": "edgepilot-demo-5bf77f6d67-xnvf5",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "nginx",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "coredns-589f44dc88-ccgxx",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "coredns",
+        "requests": {
+          "cpu": "100m",
+          "memory": "70Mi"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "coredns-589f44dc88-d8lc5",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "coredns",
+        "requests": {
+          "cpu": "100m",
+          "memory": "70Mi"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "etcd-edgepilot-control-plane",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "etcd",
+        "requests": {
+          "cpu": "100m",
+          "memory": "100Mi"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "kindnet-gvxk7",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "kindnet-cni",
+        "requests": {
+          "cpu": "100m",
+          "memory": "50Mi"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "kube-apiserver-edgepilot-control-plane",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "kube-apiserver",
+        "requests": {
+          "cpu": "250m"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "kube-controller-manager-edgepilot-control-plane",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "kube-controller-manager",
+        "requests": {
+          "cpu": "200m"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "kube-proxy-fzt4j",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "kube-proxy",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "kube-system",
+    "pod": "kube-scheduler-edgepilot-control-plane",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "kube-scheduler",
+        "requests": {
+          "cpu": "100m"
+        }
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  },
+  {
+    "namespace": "local-path-storage",
+    "pod": "local-path-provisioner-855c7b7774-6q244",
+    "phase": "Running",
+    "node": "edgepilot-control-plane",
+    "containers": [
+      {
+        "name": "local-path-provisioner",
+        "requests": {}
+      }
+    ],
+    "initContainers": [],
+    "overhead": {}
+  }
+]

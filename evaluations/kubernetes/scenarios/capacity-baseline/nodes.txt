@@ -1,0 +1,2 @@
+NODE                      SCHEDULABLE   CPU   MEMORY
+edgepilot-control-plane   <none>        8     8025700Ki

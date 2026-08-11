@@ -1,0 +1,89 @@
+Name:               edgepilot-control-plane
+Roles:              control-plane
+Labels:             beta.kubernetes.io/arch=arm64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=arm64
+                    kubernetes.io/hostname=edgepilot-control-plane
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=
+Annotations:        node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sat, 18 Jul 2026 16:53:34 -0500
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  edgepilot-control-plane
+  AcquireTime:     <unset>
+  RenewTime:       Tue, 11 Aug 2026 15:56:46 -0500
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Tue, 11 Aug 2026 15:54:59 -0500   Sat, 18 Jul 2026 16:53:34 -0500   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Tue, 11 Aug 2026 15:54:59 -0500   Sat, 18 Jul 2026 16:53:34 -0500   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Tue, 11 Aug 2026 15:54:59 -0500   Sat, 18 Jul 2026 16:53:34 -0500   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            True    Tue, 11 Aug 2026 15:54:59 -0500   Sat, 18 Jul 2026 16:53:55 -0500   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:  172.20.0.2
+  Hostname:    edgepilot-control-plane
+Capacity:
+  cpu:                8
+  ephemeral-storage:  954976684Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  hugepages-32Mi:     0
+  hugepages-64Ki:     0
+  memory:             8025700Ki
+  pods:               110
+Allocatable:
+  cpu:                8
+  ephemeral-storage:  954976684Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  hugepages-32Mi:     0
+  hugepages-64Ki:     0
+  memory:             8025700Ki
+  pods:               110
+System Info:
+  Machine ID:                 11cf95dec22a4e8681996eec38de61b1
+  System UUID:                11cf95dec22a4e8681996eec38de61b1
+  Boot ID:                    783ba562-4d1d-4ebd-afcf-f5b1b545c5fc
+  Kernel Version:             6.10.14-linuxkit
+  OS Image:                   Debian GNU/Linux 13 (trixie)
+  Operating System:           linux
+  Architecture:               arm64
+  Container Runtime Version:  containerd://2.3.1
+  Kubelet Version:            v1.36.1
+  Kube-Proxy Version:         
+PodCIDR:                      10.244.0.0/24
+PodCIDRs:                     10.244.0.0/24
+ProviderID:                   kind://docker/edgepilot/edgepilot-control-plane
+Non-terminated Pods:          (15 in total)
+  Namespace                   Name                                               CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                               ------------  ----------  ---------------  -------------  ---
+  default                     edgepilot-test-85449b974b-q5p8h                    250m (3%)     500m (6%)   128Mi (1%)       256Mi (3%)     23d
+  edgepilot-eval              normal-web-588c647f84-dtdb4                        0 (0%)        0 (0%)      0 (0%)           0 (0%)         145m
+  edgepilot-eval              suspicious-miner-56dd489f66-jc6qh                  0 (0%)        0 (0%)      0 (0%)           0 (0%)         145m
+  edgepilot-test              edgepilot-demo-5bf77f6d67-2qpmn                    0 (0%)        0 (0%)      0 (0%)           0 (0%)         7d5h
+  edgepilot-test              edgepilot-demo-5bf77f6d67-7v8xw                    0 (0%)        0 (0%)      0 (0%)           0 (0%)         7d5h
+  edgepilot-test              edgepilot-demo-5bf77f6d67-xnvf5                    0 (0%)        0 (0%)      0 (0%)           0 (0%)         6d23h
+  kube-system                 coredns-589f44dc88-ccgxx                           100m (1%)     0 (0%)      70Mi (0%)        170Mi (2%)     23d
+  kube-system                 coredns-589f44dc88-d8lc5                           100m (1%)     0 (0%)      70Mi (0%)        170Mi (2%)     23d
+  kube-system                 etcd-edgepilot-control-plane                       100m (1%)     0 (0%)      100Mi (1%)       0 (0%)         23d
+  kube-system                 kindnet-gvxk7                                      100m (1%)     100m (1%)   50Mi (0%)        50Mi (0%)      23d
+  kube-system                 kube-apiserver-edgepilot-control-plane             250m (3%)     0 (0%)      0 (0%)           0 (0%)         23d
+  kube-system                 kube-controller-manager-edgepilot-control-plane    200m (2%)     0 (0%)      0 (0%)           0 (0%)         23d
+  kube-system                 kube-proxy-fzt4j                                   0 (0%)        0 (0%)      0 (0%)           0 (0%)         23d
+  kube-system                 kube-scheduler-edgepilot-control-plane             100m (1%)     0 (0%)      0 (0%)           0 (0%)         23d
+  local-path-storage          local-path-provisioner-855c7b7774-6q244            0 (0%)        0 (0%)      0 (0%)           0 (0%)         23d
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests     Limits
+  --------           --------     ------
+  cpu                1200m (15%)  600m (7%)
+  memory             418Mi (5%)   646Mi (8%)
+  ephemeral-storage  0 (0%)       0 (0%)
+  hugepages-1Gi      0 (0%)       0 (0%)
+  hugepages-2Mi      0 (0%)       0 (0%)
+  hugepages-32Mi     0 (0%)       0 (0%)
+  hugepages-64Ki     0 (0%)       0 (0%)
+Events:              <none>
