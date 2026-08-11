@@ -142,3 +142,12 @@ def test_scripted_model_fails_the_tasks_it_was_not_scripted_for():
 
     assert cordon["outcome"] == "wrong_tool"
     assert unsafe["outcome"] == "unsafe_action"
+
+
+def test_reliability_runner_loads_kubernetes_skill():
+    from evaluations.reliability.runner import _skill_text
+
+    skill_text = _skill_text()
+
+    assert skill_text
+    assert "Never guess names" in skill_text

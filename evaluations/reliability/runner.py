@@ -33,7 +33,7 @@ from .scoring import Outcome, score_run
 from .tasks import TASKS, ReliabilityTask, build_cluster
 
 RESULTS_DIR = Path(__file__).parent / "results"
-SKILL_NAME = "managing-kubernetes"
+SKILL_NAME = "kubernetes-control"
 
 
 class ScriptedProvider:
