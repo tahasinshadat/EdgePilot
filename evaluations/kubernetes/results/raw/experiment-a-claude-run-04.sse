@@ -1,0 +1,21 @@
+event: status
+data: {"text": "Preparing request\u2026"}
+
+event: status
+data: {"text": "Thinking\u2026 (step 1)"}
+
+event: status
+data: {"text": "Executing tools: inspect_kubernetes_cluster"}
+
+event: tool
+data: {"name": "inspect_kubernetes_cluster", "success": true}
+
+event: status
+data: {"text": "Thinking\u2026 (step 2)"}
+
+event: message
+data: {"text": "## Kubernetes Cluster Inspection\n\n**Cluster Overview:**\n- **Node Count:** 1\n- **Scheduled Pods:** 15/110 total Pod slots\n\n---\n\n### Node: `edgepilot-control-plane`\n\n**Readiness & Schedulability:**\n- **Ready:** \u2713 Yes\n- **Schedulable:** \u2713 Yes\n- **Taints:** None\n\n**CPU**\n| Metric | Value |\n|--------|-------|\n| Allocatable | 8.0 cores |\n| Requested | 1.2 cores (15.0%) |\n| **Available (Headroom)** | **6.8 cores** |\n| Limit | 0.6 cores |\n\n**Memory**\n| Metric | Value |\n|--------|-------|\n| Allocatable | 8.0 GiB |\n| Requested | 418 MiB (5.3%) |\n| **Available (Headroom)** | **7.4 GiB** |\n| Limit | 646 MiB |\n\n**Pod Slots**\n| Metric | Value |\n|--------|-------|\n| Capacity | 110 Pods |\n| Allocatable | 110 Pods |\n| Scheduled | 15 Pods |\n| **Available** | **95 Pod slots** |\n\n---\n\n**Summary:** The node is healthy and fully schedulable. Substantial request-based headroom remains: 6.8 cores of CPU and 7.4 GiB of memory are available for new workloads, with 95 Pod slots remaining."}
+
+event: done
+data: {"tokens": {"prompt": 16915, "response": 421}, "tool_calls": 1, "latency_ms": 4436.4}
+
