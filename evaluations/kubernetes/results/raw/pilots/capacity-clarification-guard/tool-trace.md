@@ -21,3 +21,25 @@ The request returned before:
 
 This pilot is excluded from Experiment A because it did not invoke
 Claude or inspect the cluster.
+
+
+# Run 01 Tool Trace
+
+## Cache
+
+- Cache cleared before run: Yes
+- Cache entries before run: 0
+- Cache hit displayed: No
+
+## Tool Calls
+
+Record every tool name, input, output, and error exactly as displayed.
+
+## Observations
+
+- Kubernetes cluster was inspected: Yes
+- State-changing tool requested: No
+- Final response returned: Yes
+- Follow-up messages sent: No
+
+
