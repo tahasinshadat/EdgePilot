@@ -369,6 +369,7 @@ DANGEROUS_TOOLS = {
     "update_slurm_job_qos",
     "drain_k8s_node",
     "apply_resource_requests",
+    "migrate_workload",
 }
 
 # ── Semantic Cache ──────────────────────────────────────────────────────

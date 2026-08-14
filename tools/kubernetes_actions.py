@@ -184,3 +184,35 @@ def cordon_node(node_name: str) -> Dict[str, Any]:
         err_msg = f"Unexpected error cordoning node: {e}"
         logger.error(err_msg)
         return {"success": False, "error": err_msg}
+
+def migrate_workload(namespace: str, deployment_name: str, target_node: str) -> Dict[str, Any]:
+    """Migrates a deployment to a specific node by patching its nodeSelector."""
+    api = _get_client()
+    try:
+        patch = {
+            "spec": {
+                "template": {
+                    "spec": {
+                        "nodeSelector": {
+                            "kubernetes.io/hostname": target_node
+                        }
+                    }
+                }
+            }
+        }
+        api.patch_namespaced_deployment(
+            name=deployment_name,
+            namespace=namespace,
+            body=patch
+        )
+        msg = f"Successfully migrated deployment '{deployment_name}' in namespace '{namespace}' to node '{target_node}'."
+        logger.info(msg)
+        return {"success": True, "message": msg}
+    except ApiException as e:
+        err_msg = f"Kubernetes API error migrating deployment: {e.reason} ({e.status})"
+        logger.error(err_msg)
+        return {"success": False, "error": err_msg}
+    except Exception as e:
+        err_msg = f"Unexpected error migrating deployment: {e}"
+        logger.error(err_msg)
+        return {"success": False, "error": err_msg}

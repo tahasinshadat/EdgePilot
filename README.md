@@ -508,6 +508,8 @@ Beyond read-only capacity checks, EdgePilot can actively manage your cluster sta
 - **`scale_workload`** — scale a deployment up or down.
 - **`restart_workload`** — perform a rolling restart of a deployment (useful if metrics indicate a stuck process).
 - **`cordon_node`** — mark a specific Kubernetes node as unschedulable.
+- **`drain_k8s_node`** — safely evict all workloads from a node.
+- **`migrate_workload`** — force a deployment to migrate to a specific target node by patching its node selector.
 
 **Human-in-the-Loop Safety**: Because these tools mutate cluster state, they are marked as **dangerous**. When the LLM decides to use them, execution pauses and emits an `approval_required` event to the Electron UI. The user is presented with a prompt to explicitly **Allow** or **Deny** the action before the backend proceeds.
 

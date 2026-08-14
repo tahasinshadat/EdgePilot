@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rogue-crypto-miner
+  namespace: default
+  labels:
+    app: rogue-miner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rogue-miner
+  template:
+    metadata:
+      labels:
+        app: rogue-miner
+    spec:
+      containers:
+      - name: miner
+        image: alpine:latest
+        command: ["/bin/sh", "-c"]
+        # Simulates opening a suspicious port (e.g. 3333) and doing heavy CPU work
+        args: ["nc -l -p 3333 & while true; do let x=x+1; done"]
+        ports:
+        - containerPort: 3333
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "50Mi"

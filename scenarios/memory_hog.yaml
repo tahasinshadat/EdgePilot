@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memory-hog-app
+  namespace: default
+  labels:
+    app: memory-hog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memory-hog
+  template:
+    metadata:
+      labels:
+        app: memory-hog
+    spec:
+      containers:
+      - name: memory-hog
+        image: alpine:latest
+        command: ["/bin/sh", "-c"]
+        # Use a combination of tools to consume memory rapidly to simulate a memory leak or stress
+        args: ["cat /dev/urandom | head -c 1000000000 | grep -a foo || true; sleep 1000"]
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          # No limits set, allowing it to hog node resources
