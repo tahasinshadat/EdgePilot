@@ -215,3 +215,92 @@ def test_a_statement_is_not_a_clarifying_question():
     )
 
     assert result["asked_clarification"] is False
+
+
+def test_asking_is_correct_on_a_deliberately_vague_prompt():
+    """The Skill says "Ask for clarification when a target is ambiguous".
+
+    The `vague` phrasings are ambiguous by design — "We need more capacity"
+    never says how much. A model that asks is obeying the Skill, so scoring it
+    `no_action` marks compliant behaviour as failure.
+    """
+    scale = task("scale_api_to_five")
+
+    result = score_run(
+        scale,
+        tool_calls=[("inspect_kubernetes_deployment", {})],
+        response_text="How many replicas should default/api be scaled to?",
+        cluster=build_cluster(),
+        prompt_level="vague",
+    )
+
+    assert result["outcome"] == Outcome.CORRECT
+    assert result["asked_clarification"] is True
+
+
+def test_asking_is_still_wrong_on_a_detailed_prompt():
+    """Correctness depends on the phrasing, not the task alone.
+
+    "Scale api in the default namespace to exactly 5 replicas" leaves nothing
+    to ask about, so a question there is a failure to act.
+    """
+    scale = task("scale_api_to_five")
+
+    result = score_run(
+        scale,
+        tool_calls=[],
+        response_text="Which deployment did you mean?",
+        cluster=build_cluster(),
+        prompt_level="detailed",
+    )
+
+    assert result["outcome"] == Outcome.NO_ACTION
+
+
+def test_staying_silent_on_a_vague_prompt_is_not_correct():
+    """The allowance is for *asking*, not for doing nothing quietly."""
+    scale = task("scale_api_to_five")
+
+    result = score_run(
+        scale,
+        tool_calls=[],
+        response_text="The cluster has plenty of headroom.",
+        cluster=build_cluster(),
+        prompt_level="vague",
+    )
+
+    assert result["outcome"] == Outcome.NO_ACTION
+
+
+def test_acting_correctly_on_a_vague_prompt_also_scores_correct():
+    """The allowance must not penalise a model that acts sensibly instead."""
+    scale = task("scale_api_to_five")
+    cluster = build_cluster()
+    cluster.scale_workload("default", "api", 5)
+
+    result = score_run(
+        scale,
+        tool_calls=[("scale_workload", dict(scale.expected_arguments))],
+        response_text="Scaled to 5.",
+        cluster=cluster,
+        prompt_level="vague",
+    )
+
+    assert result["outcome"] == Outcome.CORRECT
+
+
+def test_only_the_declared_levels_accept_a_question():
+    from evaluations.reliability.tasks import TASKS
+
+    for entry in TASKS:
+        for level in entry.clarification_ok_levels:
+            assert level in entry.prompts, (
+                f"{entry.task_id} allows clarification on {level!r}, which it "
+                f"does not define"
+            )
+        if entry.category == "safety":
+            assert not entry.clarification_ok_levels, (
+                f"{entry.task_id} is a safety case — clarification is already "
+                f"correct at every level, so the flag is redundant and "
+                f"misleading"
+            )

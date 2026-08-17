@@ -622,3 +622,150 @@ def test_cached_tokens_still_count_toward_prompt_size():
     assert response.prompt_tokens == 6100, "cached tokens must be included"
     assert response.cache_read_tokens == 6000
     assert response.uncached_tokens == 100
+
+
+# ── Audit fixes before the first valid sweep ─────────────────────────────
+
+
+def test_read_only_tools_return_real_data_not_bare_ok():
+    """Reporting "ok" with no data made models invent the missing numbers.
+
+    Haiku reported "Ready replicas: 3, Available: 3, Updated: 3" after an
+    inspect call — none of it supplied by the harness. That turns part of the
+    run into a measurement of hallucination rather than Skill compliance.
+    """
+    from evaluations.reliability.runner import _results_message
+    from evaluations.reliability.tasks import build_cluster
+
+    cluster = build_cluster()
+    message = _results_message(
+        [("inspect_kubernetes_deployment", {"namespace": "default",
+                                            "deployment_name": "api"})],
+        cluster, {},
+    )
+
+    assert "replicas=3" in message, "must report the real replica count"
+    assert "inspect_kubernetes_deployment: ok" not in message
+
+
+def test_unimplemented_tools_say_so_instead_of_reporting_success():
+    from evaluations.reliability.runner import _results_message
+    from evaluations.reliability.tasks import build_cluster
+
+    message = _results_message([("gather_metrics", {})], build_cluster(), {})
+
+    assert "not implemented" in message
+    assert "invent" in message.lower(), "must tell the model not to guess"
+
+
+def test_inspecting_an_invented_deployment_reports_not_found():
+    from evaluations.reliability.runner import _results_message
+    from evaluations.reliability.tasks import build_cluster
+
+    message = _results_message(
+        [("inspect_kubernetes_deployment",
+          {"namespace": "default", "deployment_name": "ghost"})],
+        build_cluster(), {},
+    )
+
+    assert "not found" in message
+
+
+def test_explaining_a_risk_is_not_mistaken_for_a_refusal():
+    """A refusal keyword filter was tried here and had to be removed.
+
+    The Skill tells the model to explain an action's risk, and explaining a
+    cordon says "new pods cannot be scheduled onto it". The word "cannot" was
+    read as a refusal, approval was withheld, and the run deadlocked into
+    `no_action` — the same bug class the harness exists to catch. Refusal
+    wording is not separable from risk wording in prose.
+
+    Safety is carried by APPROVAL_MESSAGE's neutrality instead: it supplies no
+    information and tells an unsure model to hold.
+    """
+    from evaluations.reliability.runner import _is_awaiting_approval
+
+    cordon_explanation = (
+        "**Proposed Action:** Cordon node-b\n"
+        "- Marks the node as unschedulable\n"
+        "- New pods cannot be scheduled onto it\n"
+        "- Existing pods keep running and are not evicted\n"
+        "May I have your approval to proceed?"
+    )
+
+    assert _is_awaiting_approval(cordon_explanation, 0), (
+        "a proposal that explains risk must still be recognised as awaiting "
+        "approval"
+    )
+
+    proposals = [
+        "Proposed action: scale to 5 replicas. Requesting your approval.",
+        "May I proceed with the rolling restart?",
+        "I will request your approval to mark that node unschedulable.",
+    ]
+    for text in proposals:
+        assert _is_awaiting_approval(text, 0), f"missed a proposal: {text!r}"
+
+    # Text with no approval request is left alone, granted or not.
+    assert not _is_awaiting_approval("Which namespace did you mean?", 0)
+    assert not _is_awaiting_approval("Scaled the deployment.", 1)
+
+
+def test_runs_that_exhaust_the_turn_budget_are_flagged():
+    """A run truncated mid-action must not be silently scored as no_action.
+
+    That is bug 4's shape again: the harness stopping before the model
+    finished, recorded as the model not acting.
+    """
+    from evaluations.reliability.runner import MAX_TURNS, ScriptedProvider, run_task_once
+
+    scale = task("scale_api_to_five")
+
+    class NeverFinishes(ScriptedProvider):
+        def generate(self, messages):
+            from providers.base import LLMResponse, ToolCall
+
+            return LLMResponse(
+                text="Still looking.", prompt_tokens=0, response_tokens=0,
+                tool_calls=[ToolCall(name="inspect_kubernetes_cluster", arguments={})],
+            )
+
+    capped = run_task_once(scale, "detailed", NeverFinishes(), model="scripted")
+
+    assert capped["hit_turn_cap"] is True
+    assert capped["turns"] == MAX_TURNS
+
+    provider = ScriptedProvider([(scale.expected_tool, dict(scale.expected_arguments))])
+    finished = run_task_once(scale, "detailed", provider, model="scripted")
+
+    assert finished["hit_turn_cap"] is False
+
+
+def test_runs_record_real_token_counts():
+    """Estimating tokens was wrong by 22%.
+
+    The per-request output figure had been measured before the Skill loaded;
+    the Skill instructs the model to explain the mutation, reason, effect and
+    risk, taking output from ~130 to ~440 tokens. Output bills at 5x input, so
+    the error dominated. Never estimate what the API already reports.
+    """
+    from evaluations.reliability.runner import ScriptedProvider, run_task_once
+
+    scale = task("scale_api_to_five")
+
+    class Reports(ScriptedProvider):
+        def generate(self, messages):
+            from providers.base import LLMResponse, ToolCall
+
+            batch = ([ToolCall(name=scale.expected_tool,
+                               arguments=dict(scale.expected_arguments))]
+                     if self.calls_made == 0 else [])
+            self.calls_made += 1
+            return LLMResponse(text="ok", prompt_tokens=7000,
+                               response_tokens=440, tool_calls=batch)
+
+    result = run_task_once(scale, "detailed", Reports(), model="scripted")
+
+    assert result["tokens_in"] == 14000, "tokens must sum across turns"
+    assert result["tokens_out"] == 880
+    assert "cache_read_tokens" in result

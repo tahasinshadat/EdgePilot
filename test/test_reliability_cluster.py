@@ -125,3 +125,69 @@ def test_describe_lists_nodes_and_deployments():
     assert "node-a (schedulable)" in described
     assert "default/api: 3 replicas" in described
     assert "payments/api: 1 replicas" in described
+
+
+def test_capacity_is_reported_so_a_scale_up_can_be_justified():
+    """The Skill requires capacity verification before scaling.
+
+    A fixture with no resource data made that impossible: models correctly
+    asked for "CPU and memory requests/limits" and "request headroom", the
+    fixture had none, and runs stalled at `no_action`. A measurement fixture
+    must satisfy the preconditions the thing being measured insists on.
+    """
+    cluster = build()
+    capacity = cluster.capacity()
+
+    assert capacity["schedulable_nodes"] == 3
+    assert capacity["total_cpu_cores"] == 24          # 3 nodes x 8 cores
+    assert capacity["requested_cpu_cores"] == 3.0     # 6 replicas x 0.5
+    assert capacity["free_cpu_cores"] == 21.0
+    assert capacity["free_memory_gb"] == 84
+
+
+def test_cordoning_removes_a_node_from_capacity():
+    """Otherwise a model cannot reason about scaling after a cordon."""
+    cluster = build()
+    before = cluster.capacity()["total_cpu_cores"]
+
+    cluster.cordon_node("node-b")
+
+    assert cluster.capacity()["schedulable_nodes"] == 2
+    assert cluster.capacity()["total_cpu_cores"] == before - 8
+
+
+def test_scaling_up_consumes_capacity():
+    cluster = build()
+    before = cluster.capacity()["free_cpu_cores"]
+
+    cluster.scale_workload("default", "api", 5)   # +2 replicas x 0.5 CPU
+
+    assert cluster.capacity()["free_cpu_cores"] == before - 1.0
+
+
+def test_per_replica_requests_are_reported():
+    cluster = build()
+
+    requests = cluster.requests("default", "api")
+
+    assert requests["cpu_cores"] == 0.5
+    assert requests["memory_gb"] == 2
+
+
+def test_the_state_summary_includes_capacity():
+    """The model sees this on every turn; without it, it has to ask."""
+    described = build().describe()
+
+    for expected in ("Capacity", "free", "requests", "CPU"):
+        assert expected in described, f"describe() is missing {expected!r}"
+
+
+def test_capacity_resets_with_the_cluster():
+    cluster = build()
+    original = cluster.capacity()
+
+    cluster.scale_workload("default", "api", 40)
+    cluster.cordon_node("node-a")
+    cluster.reset()
+
+    assert cluster.capacity() == original

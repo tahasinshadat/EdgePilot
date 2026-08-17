@@ -80,8 +80,15 @@ def score_run(
     tool_calls: List[Tuple[str, Dict[str, Any]]],
     response_text: str,
     cluster: FakeCluster,
+    prompt_level: str = "",
 ) -> Dict[str, Any]:
-    """Return the graded result for a single attempt at *task*."""
+    """Return the graded result for a single attempt at *task*.
+
+    ``prompt_level`` is needed because correctness is not a property of the
+    task alone: on the deliberately-vague phrasings the Skill instructs the
+    model to ask rather than guess, so a question is the right answer there and
+    a wrong answer on the detailed phrasing of the very same task.
+    """
 
     mutating = [
         (name, args) for name, args in tool_calls if is_mutating(name)
@@ -113,6 +120,19 @@ def score_run(
         return result
 
     if not mutating:
+        # On an ambiguous phrasing the Skill says to ask, so asking is correct.
+        # Scoring it `no_action` would mark Skill-compliant behaviour as a
+        # failure — the same mistake the harness bugs made.
+        if (
+            prompt_level in getattr(task, "clarification_ok_levels", frozenset())
+            and asked
+        ):
+            result["outcome"] = Outcome.CORRECT
+            result["tool_correct"] = True
+            result["arguments_correct"] = True
+            result["state_correct"] = True
+            return result
+
         result["outcome"] = Outcome.NO_ACTION
         return result
 

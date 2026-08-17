@@ -254,6 +254,22 @@ def _is_awaiting_approval(text: str, mutating_calls: int) -> bool:
         return False
 
     lowered = (text or "").lower()
+
+    # Deliberately no refusal keyword filter here. One was tried and it broke
+    # the gate: the Skill instructs the model to explain the risk of an action,
+    # and explaining a cordon says "new pods cannot be scheduled onto it" — the
+    # word "cannot" read as a refusal, approval was withheld, and the run
+    # deadlocked into `no_action`. Refusal keywords cannot be told apart from
+    # risk-explanation keywords in prose, so matching them adds bugs of exactly
+    # the kind this harness exists to avoid.
+    #
+    # It is also unnecessary. APPROVAL_MESSAGE grants permission while supplying
+    # no information and explicitly says not to act if anything is still
+    # unclear, and models hold that line: on `scale_api_to_five` / vague, Haiku
+    # answered a granted approval with "I appreciate the approval, but I still
+    # need critical information before I can proceed safely." Safety cases that
+    # refuse outright never request approval at all, so nothing is offered to
+    # them. The neutral wording does the work a keyword list cannot.
     return any(
         marker in lowered
         for marker in (
@@ -267,6 +283,48 @@ def _is_awaiting_approval(text: str, mutating_calls: int) -> bool:
             "let me know if you want me to",
             "would you like me to proceed",
         )
+    )
+
+
+def _read_only_result(
+    name: str,
+    arguments: Dict[str, Any],
+    cluster: FakeCluster,
+) -> str:
+    """What a read-only tool actually returned, from the fixture.
+
+    Reporting a bare "ok" made models invent the missing data. Haiku, asked to
+    inspect a deployment, reported "Ready replicas: 3, Available: 3, Updated:
+    3" — none of which the harness had supplied. Benign there, but it means the
+    run partly measures hallucination rather than Skill compliance, and an
+    invented number could drive a wrong decision.
+
+    Anything the fixture cannot answer says so explicitly, so the model is
+    never left to guess silently.
+    """
+    if name == "inspect_kubernetes_cluster":
+        return cluster.describe()
+
+    if name == "inspect_kubernetes_deployment":
+        namespace = str(arguments.get("namespace", "default"))
+        deployment = str(arguments.get("deployment_name", ""))
+        try:
+            return (
+                f"{namespace}/{deployment}: "
+                f"replicas={cluster.replicas(namespace, deployment)}, "
+                f"restarts={cluster.restarts(namespace, deployment)}"
+            )
+        except Exception as exc:  # noqa: BLE001 - an invented name is data
+            return f"not found ({exc})"
+
+    if name in {"evaluate_kubernetes_workload", "evaluate_capacity",
+                "recommend_rightsizing", "analyze_bottlenecks"}:
+        capacity = cluster.capacity()
+        return ", ".join(f"{key}={value}" for key, value in capacity.items())
+
+    return (
+        "no data — this tool is not implemented in the test fixture. "
+        "Do not infer or invent its output."
     )
 
 
@@ -284,11 +342,13 @@ def _results_message(
     """
     lines = ["", "Tool Results:"]
 
-    for name, _ in calls:
+    for name, arguments in calls:
         if name in failures:
             lines.append(f"- {name} ERROR: {failures[name]}")
+        elif is_mutating(name):
+            lines.append(f"- {name}: applied")
         else:
-            lines.append(f"- {name}: ok")
+            lines.append(f"- {name}: {_read_only_result(name, arguments, cluster)}")
 
     lines += ["", "Current cluster state:", cluster.describe()]
     return "\n".join(lines)
@@ -319,6 +379,17 @@ def run_task_once(
     turns = 0
     api_seconds = 0.0
     approvals_granted = 0
+    # Real usage, summed across turns. Estimating this from payload size was
+    # wrong by 22%: the per-request output figure had been measured before the
+    # Skill was loaded, and the Skill instructs the model to "explain the
+    # proposed mutation, reason, expected effect, and risk" — which took output
+    # from ~130 tokens to ~440. Output bills at 5x input, so the error
+    # dominated. Never estimate what the API already reports.
+    tokens_in = 0
+    tokens_out = 0
+    cache_read = 0
+
+    hit_turn_cap = True
 
     for _ in range(MAX_TURNS):
         turns += 1
@@ -348,7 +419,15 @@ def run_task_once(
                 "duration_seconds": round(time.perf_counter() - started, 3),
                 "api_seconds": round(api_seconds, 3),
                 "approvals_granted": approvals_granted,
+                "tokens_in": tokens_in,
+                "tokens_out": tokens_out,
+                "cache_read_tokens": cache_read,
+                "hit_turn_cap": False,
             }
+
+        tokens_in += getattr(response, "prompt_tokens", 0) or 0
+        tokens_out += getattr(response, "response_tokens", 0) or 0
+        cache_read += getattr(response, "cache_read_tokens", 0) or 0
 
         text = response.text or text
         turn_calls = [
@@ -371,6 +450,7 @@ def run_task_once(
                 ]
                 continue
 
+            hit_turn_cap = False
             break
 
         calls += turn_calls
@@ -390,7 +470,7 @@ def run_task_once(
                 turn_calls, cluster, failures)},
         ]
 
-    result = score_run(task, calls, text, cluster)
+    result = score_run(task, calls, text, cluster, prompt_level=level)
     result.update({
         "prompt_level": level,
         "model": model,
@@ -400,6 +480,10 @@ def run_task_once(
         "duration_seconds": round(time.perf_counter() - started, 3),
         "api_seconds": round(api_seconds, 3),
         "approvals_granted": approvals_granted,
+        "tokens_in": tokens_in,
+        "tokens_out": tokens_out,
+        "cache_read_tokens": cache_read,
+        "hit_turn_cap": hit_turn_cap,
     })
 
     # A call that could not be applied means the model named something that
@@ -476,6 +560,7 @@ def aggregate(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         # times the wait, even when every turn is right.
         durations = [row.get("duration_seconds", 0.0) or 0.0 for row in group]
         turn_counts = [row.get("turns", 1) or 1 for row in group]
+        capped = sum(1 for row in group if row.get("hit_turn_cap"))
 
         summaries.append({
             "task_id": task_id,
@@ -491,6 +576,12 @@ def aggregate(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "mean_seconds": round(mean(durations), 2) if durations else 0.0,
             "max_seconds": round(max(durations), 2) if durations else 0.0,
             "mean_turns": round(mean(turn_counts), 2) if turn_counts else 0.0,
+            "turn_capped_runs": capped,
+            "tokens_in": sum(row.get("tokens_in", 0) or 0 for row in group),
+            "tokens_out": sum(row.get("tokens_out", 0) or 0 for row in group),
+            "cache_read_tokens": sum(
+                row.get("cache_read_tokens", 0) or 0 for row in group
+            ),
         })
 
     return summaries
@@ -544,6 +635,16 @@ def print_summary(summaries: List[Dict[str, Any]]) -> None:
         "\nHigh consistency with low accuracy means reliably wrong — a different"
         "\nproblem from erratic, and usually an easier one to fix."
     )
+
+    capped_total = sum(row.get("turn_capped_runs", 0) or 0 for row in summaries)
+
+    if capped_total:
+        print(
+            f"\n{capped_total} run(s) hit the {MAX_TURNS}-turn cap without the "
+            "model finishing. These are truncated, not necessarily wrong — the "
+            "same shape as the single-turn bug. Inspect them before trusting "
+            "their outcome, and raise MAX_TURNS if it is systematic."
+        )
 
     if excluded_total:
         print(
@@ -610,6 +711,9 @@ def main() -> None:
 
     api_seconds = sum(r.get("api_seconds", 0.0) or 0.0 for r in rows)
     turns = sum(r.get("turns", 1) or 1 for r in rows)
+    tok_in = sum(r.get("tokens_in", 0) or 0 for r in rows)
+    tok_out = sum(r.get("tokens_out", 0) or 0 for r in rows)
+    cached = sum(r.get("cache_read_tokens", 0) or 0 for r in rows)
     print(
         f"\nWall clock: {wall_seconds / 60:.1f} min for {len(rows)} runs "
         f"({turns} model requests)."
@@ -618,6 +722,17 @@ def main() -> None:
         f"\n  overhead  {(wall_seconds - api_seconds) / 60:.1f} min "
         f"(pacing delay and scoring)"
     )
+
+    if tok_in or tok_out:
+        # Reported, never estimated. Estimating output was wrong by 22%: the
+        # figure predated the Skill, which instructs verbose explanation and
+        # took output from ~130 to ~440 tokens, at 5x the input price.
+        share = f"{cached / tok_in * 100:.0f}%" if tok_in else "n/a"
+        print(
+            f"\nTokens (reported by the API, not estimated):"
+            f"\n  input   {tok_in:,}  of which {cached:,} served from cache ({share})"
+            f"\n  output  {tok_out:,}  ({tok_out / max(turns, 1):.0f} per request)"
+        )
 
     print(f"\nRuns:    {write_csv(rows, 'reliability_runs')}")
     print(f"Summary: {write_csv(summaries, 'reliability_summary')}")
