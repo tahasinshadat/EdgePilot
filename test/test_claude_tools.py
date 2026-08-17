@@ -58,7 +58,15 @@ def test_claude_sends_tool_schemas(mock_client_class, provider):
 
     request_payload = client.post.call_args.kwargs["json"]
 
-    assert request_payload["tools"] == schemas
+    # Every enabled schema is sent, in order and unchanged. The only permitted
+    # difference is the prompt-cache breakpoint on the final tool, which caches
+    # the whole ~22,000-character tool block; strip it and the payload must be
+    # byte-identical to what was enabled.
+    sent = [dict(tool) for tool in request_payload["tools"]]
+    assert "cache_control" in sent[-1], "tool block should be cached"
+    sent[-1].pop("cache_control")
+
+    assert sent == schemas
     assert request_payload["tool_choice"] == {"type": "auto"}
 
 
