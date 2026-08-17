@@ -19,8 +19,13 @@ __pycache__/
 
 # Ignore environment variables and secrets
 .env
-env/.env
 *.env
+
+# The whole env/ directory, not just env/.env. The name-based patterns above
+# miss anything misnamed — a stray `env/.enprintf` sat untracked-but-visible
+# because none of `.env`, `env/.env` or `*.env` matched it. Key files get
+# misnamed under pressure, so ignore the directory and stop guessing names.
+env/
 
 # Ignore Chat History
 data/chat_history.json
