@@ -375,6 +375,29 @@ TOOL_SCHEMAS: List[Dict[str, Any]] = [
         }
     },
     {
+        "name": "migrate_workload",
+        "description": "Migrates a Kubernetes deployment to a specific node by patching its nodeSelector. Requires human approval.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "namespace": {
+                    "type": "string",
+                    "description": "The Kubernetes namespace.",
+                    "default": "default"
+                },
+                "deployment_name": {
+                    "type": "string",
+                    "description": "The name of the deployment to migrate."
+                },
+                "target_node": {
+                    "type": "string",
+                    "description": "The target node to migrate the deployment to."
+                }
+            },
+            "required": ["deployment_name", "target_node"]
+        }
+    },
+    {
         "name": "cordon_node",
         "description": "Marks a Kubernetes node as unschedulable. Requires human approval.",
         "parameters": {

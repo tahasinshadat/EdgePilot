@@ -32,6 +32,7 @@ from tools.kubernetes_actions import (
     cordon_node,
     restart_workload,
     scale_workload,
+    migrate_workload,
 )
 from tools.kubernetes import (
     evaluate_kubernetes_workload,
@@ -99,6 +100,7 @@ class ToolExecutor:
             "scale_workload": self._execute_scale_workload,
             "restart_workload": self._execute_restart_workload,
             "cordon_node": self._execute_cordon_node,
+            "migrate_workload": self._execute_migrate_workload,
             "list_skills": self._execute_list_skills,
             "load_skill": self._execute_load_skill,
             "recommend_rightsizing": self._execute_recommend_rightsizing,
@@ -268,8 +270,18 @@ class ToolExecutor:
     def _execute_cordon_node(self, args: Dict[str, Any]) -> Dict[str, Any]:
         node_name = args.get("node_name")
         if not node_name:
-            raise ValueError("node_name is required")
+            return {"success": False, "error": "Missing node_name argument."}
         return cordon_node(node_name)
+
+    def _execute_migrate_workload(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        namespace = args.get("namespace", "default")
+        deployment_name = args.get("deployment_name")
+        target_node = args.get("target_node")
+
+        if not deployment_name or not target_node:
+            return {"success": False, "error": "Missing deployment_name or target_node arguments."}
+
+        return migrate_workload(namespace, deployment_name, target_node)
 
     def _source_args(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Extract the source-selection arguments shared by both analyses."""
