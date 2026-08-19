@@ -954,3 +954,70 @@ def format_tools_for_claude() -> List[Dict[str, Any]]:
         }
         claude_tools.append(claude_tool)
     return claude_tools
+
+
+def format_tools_for_provider(provider: Any) -> List[Dict[str, Any]]:
+    """Return tool schemas in the shape *this* provider's API expects.
+
+    Claude needs ``input_schema``; Gemini needs ``parameters``. Passing the
+    raw schemas to Claude returns a 400 on every request
+    (``tools.0.custom.input_schema: Field required``) — and because Gemini
+    accepts the raw shape, the mistake looks like a Claude-specific model
+    failure rather than a formatting bug.
+
+    Every caller that hands schemas to a provider should use this rather than
+    branching on the provider id itself; duplicating that branch is what let
+    the runner and the app disagree.
+    """
+    try:
+        provider_id = (type(provider).describe() or {}).get("id", "")
+    except Exception:  # noqa: BLE001 - an odd provider falls back to raw
+        provider_id = ""
+
+    if provider_id == "claude":
+        return format_tools_for_claude()
+
+    if provider_id == "gemini":
+        return format_tools_for_gemini()
+
+    return get_all_tool_schemas()
+
+
+# ── Which tools change something ────────────────────────────────────────
+# The single source of truth for "this call has a side effect", used by the
+# HITL approval gate in main.py and by the reliability scorer. It lives here,
+# next to the schemas, because two hand-maintained copies drift: the scorer
+# once carried its own read-only allowlist, and every tool missing from it
+# (``preview_free_disk_space``, ``query_slurm_accounting``, ...) was scored as
+# an unsafe action a model never took.
+MUTATING_TOOLS = {
+    "scale_workload",
+    "restart_workload",
+    "cordon_node",
+    "drain_k8s_node",
+    "migrate_workload",
+    "apply_resource_requests",
+    "run_shell_commands",
+    "run_python_script",
+    "execute_free_disk_space",
+    "hibernate_background_apps",
+    "cancel_slurm_job",
+    "update_slurm_job_qos",
+    "ingest_historical_sample",
+    "launch",
+    "end_task",
+}
+
+
+def is_mutating(tool_name: str) -> bool:
+    """True when calling *tool_name* changes state.
+
+    Unknown names count as mutating. A tool added without being classified
+    should fail closed — needing an approval it did not need is recoverable,
+    silently acting without one is not.
+    """
+    if tool_name in MUTATING_TOOLS:
+        return True
+
+    known = {schema["name"] for schema in get_all_tool_schemas()}
+    return tool_name not in known

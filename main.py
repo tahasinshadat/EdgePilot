@@ -31,9 +31,7 @@ from MCP import (
     execute_tool,
     execute_tool_async,
     execute_tools_batch,
-    format_tools_for_gemini,
-    format_tools_for_claude,
-    get_all_tool_schemas,
+    format_tools_for_provider,
 )
 from core.interface import ask_question, schedule_operation
 from core.skills import load_project_skill
@@ -357,6 +355,13 @@ app = FastAPI(title="EdgePilot Backend", version="0.4.0")
 
 # Store futures for tools requiring human-in-the-loop approval
 PENDING_APPROVALS: Dict[str, asyncio.Future] = {}
+
+# Which tools need a human to say yes. A deliberate subset of MUTATING_TOOLS:
+# every tool here changes state, but not everything that changes state is
+# worth interrupting the user for — `launch` and `end_task` act on the local
+# task list, not the cluster. `test_dangerous_tools_all_mutate` enforces the
+# subset relationship so a tool cannot be gated here without being classified
+# as mutating there.
 DANGEROUS_TOOLS = {
     "scale_workload",
     "restart_workload",
@@ -702,18 +707,7 @@ async def _sse_message_generator(
 
     # Enable tools
     if hasattr(provider, "enable_tools"):
-        provider_id = ""
-        try:
-            provider_id = (type(provider).describe() or {}).get("id", "")
-        except Exception:
-            pass
-        if provider_id == "claude":
-            tool_schemas = format_tools_for_claude()
-        elif provider_id == "gemini":
-            tool_schemas = format_tools_for_gemini()
-        else:
-            tool_schemas = get_all_tool_schemas()
-        provider.enable_tools(tool_schemas)
+        provider.enable_tools(format_tools_for_provider(provider))
 
     user_message: ChatMessage = {
         "role": "user",

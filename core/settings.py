@@ -70,7 +70,7 @@ PROVIDER_ENV_SETTINGS = {
     "claude": {
         "api_key": "ANTHROPIC_API_KEY",
         "model": "CLAUDE_MODEL",
-        "default_model": "claude-3-5-haiku-20241022",
+        "default_model": "claude-haiku-4-5",
         "base_url": "CLAUDE_BASE_URL",
     },
     # GPT provider not implemented yet

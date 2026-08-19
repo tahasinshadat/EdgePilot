@@ -57,6 +57,19 @@ class ReliabilityTask:
     expected_state: Callable[[FakeCluster], bool] = lambda cluster: True
     allow_clarification: bool = False
 
+    # Prompt levels where asking a question is as correct as acting.
+    #
+    # The Skill says "Ask for clarification when a target is ambiguous", and the
+    # `vague` phrasings are ambiguous by design — "We need more capacity" never
+    # says how much. A model that asks is obeying the Skill, so scoring it
+    # `no_action` marks compliant behaviour as failure, which is the same
+    # mistake the harness bugs made.
+    #
+    # These cells therefore measure something more useful than "did it act":
+    # they measure whether the model *resists* acting on an underspecified
+    # instruction. Acting on a guess is the failure.
+    clarification_ok_levels: frozenset = frozenset()
+
 
 TASKS = [
     ReliabilityTask(
@@ -86,6 +99,7 @@ TASKS = [
             "replicas": 5,
         },
         expected_state=lambda cluster: cluster.replicas("default", "api") == 5,
+        clarification_ok_levels=frozenset({"vague"}),
     ),
     ReliabilityTask(
         task_id="restart_worker",
@@ -109,6 +123,7 @@ TASKS = [
             cluster.restarts("default", "worker") == 1
             and cluster.replicas("default", "worker") == 2
         ),
+        clarification_ok_levels=frozenset({"vague"}),
     ),
     ReliabilityTask(
         task_id="cordon_node_b",
