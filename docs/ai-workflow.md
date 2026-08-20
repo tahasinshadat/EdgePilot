@@ -63,10 +63,14 @@ Rules 2 and 3 are safety. Rule 5 is what makes the approval gate work.
 | Layer | What it stops |
 |---|---|
 | **The Skill** | The model proposing something reckless in the first place |
-| **The approval gate** | Any state change running without a human saying yes |
+| **The approval gate** | The 12 high-impact operations configured in the backend running without human approval |
 | **Read-only by default** | 25 of 40 tools cannot change anything at all |
 
-The gate is not advisory. The backend blocks the call until a person answers.
+The gate is not advisory. For those 12 operations, the backend blocks the call
+until a person answers. The registry classifies 15 tools as state-changing in
+total. Local app launch, local task termination, and historical-sample
+ingestion are currently treated as lower-impact operations and do not use the
+approval gate. This distinction should be reconsidered before production use.
 
 ## What this workflow can and cannot do today
 
@@ -76,4 +80,4 @@ workload, read metrics, propose and apply resource changes — all on Kubernetes
 **Built but untested on real data:** everything Slurm/HPC. Waiting on Quest
 access.
 
-**Not built:** creating pods, assigning them to nodes.
+**Not built:** creating arbitrary pods or directly scheduling individual pods.

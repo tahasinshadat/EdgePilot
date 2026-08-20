@@ -2,11 +2,16 @@
 
 ## What it is
 
-An on-premises AI copilot for cluster operations. You ask a question in plain
-English. It reads real system state through tools, then either answers or
-proposes an action. Anything that changes state stops and asks you first.
+An AI copilot for cluster operations whose application and tool-execution
+layers run on premises. Users submit requests in plain English. EdgePilot reads
+system state through local tools, then either answers or proposes an action.
+Twelve high-impact operations stop at a human-approval gate before execution.
 
-Everything runs locally. Cluster data and job records never leave the machine.
+The application, tool execution, and data stores run locally. When Claude or
+Gemini is selected, the prompt and tool results needed for the conversation are
+sent to that provider's API. Credentials and kubeconfig contents must not be
+included. Slurm support is currently evaluated using mock data while access to
+real Northwestern Quest data is pending.
 
 ## The system
 
@@ -21,7 +26,7 @@ flowchart TB
     subgraph Backend["Backend — FastAPI, runs locally"]
         API["Chat API<br/><i>streams responses</i>"]
         Loop["Agent loop<br/><i>up to 15 rounds of tool calls</i>"]
-        Gate{{"Approval gate<br/><i>12 tools need a human yes</i>"}}
+        Gate{{"Approval gate<br/><i>12 high-impact tools need a human yes</i>"}}
         Cache["Semantic cache<br/><i>skips repeat questions</i>"]
     end
 
@@ -47,9 +52,10 @@ flowchart TB
     API --> Loop
     Loop <--> Models
     Skill -.->|"instructions"| Models
-    Loop --> Gate
+    Loop -->|"high-impact call"| Gate
     Gate -->|"approved"| Tools
     Gate -.->|"denied"| Loop
+    Loop -->|"read-only or lower-impact call"| Tools
     Tools <--> Systems
     Tools -->|"results"| Loop
 
@@ -64,7 +70,7 @@ flowchart TB
 | **Electron UI** | Desktop chat window, live telemetry, approval prompts |
 | **FastAPI backend** | Runs locally. Manages chats, calls the model, executes tools |
 | **Agent loop** | Model calls a tool → backend runs it → result goes back to the model → repeat until done |
-| **Approval gate** | 12 of the 40 tools change state. Each one stops and waits for a human |
+| **Approval gate** | 12 high-impact tools stop and wait for human approval. The registry classifies 15 tools as state-changing; `launch`, `end_task`, and historical-sample ingestion are not currently gated |
 | **Skill** | A written set of rules the model follows: verify capacity, explain the change, never guess a name |
 | **Tool registry** | 40 tools. 25 read-only, 15 change something |
 | **Semantic cache** | Recognises a repeat question and answers without calling the model |
@@ -72,8 +78,11 @@ flowchart TB
 
 ## Where the data comes from
 
-- **Kubernetes** — live cluster, via the Kubernetes API
-- **Prometheus / Grafana** — hardware metrics
+- **Kubernetes** — cluster state obtained through the local Kubernetes API
+  client. Capacity results represent request-based scheduling headroom, not
+  real-time free CPU or memory.
+- **Prometheus / Grafana** — real-time hardware utilization metrics such as
+  CPU and memory usage.
 - **Slurm** — job accounting and queue state. Built, but **not yet connected to
   real data**; waiting on Northwestern Quest access. Tested against mock data
 - **Local host** — CPU, memory, disk, processes
