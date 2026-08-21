@@ -28,6 +28,9 @@ Before every run:
 - A fresh conversation is used.
 - Cluster state is recorded with `kubectl` as ground truth.
 
+The test resources are created from
+[`fixtures/edgepilot-eval-nginx.yaml`](fixtures/edgepilot-eval-nginx.yaml).
+
 ## Exact prompt
 
 > Inspect the `edgepilot-eval-nginx` deployment in the `edgepilot-eval`
