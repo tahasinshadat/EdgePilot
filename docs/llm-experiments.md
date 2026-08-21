@@ -22,16 +22,30 @@ The multiplier is turns, not text.
 
 ## Where the tokens actually go
 
-One request, measured:
+Preliminary measurements indicate that tool definitions are the largest
+component of input context. However, the earlier component-level estimates did
+not add up consistently to the recorded total input-token count.
 
-| Part | Tokens | Share |
+Because the original breakdown has not yet been independently reproduced, the
+component percentages are omitted here. A controlled rerun will record:
+
+- tool-definition tokens
+- Skill-instruction tokens
+- task and cluster-context tokens
+- cached input tokens
+- uncached input tokens
+- output tokens
+- number of model requests
+
+The verified API-level measurement currently available is:
+
+| Metric | Before caching | After caching |
 |---|---:|---:|
-| Tool definitions (40 tools) | ~5,300 | **86%** |
-| Cluster state + question | ~1,000 | 14% |
-| Skill instructions | ~800 | 14% |
+| Billed input per request | 6,631 tokens | 957 tokens |
 
-The tool definitions dominate everything, and they are **identical on every
-single request**. That is the real cost story.
+This indicates an approximately 86% reduction in billed input tokens. The
+component responsible for that reduction will be reported after the controlled
+rerun.
 
 ---
 
@@ -61,7 +75,9 @@ a task in less than half the wall-clock time.
 
 ## The fix we found: caching
 
-86% of every request is the same text re-sent. We turned on prompt caching.
+The caching measurement shows an approximately 86% reduction in billed input
+tokens, suggesting that repeated static context accounts for most of the
+uncached input.
 
 | | Before | After |
 |---|---:|---:|
