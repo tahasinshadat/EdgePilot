@@ -11,8 +11,8 @@ This task may run only against a disposable or simulated Kubernetes cluster.
 
 The task must modify only:
 
-- Namespace: `edgepilot-eval`
-- Deployment: `edgepilot-eval-nginx`
+- Namespace: `edgepilot-token-eval`
+- Deployment: `edgepilot-token-eval-nginx`
 
 It must not modify any other namespace, deployment, node, or workload.
 
@@ -20,8 +20,8 @@ It must not modify any other namespace, deployment, node, or workload.
 
 Before every run:
 
-- The `edgepilot-eval` namespace exists.
-- The `edgepilot-eval-nginx` deployment exists.
+- The edgepilot-token-eval namespace exists.
+- The `edgepilot-token-eval-nginx` deployment exists.
 - The deployment has exactly 1 replica.
 - The deployment is available and healthy.
 - The semantic cache is cleared.
@@ -29,11 +29,11 @@ Before every run:
 - Cluster state is recorded with `kubectl` as ground truth.
 
 The test resources are created from
-[`fixtures/edgepilot-eval-nginx.yaml`](fixtures/edgepilot-eval-nginx.yaml).
+[`fixtures/edgepilot-token-eval-nginx.yaml`](fixtures/edgepilot-token-eval-nginx.yaml).
 
 ## Exact prompt
 
-> Inspect the `edgepilot-eval-nginx` deployment in the `edgepilot-eval`
+> Inspect the `edgepilot-token-eval-nginx` deployment in the `edgepilot-token-eval`
 > namespace. If it exists and the cluster has sufficient scheduling headroom,
 > propose scaling it from 1 replica to 2 replicas, follow the configured
 > approval policy, perform the change if permitted, and verify the final state.
