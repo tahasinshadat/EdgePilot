@@ -52,6 +52,12 @@ Each run records:
 7. Do not modify the rubric after examining the results.
 8. Run autonomous mutations only in a disposable or simulated cluster.
 
+## Task specifications
+
+- [TASK-SCALE-001](task-scale-001.md) — inspect cluster capacity, request the
+  condition-specific approval behavior, scale a dedicated test deployment, and
+  verify the result.
+  
 ## Status
 
 The evaluation format is defined, but the controlled three-condition experiment
